@@ -1,1 +1,9 @@
 * schimbarea cheii de criptare
+* ken thompson - writing a bogus compiler - reflections on trusting trust - p761-thompson.pdf
+* how does uefi work?
+* will I be able de decrypt parts of the bundle as it arrives,
+or will I have to store it in flash and then do it for the whole thing?
+* what happens if the flashiong fails? boot-loop? or revert to old firmware?
+* say about what happens if we try to read the microcontroller (will everything delete?)
+* trying a normal reprogram is no longer possible after initial programming since
+ JTAG will only allow deleting the contents of the flash?
