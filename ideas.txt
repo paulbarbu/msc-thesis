@@ -7,3 +7,5 @@ or will I have to store it in flash and then do it for the whole thing?
 * say about what happens if we try to read the microcontroller (will everything delete?)
 * trying a normal reprogram is no longer possible after initial programming since
  JTAG will only allow deleting the contents of the flash?
+
+

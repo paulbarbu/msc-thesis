@@ -1,0 +1,103 @@
+\documentclass[12pt,a4paper,titlepage]{article}
+
+\usepackage{times}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[romanian]{babel}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{url}
+
+\author{Barbu Paul - Gheorghe}
+
+%TODO: coperta
+%TODO: plan tematic?
+
+\begin{document}
+
+\begin{titlepage}
+{
+\centering
+UNIVERSITATEA "LUCIAN BLAGA" DIN SIBIU\\
+FACULTATEA DE INGINERIE \\
+DEPARTAMENTUL DE CALCULATOARE ŞI INGINERIE ELECTRICĂ\\
+}
+
+\vfill
+
+{
+\centering
+\Large
+Secured Bootloader: program pentru controlul secvenței de
+inițializare și al actualizării aplicației în microcontrollere
+programabile
+}
+
+\vfill
+{
+\raggedright
+Conducător ştiinţific: TODO: c.d. cu  grad şi titlul de doctor \\
+Îndrumător: TODO: c.d. ce s-a ocupat de student
+}
+\vfill
+
+{
+\raggedright
+\hspace*{160pt}Absolvent: \\
+\hspace*{160pt}Barbu Paul - Gheorghe\\
+\hspace*{160pt}Specializarea:\\
+\hspace*{160pt}Calculatoare și Tehnologia Informației
+}
+
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\subsection*{Prezentarea temei}
+
+Lucrarea de față își propune dezvoltarea unui bootloader securizat pentru dispozitive embedded, aceste dispozitive conțin un microcontroller și în general utilizatorul respectivelor dispozitive nu vede și nu interacționează direct cu microcontroller-ul. Exemple de dispozitive embedded sau de aparate care conțin asemenea dispozitive: frigider, mașină de spălat, autoturism, termostat, contor electric, sistem de alarmă, sistem de supraveghere, ceasuri, etc.
+
+Un bootloader este o aplicație care este în general încărcată pe microcontroller de către firma care vinde microcontroller-ul și care nu poate fi înlocuită ușor de către utilizatorii acestuia.
+Rolul acestei aplicații este de a fi gazda ("host"-ul) și de a face verificările necesare încărcării unei alte aplicații pe microcontroller. În urma verificărilor se poate afirma că aplicația "guest" sau utilizator este una validă și că poate fi rulată de microcontroller cu încredere.
+În urma procesului de bootloading ambele aplicații, atât bootloader-ul cât și aplicația utilizator, vor coexista în
+memoria non-volatilă a dispozitivului embedded\footnote{în general pe flash-ul microcontroller-ului, conform unui memory map predefinit de producător}.
+ 
+Motivele pentru care bootloader-ul este securizat și pentru care înlocuirea lui sau a aplicației utilizator
+nu ar trebui să poată fi făcută de oricine țin în mică parte de protejarea proprietății intelectuale a celor ce creează aplicații guest pentru respectivul dispozitiv și într-o mai mare măsură țin de asigurarea integrității și a evitării modificării neautorizate a acestei aplicații pentru a asigura utilizatorului experiența pe care producătorul dispozitivelor embedded și-a imaginat-o. Acest lucru este crucial în ziua de astăzi, când criminalitatea în mediul cibernetic este în creștere\cite{interpol}\cite{morgan2016}. Consumatorii trebuie să poată fi protejați proactiv de acțiunile ilegale ale crackerilor, în antiteză cu metoda tradițională, reactivă care constă în schimbarea și îmbunătățirea unui sistem după ce acesta a fost compromis. Cele două metode se complementează reciproc, dar metoda proactivă are avantajul prevenirii unei acțiuni malițioase asupra sistemului informatic.
+
+În afară de îmbunătățirea securității unui sistem embedded precum a fost descris mai sus, rolul bootloader-ului ar trebui să fie și de a mări flexibilitatea unui astfel de sistem. Acest rol este îndeplinit prin faptul că aplicația utilizator de pe microcontroller poate fi schimbată fără modificări hardware asupra sistemului. Schimbarea aplicației utilizator poate surveni din diverse motive, printre care: dezvoltatorul sistemului embedded hotărăște că este timpul să introducă funcționalități noi în aplicație sau că aplicația veche are unele defecte (bug-uri) care trebuie reparate sau chiar că sistemul embedded care înainte îndeplinea un rol trebuie să îndeplinească un rol complet nou, diferit față de cel vechi. Toate aceste scenarii implică folosirea bootloader-ului pre-instalat pe un dispozitiv pentru a încărca o altă aplicație (fie că e una complet nouă sau doar puțin modificată datorită remedierii defectelor din versiunea anterioară).
+
+Bootloader-ul dezvoltat ar trebui să ne permită de asemenea reducerea costurilor. Prin costuri putem să considerăm de exemplu costurile survenite în urma livrării unui sistem embedded. Prin definiție mecanismele interne ale unui astfel de sistem nu sunt accesibile consumatorilor, deci orice modificare, fie ea chiar și software trebuie să fie făcută de producător. Așadar dispozitivul trebuie să fie livrat la producător, acesta aplică modificările și livrează înapoi dispozitivul clientului. Prin intermediul bootloader-ului ne propunem să putem face aceste modificări software la distanță. În esență aceste modificări se vor putea face independent de către fiecare utilizator al sistemului.
+
+Succint cerințele pe care trebuie să le satisfacă bootloader-ul sunt:
+\begin{itemize}
+\item asigurarea flexibilității dispozitivului embedded prin faptul ca aplicațiile de utilizator se pot schimba la nevoie
+\item asigurarea securității și integrității unui sistem embedded în momentul în care aplicația este încărcată\footnote{securitatea sistemului depinde 100\% de aplicație în momentul în care aceasta rulează}
+\item minimizarea costurilor de întreținere a dispozitivelor embedded dintr-un mediu industrial prin posibilitatea de a acționa bootloader-ul din exteriorul sistemului embedded
+\end{itemize}
+
+Prin rezolvarea acestor puncte, bootloader-ul va fi de ajuns de generic pentru aplicabilitate în diverse domenii și pe diverse platforme hardware. Fiind vorba de mediul embedded, bootloader-ul a fost proiectat și dezvoltat cu constrângerile de mărime în minte, cu atât mai mult cu cât pe un microcontroller se vor stoca două aplicații simultan, bootloader-ul și aplicația utilizator, dar doar una va rula la un moment dat.
+
+\part{Partea I}
+\section{Introducere}
+TODO: scrie-ma
+\cite{TODO}
+\cite{aTODO}
+
+
+\part{Partea II}
+\section{Introducere}
+TODO: memory map, cum sta aplicatia host si guest in memorie
+TODO: scrie-ma
+\cite{TODO}
+\cite{aTODO}
+
+
+\bibliographystyle{plain}
+\bibliography{bibliografie}
+
+\end{document}
