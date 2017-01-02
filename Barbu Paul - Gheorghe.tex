@@ -1,4 +1,4 @@
-\documentclass[12pt,a4paper,titlepage]{article}
+\documentclass[12pt,a4paper,titlepage]{report}
 
 \usepackage{times}
 
@@ -9,7 +9,7 @@
 \usepackage{setspace}
 \onehalfspacing
 
-\usepackage{url}
+\usepackage[hidelinks]{hyperref}
 
 \author{Barbu Paul - Gheorghe}
 
@@ -82,21 +82,49 @@ Succint cerințele pe care trebuie să le satisfacă bootloader-ul sunt:
 
 Prin rezolvarea acestor puncte, bootloader-ul va fi de ajuns de generic pentru aplicabilitate în diverse domenii și pe diverse platforme hardware. Fiind vorba de mediul embedded, bootloader-ul a fost proiectat și dezvoltat cu constrângerile de mărime în minte, cu atât mai mult cu cât pe un microcontroller se vor stoca două aplicații simultan, bootloader-ul și aplicația utilizator, dar doar una va rula la un moment dat.
 
-\part{Partea I}
-\section{Introducere}
-TODO: scrie-ma
-\cite{TODO}
-\cite{aTODO}
+\newpage
+\chapter{Considerații teoretice}
+\section{Introducere și etimologie}
+Un bootloader se află pe orice sistem de calcul care trebuie să încarce un sistem de operare sau o aplicație terță.
+Acest lucru este valabil fie că utilizatorul interacționează cu sistemul în timpul procesului de "boot" fie că procesul se petrece automat, fără interacțiune umană.
 
+Cuvântul bootloader vine de la procesul de "boot" (sau "boot up"), care la rândul său este o scriere prescurtată a "bootstrap". Bootstrap în engleză semnifică "to pull oneself up by one's bootstraps", procesul prin care noi pornim la drum încălțându-ne. \cite{wikiBootstrap}
 
-\part{Partea II}
+\section{Modul de funcționare al unui bootloader}
+Orice bootloader trebuie stocat într-o memorie non-volatilă și de preferat disponibilă doar pentru citire, o memorie ROM\footnote{Read-Only Memory}, deoarece acesta trebuie să fie disponibil în momentul în care sistemul pornește indiferent de ce s-a întâmplat anterior pe sistem. Acest lucru garantează funcționarea corectă a sistemului și faptul că sistemul de operare sau aplicația utilizator poate fi schimbată. În caz contrar, când sistemul încetează să funcționeze din cauza unui defect (în general software) putem spune ca este "brick-uit", de la englezescul "brick" (cărămidă)\cite{wikiBrick}.
+
+Un bootloader este, fără excepție, primul program executat de către un calculator.
+Codul este încărcat din ROM în RAM\footnote{Random - Access Memory}, este executat, iar în urma execuției acestui cod (în mod tipic un sector) se pot întâmpla unul din două lucruri:
+\begin{enumerate}
+\item bootloader-ul și-a încheiat treaba și a predat controlul aplicației utilizator respectiv sistemului de operare
+\item bootloader-ul nu încape într-un sector și codul executat anterior este doar auxiliar
+\end{enumerate}
+În al doilea caz avem de a face cu un așa zis "two stage bootloader", în primul stagiu făcându-se doar apelul spre acest stagiu secundar. Aici se va face de fapt încărcarea aplicației utilizator. Motivul din spatele încărcării în două faze este faptul că, fără drivere de disc și fără sisteme de fișiere, unitatea maximă pe care procesorul o poate citi de pe hard disc este sectorul.
+
+Posibila diferență la sistemele embedded este aceea că microcontroller-ul poate executa cod direct din memoria flash și că bootloader-ul este probabil mai mic ca un sector, deoarece aplicațiile sunt reduse ca dimensiune și ca periferice cu care pot interacționa, display-ul și tastatura nefiind necesare în astfel de sisteme în timpul procesului de boot up.
+
+La calculatoarele personale un bootloader bine cunoscut și pentru care avem nevoie de display și tastatură este GNU GRUB, folosit de majoritatea distribuțiilor GNU/Linux. Acest bootloader este vizibil utilizatorului și se poate chiar schimba tipul de sistem de operare încărcat (folosind tastatura).
+
+TODO: GRUB image
+TODO: %https://msdn.microsoft.com/en-us/library/ms902397.aspx
+TODO: cum se intampla boot-ul la PC + POST % https://en.wikipedia.org/wiki/Booting\#Boot_sequence
+TODO:% https://en.wikipedia.org/wiki/Master_boot_record\#Programming_considerations
+TODO: despre alte bootloadere la PC: grub, lilo
+
+TODO: despre cum se scrie codul in lumea embedded, fara bootloader prima data (flashuirea din fabrica)
+TODO: despre alte bootloadere embedded
+
+\newpage
+\chapter{Rezolvarea temei de proiect}
 \section{Introducere}
 TODO: memory map, cum sta aplicatia host si guest in memorie
 TODO: scrie-ma
-\cite{TODO}
-\cite{aTODO}
+
+\section{Concluzii și dezvoltări ulterioare}
+TODO: scrie-ma
 
 
+\newpage
 \bibliographystyle{plain}
 \bibliography{bibliografie}
 
