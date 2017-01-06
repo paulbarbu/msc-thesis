@@ -118,27 +118,67 @@ Deși nu este în domeniul bootloader-ului, datorită omniprezenței acestor tip
 Această secvență fiind în strânsă relație cu pornirea bootloader-ului.
 
 La pornire procesorul intră în modul real și execută instrucțiunea de la adresa \texttt{0xFFFFFFF0}\footnote{pe sisteme 32 si 64 bit} \cite{intel80386} \cite{intel64}. În mod normal această locație conține o instrucțiune de salt la locația de start a BIOS-ului care se află într-o memorie ROM.
-BIOS-ul este de fapt primul program care se execută pe această arhitectură, nu direct bootloader-ul, în contradicție cu ceea ce am precizat anterior. Rolul BIOS-ului este de a inițializa hardware-ul și de a-l abstractiza, acesta rămânând tot timpul în funcțiune.
+BIOS-ul este de fapt primul program care se execută pe această arhitectură, nu direct bootloader-ul, în contradicție cu ceea ce am precizat anterior. Rolul BIOS-ului este de a inițializa hardware-ul și de a-l abstractiza, acesta rămânând tot timpul în funcțiune \cite{wikiBootSeq}.
 
 Pasul de inițializare făcut de BIOS, poartă denumirea de POST\footnote{Power-On Self Test}, pas în care BIOS-ul pregătește memoria RAM și bus-urile pentru a putea începe comunicația cu perifericele a căror prezență urmează să o verifice. Aceste verificări sunt necesare, deoarece contrar unui sistem embedded, intr-un calculator personal pot apărea și dispărea componente de la o pornire la alta, de exemplu putem adăuga o placă de rețea sau putem scoate placa video, în oricare dintre aceste cazuri BIOS-ul trebuie să știe de prezența unui periferic nou sau de lipsa unuia vechi pentru a putea prezenta toate aceste informații nivelelor superioare, care vor pune în funcțiune perifericele respective.
-
-%TODO: figure with the "shell" architecture: bios, OS, libs, apps
+\begin{figure}[h]
+    \centering
+    \includegraphics{structuraPC}
+    \caption{Structura "cochilie" a PC-ului}
+    \label{shellArchitecture}
+\end{figure}
+Se poate observa în figura \ref{shellArchitecture} că BIOS-ul abstractizează hardware-ul, acest lucru este făcut mai departe și de sistemul de operare prin intermediul driverelor și prin intermediul apelurilor de sistem\footnote{"syscalls" sau "system calls" în engleză}. Datorită poziționării lor în centrul cochiliei, din aceeași figură reiese că aplicațiile beneficiază de cel mai mare nivel de abstractizare, ele nu trebuie să știe detalii intime despre așezarea datelor pe hard disk, în schimb au la dispoziție conceptul de fișier, indiferent de câte sectoare ocupă un asemenea fișier sau cum se comandă citirea lui la nivelele inferioare ale arhitecturii.
 
 După inițializarea perifericelor, BIOS-ul trece printr-o listă pre-configurată de dispozitive de stocare non-volatile
-până când găsește unul boot-abil. Un asemenea dispozitiv este caracterizat de faptul că ultimii doi octeți ai primului sector sunt egali cu \texttt{0xAA55}\footnote{în reprezentare little-endian, în big endian, ar fi: \texttt{0x55AA}}, aceasta reprezentând "semnătura" unui disc boot-abil.
-Cel mai probabil această secvență \texttt{0xAA55} a fost aleasă deoarece în binar ea arată așa: \texttt{1010 1010 0101 0101}, observăm că biții sunt destul de variați, schimbarea în cascadă a lor neproducând din nou aceeași valoare și putând evita încărcarea unui sector invalid sau corupt.
+până când găsește unul boot-abil. Un asemenea dispozitiv este caracterizat de faptul că ultimii doi octeți ai primului sector sunt egali cu \texttt{0x55AA}, aceasta reprezentând "semnătura" unui disc boot-abil.
+Cel mai probabil această secvență \texttt{0x55AA} a fost aleasă deoarece în binar ea arată așa: \texttt{0101 0101 1010 1010}, observăm că biții sunt destul de variați, schimbarea în cascadă a lor neproducând din nou aceeași valoare și putând evita astfel încărcarea unui sector invalid sau corupt.
 
 Odată ce discul boot-abil a fost găsit primul lui sector este încărcat în memorie și executat, aici se află în sfârșit bootloader-ul. Codul este încărcat la adresa \texttt{0x0000:0x7C00} \cite{biosMBRaddr}.
 
 În urma execuției bootloader-ul poate alege în mod automat de unde încarcă sistemul de operare sau, în cazul multi-boot, pasează această responsabilitate utilizatorului, punându-l să aleagă sistemul de operare dorit dintr-o listă.
 
-%TODO: despre MBR?
+În acest prim sector se află MBR-ul\footnote{Master Boot Record}. În cele mai multe cazuri cu o dimensiune de 512 octeți, MBR-ul conține de fapt codul bootloader-ului și detalii despre partiționarea discului. Codul bootloader-ului poate fi acela al lui GRUB sau bootloader-ul instalat de sistemele de operare Windows.
 
-\cite{wikiBootSeq}
+Structura MBR-ului este prezentată în tabelul \ref{mbrStruct}.
+
+\begin{table}[h]
+    \begin{tabular}{ | c | c | c | }
+        \hline
+        \textbf{Adresă} & \textbf{Descriere} & \textbf{Mărime (octeți)} \\ \hline
+        \texttt{0x000} & Codul bootloader-ului & 446 \\ \hline
+        \texttt{0x1BE} & Prima tabelă de partiție & 16 \\ \hline
+        \texttt{0x1CE} & A doua tabelă de partiție & 16 \\ \hline        
+        \texttt{0x1DE} & A treia tabelă de partiție & 16 \\ \hline
+        \texttt{0x1EE} & A patra tabelă de partiție & 16 \\ \hline
+        \texttt{0x1FE} & Primul octet al semnăturii discului (\texttt{0x55}) & 1 \\ \hline
+        \texttt{0x1FF} & Al doilea octet al semnăturii discului (\texttt{0xAA}) & 1 \\ \hline
+    \end{tabular}
+    \centering
+    \caption{Structura MBR-ului}
+    \label{mbrStruct}
+\end{table}
+
+Din tabelul \ref{mbrStruct} se poate observa de asemenea că bootloader-ul este în realitate constrâns la mai puțin de 512 octeți, deoarece MBR-ul conține atât semnătura unui disc boot-abil, folosită de BIOS, cât și informații despre partițiile primare existente pe mediul de stocare. Pe scurt, tabelele de partiții au structura din tabelul \ref{partitionTableStruct} \cite{wikiPTE} și ele indică unde începe și unde se termină o partiție pe disc, cât și tipul acesteia și faptul că ea conține sau nu un sistem de operare, informație folosită apoi de bootloader pentru a popula lista de sisteme de operare disponibile pe calculator. Așadar dacă bootlodaer-ul, în urma inspectării tabelelor de partiții, găsește doar una activă, o va alege automat, în caz contrar îi va prezenta utilizatorului o listă cu sistemele de operare (respectiv partițiile pe care se află acestea) spre a face alegerea.
+
+\begin{table}[h]
+    \begin{tabular}{ | c | c | c | }
+        \hline
+        \textbf{Adresă} & \textbf{Descriere} & \textbf{Mărime (octeți)} \\ \hline
+        \texttt{0x0} & Partiție activă sau nu (conține sau nu un sistem de operare) & 1 \\ \hline
+        \texttt{0x1} & Adresa Cilindru-Cap-Sector de început a partiției & 3 \\ \hline
+        \texttt{0x4} & Tipul partiției & 1 \\ \hline
+        \texttt{0x5} & Adresa Cilindru-Cap-Sector de final a partiției & 3 \\ \hline
+        \texttt{0x8} & Adresa logică a blocului (LBA) de început a partiției & 4 \\ \hline
+        \texttt{0xC} & Numărul de sectoare al partiției & 4 \\ \hline
+    \end{tabular}
+    \centering
+    \caption{Structura sumară a unei tabele de partiție}
+    \label{partitionTableStruct}
+\end{table}
+
+%TODO: despre EFI si lipsa MBR-ului: https://en.wikipedia.org/wiki/Master_boot_record#System_bootstrapping
 
 TODO: %https://msdn.microsoft.com/en-us/library/ms902397.aspx
-
-TODO: cum se intampla boot-ul la PC + POST % https://en.wikipedia.org/wiki/Booting\#Boot_sequence
 
 TODO:% https://en.wikipedia.org/wiki/Master_boot_record\#Programming_considerations
 
@@ -147,6 +187,8 @@ TODO: despre alte bootloadere la PC: grub, lilo
 \section{Studiu de caz: secvența de boot la un sistem embedded}
 
 TODO: despre cum se scrie codul in lumea embedded, fara bootloader prima data (flashuirea din fabrica)
+
+TODO: analogie cu structura shell la PC, in loc de bios, drivere si SO avem direct biblioteci
 
 TODO: %Standard Startup Sequenc: https://mcuoneclipse.com/2014/06/15/tutorial-diy-kinetis-sdk-project-with-eclipse-startup/
 
