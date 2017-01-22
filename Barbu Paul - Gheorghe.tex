@@ -254,17 +254,21 @@ Totuși modul în care acestea sunt folosite diferă substanțial față de modu
 Acest mod de lucru nu este totuși unic industriei embedded, el poate fi observat într-o oarecare măsură și în cadrul așa numitului unikernel. Un unikernel reprezintă o aplicație de uz general \cite{barbu} și un nucleu de sistem de operare, combinate într-o singură unitate funcțională care poate servi drept firmware-ul unui dispozitiv. Față de cazul embedded, unde sistemul de operare era inclus în aplicație (fie la nivel de cod sursă, fie link-at static), aici lucrurile stau invers, aplicația va fi inclusă direct în sistemul de operare de uz general prin linkare statică. Acest lucru duce la efectul secundar de a putea integra o singură aplicație în unikernel, de unde provine și numele, un nucleu de sistem de operare dedicat unei singure aplicații \cite{kantee}.
 
 %TODO: reitereaza ideea asta la capitolul cu practica
-După cum am văzut în listingul \ref{resetHandler}, funcția main este chemată direct, fără să se facă o selecție dintr-o colecție de funcții sau de aplicații disponibile, similar cu selecția sistemului de operare de către bootloader.
-Putem modifica acest lucru prin
+După cum am văzut în listingul \ref{resetHandler}, funcția main este chemată direct, fără să se facă o selecție dintr-o colecție de funcții (corespondente unor aplicații) disponibile, similar cu selecția sistemului de operare de către bootloader.
+Putem modifica acest lucru prin introducerea unui strat de abstractizare suplimentar. Adică să scriem o aplicație care să fie apelată implicit de către microcontroller, iar apoi această aplicație să joace rolul de bootloader. Bootloader care va fi responsabil cu alegerea unei aplicații pe care să o ruleze și eventual cu validarea acesteia similar cu sistemul UEFI.
 
-%TODO: cum intra bootloader-ul in joc
+În urma alegerii și validării aplicației bootloader-ul va trebui să îi predea controlul, similar unui bootloader pentru arhitecturile x86.
+
 TODO: despre alte bootloadere embedded
 
 \section{Protecția și securitatea}
-TODO: AES, CRC
-
-
+TODO: AES (figuri wiki), CRC (reference to tannenbaum + example code)
+TODO: why I need GCM
+TODO: GCM vs CRC
 TODO: securitatea flash-ului
+
+\section{Procesul de flashing al unui microcontroller}
+TODO: scrie-ma, despre JTAG, stergerea flash-ului, tehnologii de flash, el de fapt este pe 1 si cand scriem se duce pe 0
 
 \newpage
 \chapter{Rezolvarea temei de proiect}
@@ -272,7 +276,7 @@ TODO: securitatea flash-ului
 
 TODO: despre cum se scrie codul in lumea embedded, fara bootloader prima data (flashuirea din fabrica)
 
-TODO: memory map, cum sta aplicatia host si guest in memorie
+TODO: memory map, cum sta bootloader-ul si aplicatia guest in memorie
 
 TODO: scrie-ma
 
@@ -281,7 +285,7 @@ TODO: %https://mcuoneclipse.com/2013/04/19/why-i-dont-like-printf/
 TODO: %size_comp_debug_release.ods
 
 \section{Concluzii și dezvoltări ulterioare}
-
+TODO: alegerea unei aplicatii dintre mai multe
 TODO: scrie-ma
 
 
