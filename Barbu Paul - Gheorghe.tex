@@ -14,6 +14,9 @@
 \usepackage{graphicx}
 
 \usepackage{minted}
+%TODO: remove red box on parser error
+
+\usepackage{caption}
 
 \author{Barbu Paul - Gheorghe}
 
@@ -225,19 +228,35 @@ Prima intrare din acest vector este valoarea inițială a stack pointer-ului, nu
 Aceasta este apelată de fiecare dată când procesorul primește semnalul de reset. Din acest motiv putem spune ca PC-ul inițial se află pe poziția a doua în tabelă, deoarece el corespunde acestei rutine.
 
 Continuând pe firul execuției în urma resetării microcontroller-ului, rutina \texttt{Reset\_Handler} nu face altceva decât să 
-apeleze funcția \texttt{SystemInit} care este responsabilă cu inițializarea cache-urilor și a unității de procesare a numerelor cu virgulă flotantă. În urma acestui apel controlul este redat rutinei \texttt{Reset\_Handler} care mai departe se va ocupa cu copierea secțiunii de constante a codului în memoria RAM și de inițializarea zonei de memorie rezervată pentru heap (folosită când programul alocă dinamic memoria). De asemenea \texttt{Reset\_Handler}-ul continuă cu apelul funcției \texttt{\_\_libc\_init\_array} și în final va apela punctul unic de intrare într-un program, funcția scrisă de dezvoltator: \texttt{main}.
-Codul pentru pașii de inițializare se află în fișierul \texttt{startup\_MKV58F24.S} din directorul \texttt{startup} al unei aplicații embedded\footnote{Locația poate diferi în funcție de producătorul microcontroller-ului și de mediul de programare folosit}.
+apeleze funcția \texttt{SystemInit} care este responsabilă cu inițializarea cache-urilor și a unității de procesare a numerelor cu virgulă flotantă. În urma acestui apel controlul este redat rutinei \texttt{Reset\_Handler} care mai departe se va ocupa cu copierea secțiunii de constante a codului în memoria RAM și de inițializarea zonei de memorie rezervată pentru heap (folosită când programul alocă dinamic memoria). De asemenea \texttt{Reset\_Handler}-ul continuă cu apelul funcției \texttt{\_\_libc\_init\_array} (care inițializează structurile necesare limbajului C) și în final va apela punctul unic de intrare într-un program, funcția scrisă de dezvoltator: \texttt{main}.
+Codul pentru pașii de inițializare se află în fișierul \texttt{startup\_MKV58F24.S} din directorul \texttt{startup} al unei aplicații embedded\footnote{Locația diferă în funcție de producătorul microcontroller-ului și de mediul de programare folosit}.
 
 După ce se apelează \texttt{main}-ul, practic controlul îi este predat aplicației scrisă de dezvoltator și secvența de inițializare a luat sfârșit. În afară de memorie și de componentele auxiliare acesteia, cache-urile, alte componente ale microcontroller-ului nu au fost pornite, acest lucru se datorează faptului că responsabilitatea aceasta este predată aplicației . Lucru necesar pentru a consuma cât mai puțină energie posibil, dacă aplicația nu va folosi, spre exemplu, comunicația pe portul serial, nu va inițializa acest port, ceea ce va duce la evitarea consumului de energie fără scop.
 
-%TODO: secventa de initializare in mod grafic + apelurile de functii
-TODO: analogie cu structura shell la PC, in loc de bios, drivere si SO avem direct biblioteci
-%ResetHandler + SystemInit + memorie + __libc_init_array + main
-%TODO: ce face __libc_init_array
+\inputminted{asm}{reset_handler.s}
+\captionof{listing}{Definiția rutinei Reset\_Handler\label{resetHandler}}
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{structuraEmbedded}
+    \caption{Structura "cochilie" a unui sistem embedded}
+    \label{shellEmbedded}
+\end{figure}
 
+Secvența descrisă anterior se poate vedea sub formă de schemă logică în figura \ref{shellEmbedded} și sub formă de cod asamblare în listingul \ref{resetHandler}.
+Am păstrat în această figură și analogia structurii cochilie pentru a ilustra diferența majoră între un sistem embedded care funcționează pe o arhitectură ARM\footnote{în cazul de față Cortex M7} și arhitectura x86 folosită în calculatoarele personale și server-e. Diferența constă în faptul că în cazul programării dispozitivelor embedded sistemul nu include nivele de abstractizare pe care programatorul nu le cere și de care nu are nevoie în mod explicit. În mod implicit sistemele embedded nu oferă altceva decât biblioteci care ne dau acces la hardware, la registrele microprocesorului. Prin aceste registre se pot controla porturile de comunicație\footnote{UART, SPI, I2C}, se poate scrie sau șterge memoria flash, putem controla convertoarele analog-digitale și pe cele digital-analogice, etc. Bine-înțeles că există producători care oferă un nivel mai ridicat de abstractizare prin biblioteci, un asemenea producător este NXP\footnote{\url{http://nxp.com/}}. Aceste biblioteci ascund lucrul cu registrele microcontroller-ului în favoarea lucrului cu funcții și structuri\cite{ksdk}, ele reprezintă chiar echivalentul BIOS-ului și al colecției de driver-e în sistemele x86, deoarece scopul lor este similar: de a abstractiza hardware-ul pe care aplicația rulează.
 
-TODO: %Standard Startup Sequenc: https://mcuoneclipse.com/2014/06/15/tutorial-diy-kinetis-sdk-project-with-eclipse-startup/
+Un programator embedded are la dispoziția sa și sisteme de operare, în principal de tipul "real time"\footnote{de timp real}.
+Aceste sisteme de operare sunt caracterizate de predictibilitatea lor și de garanțiile puternice pe care le fac legat de timpul în care termină de executat un task\cite{silberschatz}.
+
+Totuși modul în care acestea sunt folosite diferă substanțial față de modul în care sistemele de operare non-real-time sunt folosite. Acest lucru este datorat faptului că un sistem de operare real-time folosit pe o platformă embedded va fi o parte a aplicației scrisă de dezvoltator, nu există deja un mediu pre-definit în care aplicația este creată, ca la sistemele de operare de uz general. Asta înseamnă că sistemul de operare real-time va fi inclus în aplicație la nivelul codului sursă sau link-at static la aceasta, astfel că funcționalitățile lui sunt accesate asemenea funcționalităților unei biblioteci, prin apeluri de funcții și structuri de date, din nou revenind la analogia anterioară, unde bibliotecile țin loc de BIOS, drivere, și acum, chiar și de sistem de operare real-time \cite{freertos}. 
+
+Acest mod de lucru nu este totuși unic industriei embedded, el poate fi observat într-o oarecare măsură și în cadrul așa numitului unikernel. Un unikernel reprezintă o aplicație de uz general \cite{barbu} și un nucleu de sistem de operare, combinate într-o singură unitate funcțională care poate servi drept firmware-ul unui dispozitiv. Față de cazul embedded, unde sistemul de operare era inclus în aplicație (fie la nivel de cod sursă, fie link-at static), aici lucrurile stau invers, aplicația va fi inclusă direct în sistemul de operare de uz general prin linkare statică. Acest lucru duce la efectul secundar de a putea integra o singură aplicație în unikernel, de unde provine și numele, un nucleu de sistem de operare dedicat unei singure aplicații \cite{kantee}.
+
+%TODO: reitereaza ideea asta la capitolul cu practica
+După cum am văzut în listingul \ref{resetHandler}, funcția main este chemată direct, fără să se facă o selecție dintr-o colecție de funcții sau de aplicații disponibile, similar cu selecția sistemului de operare de către bootloader.
+Putem modifica acest lucru prin
+
 %TODO: cum intra bootloader-ul in joc
 TODO: despre alte bootloadere embedded
 
