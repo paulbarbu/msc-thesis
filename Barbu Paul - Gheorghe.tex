@@ -16,6 +16,8 @@
 \usepackage{minted}
 %TODO: remove red box on parser error
 
+\setminted{baselinestretch=1,fontsize=\footnotesize}
+
 \usepackage{caption}
 
 \author{Barbu Paul - Gheorghe}
@@ -195,7 +197,7 @@ Sistemul de operare poate fi localizat pe rețea, de exemplu Grub și Syslinux a
 
 De asemenea anumite bootloader-e pot încărca aplicații sau sisteme de operare comprimate, stocate așa deoarece este posibil ca spațiul să fie limitat, cum este cazul sistemelor embedded. Pentru aceste sisteme a fost dezvoltat bootloader-ul "Das U-Boot" \footnote{http://www.denx.de/wiki/U-Boot/} care poate fi folosit pe o multitudine de arhitecturi și care se axează pe minimizarea mărimii codului și a timpilor de rulare prin simplitatea codului\footnote{http://www.denx.de/wiki/U-Boot/DesignPrinciples}. Urmărirea acestor principii de dezvoltare au făcut ca acest bootloader să fie prezent într-o gama largă  de produse, de la dispozitive industriale, până la echipamente de rețea, cum ar fi cele de la Ubiquiti Networks cât și la laptop-urile dezvoltate de Google, Chromebooks \cite{wikiUboot}.
 
-\section{Studiu de caz: secvența de boot la un sistem embedded}
+\section{Studiu de caz: secvența de inițializare la un sistem embedded}
 
 În ceea ce privește sistemele embedded, acestea fiind mai puțin performante față de un calculator personal, putem spune că și secvența de inițializare a lor și respectiv bootloader-ul sunt mai puțin complexe.
 Acest lucru este datorat și tipurilor de periferice și dispozitive de stocare cu care sistemul este dotat. În cazul dispozitivelor embedded perifericele ca tastatura sau mouse-ul și monitorul, nu există, iar mediile de stocare sunt in general memorii flash, nu hard disk-uri, făcând accesul la date mult mai simplu și nefiind nevoie de nivelele de abstractizare pe care le oferă BIOS-ul și sistemul de operare.
@@ -229,7 +231,7 @@ Aceasta este apelată de fiecare dată când procesorul primește semnalul de re
 
 Continuând pe firul execuției în urma resetării microcontroller-ului, rutina \texttt{Reset\_Handler} nu face altceva decât să 
 apeleze funcția \texttt{SystemInit} care este responsabilă cu inițializarea cache-urilor și a unității de procesare a numerelor cu virgulă flotantă. În urma acestui apel controlul este redat rutinei \texttt{Reset\_Handler} care mai departe se va ocupa cu copierea secțiunii de constante a codului în memoria RAM și de inițializarea zonei de memorie rezervată pentru heap (folosită când programul alocă dinamic memoria). De asemenea \texttt{Reset\_Handler}-ul continuă cu apelul funcției \texttt{\_\_libc\_init\_array} (care inițializează structurile necesare limbajului C) și în final va apela punctul unic de intrare într-un program, funcția scrisă de dezvoltator: \texttt{main}.
-Codul pentru pașii de inițializare se află în fișierul \texttt{startup\_MKV58F24.S} din directorul \texttt{startup} al unei aplicații embedded\footnote{Locația diferă în funcție de producătorul microcontroller-ului și de mediul de programare folosit}.
+Codul pentru pașii de inițializare se află în fișierul \texttt{startup\_MKV58F24.S} din directorul \texttt{startup} al unei aplicații embedded\footnote{Locația depinde de producătorul microcontroller-ului și de mediul de programare folosit}.
 
 După ce se apelează \texttt{main}-ul, practic controlul îi este predat aplicației scrisă de dezvoltator și secvența de inițializare a luat sfârșit. În afară de memorie și de componentele auxiliare acesteia, cache-urile, alte componente ale microcontroller-ului nu au fost pornite, acest lucru se datorează faptului că responsabilitatea aceasta este predată aplicației . Lucru necesar pentru a consuma cât mai puțină energie posibil, dacă aplicația nu va folosi, spre exemplu, comunicația pe portul serial, nu va inițializa acest port, ceea ce va duce la evitarea consumului de energie fără scop.
 
@@ -257,9 +259,17 @@ Acest mod de lucru nu este totuși unic industriei embedded, el poate fi observa
 După cum am văzut în listingul \ref{resetHandler}, funcția main este chemată direct, fără să se facă o selecție dintr-o colecție de funcții (corespondente unor aplicații) disponibile, similar cu selecția sistemului de operare de către bootloader.
 Putem modifica acest lucru prin introducerea unui strat de abstractizare suplimentar. Adică să scriem o aplicație care să fie apelată implicit de către microcontroller, iar apoi această aplicație să joace rolul de bootloader. Bootloader care va fi responsabil cu alegerea unei aplicații pe care să o ruleze și eventual cu validarea acesteia similar cu sistemul UEFI.
 
-În urma alegerii și validării aplicației bootloader-ul va trebui să îi predea controlul, similar unui bootloader pentru arhitecturile x86.
+În urma alegerii și validării aplicației, bootloader-ul va trebui să îi predea controlul acesteia, similar unui bootloader pentru arhitecturile x86 care predă controlul sistemului de operare. Totuși fiind vorba de dispozitive embedded rareori este necesar ca bootloader-ul să aleagă între două aplicații guest pe care să le ruleze, așa cum se întâmplă la calculatoarele personale cu bootloader-ul și sistemele de operare. Acest lucru este cauzat de hardware-ul redus ca putere și spațiu de stocare, dar și de o caracteristică intrinsecă a sistemelor embedded: orientarea spre un singur domeniu și rezolvarea unui singur fel de problemă la un moment dat. Așadar este mai probabil ca în bootloader-ele embedded să vedem modalități de a încărca o aplicație complet nouă pe microcontroller (care o înlocuiește pe cea veche) în locul funcționalității de a alege o aplicație dintr-o colecție pre-existentă.
 
-TODO: despre alte bootloadere embedded
+În funcție de tipul microcontroller-ului aplicația se poate încărca folosind un tip de comunicație serială clasică, precum UART, I2C și SPI sau prin metode întâlnite mai des pe sistemele de uz general cum ar fi USB-ul și Ethernet-ul.
+
+\subsection{Variante de bootloader}
+
+Similar arhitecturilor generale, există de asemenea diverse bootloader-e create pentru dispozitive embedded. "Das U-Boot", precizat și în secțiunea anterioară este unul dintre ele, printre principiile acestuia de design aflându-se și portabilitatea.
+
+Printre alte alternative se numără și "KBoot", bootloader-ul celor de la Kinetis. Spre deosebire de "Das U-Boot", acesta este creat special pentru dispozitivele dezvoltate de NXP \cite{kboot}. Procesul de inițializare este similar cu cel descris anterior. Microcontroller-ul pornește și începe să execute codul bootloader-ului, care la rândul său așteaptă să primească o aplicație pe care să o încarce pe toată gama de porturi disponibile pe dispozitiv. În urma încărcării aplicația este pornită. Ceea ce este special la acest bootloader este faptul că el poate fi folosit și drept sistem de control al dispozitivului, permițând rularea unor comenzi administrative cum ar fi citirea anumitor zone de memorie, ștergerea lor și scrierea de date. Bootloader-ul pune la dispoziție și o aplicație similară unui terminal prin care pot fi executate aceste comenzi.
+
+Un alt bootloader embedded este \guillemotleft$\mu$Tasker "Bare-Minimum" Boot Loader\guillemotright, acesta după cum îi spune și numele conține doar minimul necesar pentru a încărca o altă aplicație \cite{uTaskerMinim}. El se bazează pe "$\mu$Tasker Serial Loader" pentru a face încărcarea prin Ethernet, UART sau chiar și de pe carduri de memorie \cite{uTaskerSerial}. Deoarece  încărcarea se face în doi pași, primul făcând minimul necesar și într-un spațiu cât mai mic, iar cel de-al doilea pas făcând încărcarea propriu zisă putem spune că acest bootloader se aseamănă cel mai mult cu bootloader-ele pentru arhitecturi x86, precum GRUB.
 
 \section{Protecția și securitatea}
 TODO: AES (figuri wiki), CRC (reference to tannenbaum + example code)
@@ -275,6 +285,8 @@ TODO: scrie-ma, despre JTAG, stergerea flash-ului, tehnologii de flash, el de fa
 \section{Introducere}
 
 TODO: despre cum se scrie codul in lumea embedded, fara bootloader prima data (flashuirea din fabrica)
+%TODO: precizeaza faptul ca codul meu este 100% scris de mine fara legatura cu codul celor de la KBoot spre exemplu
+%TODO: al meu vrea encryptie end-to-end, simplitate (fata de kboot) si portabilitate doar pe ramura embedded (fata de dat u-boot)
 
 TODO: memory map, cum sta bootloader-ul si aplicatia guest in memorie
 
