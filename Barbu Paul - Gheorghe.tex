@@ -272,7 +272,55 @@ Printre alte alternative se numără și "KBoot", bootloader-ul celor de la Kine
 Un alt bootloader embedded este \guillemotleft$\mu$Tasker "Bare-Minimum" Boot Loader\guillemotright, acesta după cum îi spune și numele conține doar minimul necesar pentru a încărca o altă aplicație \cite{uTaskerMinim}. El se bazează pe "$\mu$Tasker Serial Loader" pentru a face încărcarea prin Ethernet, UART sau chiar și de pe carduri de memorie \cite{uTaskerSerial}. Deoarece  încărcarea se face în doi pași, primul făcând minimul necesar și într-un spațiu cât mai mic, iar cel de-al doilea pas făcând încărcarea propriu zisă putem spune că acest bootloader se aseamănă cel mai mult cu bootloader-ele pentru arhitecturi x86, precum GRUB.
 
 \section{Protecția și securitatea}
-TODO: AES (figuri wiki), CRC (reference to tannenbaum + example code)
+Unul dintre scopurile pe care bootloader-ul dezvoltat în cadrul acestei lucrări și le propune să le atingă este acela de a asigura integritatea și de a evita modificarea neautorizată a aplicației pe care bootloader-ul o va încărca.
+
+Deducem deci două categorii de modificări care pot surveni asupra aplicației:
+\begin{enumerate}
+\item modificarea ne-intenționată datorată problemelor de transmisie spre microcontroller
+\item modificarea intenționată, posibil pentru a rula cod malițios
+\end{enumerate}
+
+\subsection{Coduri polinomiale}
+Pentru a preveni prima categorie de modificări, cele datorate mediului de comunicație, soluțiile trebuie să acționeze la nivelul pachetelor care se transferă între microcontroller și calculator (dacă presupunem de exemplu o transmisiune serială, RS232). În timpul transferului de date, datorită interferențelor, anumiți biți pot ajunge schimbați la destinație. Pentru a detecta astfel de erori avem la dispoziție mai multe tehnici.
+
+Cea mai simplă tehnică ar fi introducerea unui bit de paritate de către expeditor, bit pe care destinatarul trebuie să îl verifice pentru a avea siguranța că datele au fost transmise corect. Această tehnică poate detecta schimbarea unui singur bit. Este deci o metodă simplă, nu adaugă meta-date, în afară de bit-ul de paritate, datelor utile. Un exemplu ar fi dacă dorim să transmitem șirul de biți \texttt{0101 1010} cu paritate pară, atunci acesta ar deveni: \texttt{0101 1010 0}, iar cu paritate impară ar deveni: \texttt{0101 1010 1}. Observăm că în primul caz, cel al parității pare, numărul total de biți setați (cu valoarea 1) este par și am adăugat la final un bit de 0, iar în cazul parității impare, numărul transmis de biți cu valoarea 1 este impar deoarece am adăugat la final un bit de 1. Totuși acestă metodă nu este de ajuns pentru a detecta dacă mai mulți biți au fost afectați de erori, după cum se poate vedea în cazul următor: dacă dorim să transmitem secvența de biți \texttt{0101 1010} cu paritate pară vom transmite secvența \texttt{0101 1010 0}. În timpul transmisiei, datorită interferențelor doi biți se modifică din 1 în 0: \texttt{0000 1010 0}, făcând astfel datele care ajung la destinatar să fie diferite față de cele expediate, dar cu un bit de paritate încă valid și drept consecință făcând imposibilă detectarea erorilor.
+
+În urma acestor limitări W. Wesley Peterson a descoperit un algoritm mai complex de detecție a erorilor, numit cyclic redundancy check\footnote{CRC}, "coduri ciclice" sau "coduri polinomiale" \cite{wikiCrc}. Rezultatul acestui algoritm este, similar cu bit-ul de paritate, adăugat datelor utile (de unde vine și denumirea de "redundant", deoarece nu adaugă date noi, ci reprezintă o transformare a celor existente deja). Codurile ciclice sunt mai versatile deoarece acestea pot detecta erori în secvențe mai lungi de un bit. Acest algoritm de detecție al erorilor este folosit și la nivelul "Data Link"\footnote{legătură de date} al modelului ISO-OSI datorită capacității lui bune de a detecta erori.
+
+Rezultatul unui CRC este reprezentat pe un număr fix de biți, de exemplu unele dintre cele mai folosite astfel de coduri polinomiale sunt CRC-8, CRC-16 și CRC-32, cu reprezentări pe 8, 16 și respectiv 32 de biți. Lungimea acestora este aleasă în funcție de cât de bună dorim să fie detecția și de cât de multe meta-date dorim să adăugăm mesajului util. De regulă codul polinomial poate detecta erori de o lungime maximă cu lungimea proprie de reprezentare, de exemplu CRC-32 poate detecta maxim un șir de 32 de biți alăturați care au fost modificați în timpul transferului.
+
+CRC-urile se mai numesc coduri polinomiale deoarece polinoamele sunt fundamentul matematic pe care se bazează. Algoritmul care calculează CRC-ul tratează un șir de biți ca fiind coeficienții unui polinom de ordin n+1.
+Așadar șirul de biți \texttt{0000 00111} corespunde polinomului $x^8 + x^2 + x + 1$, prin convenție cel mai semnificativ bit este tot timpul 1 fără să fie reprezentat (aici coeficientul lui $x^8$), de aceea de exemplu algoritmul CRC-8, cu rezultatul reprezentat pe 8 biți are de fapt 9 membrii în polinom. Operațiile aritmetice cu polinoame se fac în "modulo 2", ceea ce înseamnă că nu există carry pentru adunare și împrumuturi pentru scădere. Acest lucru face ca adunarea și scăderea să fie echivalente cu operația de sau-exclusiv \cite{tanenbaumCN}. Pentru a calcula CRC-ul unui șir de biți, atât destinatarul cât și expeditorul trebuie să stabilească un polinom comun pe care să îl folosească la generarea CRC-ului, acest polinom se numește sugestiv: polinom generator. Polinomul generator este folosit ca împărțitor, iar biții datelor utile sunt folosiți pentru a construi polinomul deîmpărțit. În urma operației de împărțire între cei doi termeni, doar restul se va folosi, el este CRC-ul și este reprezentat pe n biți, unde n+1 este ordinul polinomului generator. Este important să subliniem că împărțirea polinoamelor are loc în aritmetică modulo 2, acest lucru făcând facilă implementarea algoritmului de calcul al unui CRC în hardware, acesta necesitând doar registre de shiftare și porți XOR \cite{hackersDelight}.
+
+Din punct de vedere software o funcție în limbajul C care calculează un CRC pe 16 biți este prezentată în listing-ul \ref{crcInC}. Din cod se poate vedea cum pentru fiecare bit, al fiecărui octet din datele de intrare, celui mai semnificant bit al CRC-ului și bit-ului de date le sunt aplicate operația de sau-exclusiv și apoi CRC-ul este shiftat la stânga cu o poziție \cite{rossCrc}.
+
+\begin{listing}[h]
+\begin{minted}{c}
+uint16_t Crc16(const uint8_t *pu8Data, const uint32_t u32DataLen,
+               const uint16_t u16Poly, uint16_t u16Crc)
+{
+    for(uint32_t byte=0; byte<u32DataLen; ++byte)
+    {
+        u16Crc ^= (*pu8Data++) << 8;
+        for(uint8_t bit=0; bit<8; ++bit)
+        {
+            u16Crc = (u16Crc << 1) ^ ((u16Crc & 0x8000) ? u16Poly : 0);
+        }
+    }
+
+    return u16Crc;
+}
+\end{minted}
+
+\caption{Implementarea unei rutine de calcul a CRC-16}
+\label{crcInC}
+\end{listing}
+
+Folosind algoritmul exemplificat în listing-ul \ref{crcInC} atât expeditorul cât și destinatarul vor calcula codul ciclic. Dacă destinatarul observă că valoarea CRC-ului diferă înseamnă că au apărut erori la trimiterea datelor și cere o re-transmisiune până când erorile nu mai apar. Datorită faptului că discutăm despre un sistem embedded codurile de corecție a erorilor nu au fost considerate spre implementare, ci doar cele de detecție a erorilor, prezentate anterior.
+
+\subsection{Encripția și autentificarea datelor}
+TODO: despre al doilea tip de problema care poate interveni asupra datelor
+TODO: AES (figuri wiki)
 TODO: why I need GCM
 TODO: GCM vs CRC
 TODO: securitatea flash-ului
