@@ -276,9 +276,11 @@ Unul dintre scopurile pe care bootloader-ul dezvoltat în cadrul acestei lucrăr
 
 Deducem deci două categorii de modificări care pot surveni asupra aplicației:
 \begin{enumerate}
-\item modificarea ne-intenționată datorată problemelor de transmisie spre microcontroller
-\item modificarea intenționată, posibil pentru a rula cod malițios
+\item modificarea ne-intenționată datorată problemelor de transmisie spre microcontroller;
+\item modificarea intenționată, posibil pentru a rula cod malițios.
 \end{enumerate}
+
+Vom studia în cele ce urmează posibile soluții pentru aceste două probleme.
 
 \subsection{Coduri polinomiale}
 Pentru a preveni prima categorie de modificări, cele datorate mediului de comunicație, soluțiile trebuie să acționeze la nivelul pachetelor care se transferă între microcontroller și calculator (dacă presupunem de exemplu o transmisiune serială, RS232). În timpul transferului de date, datorită interferențelor, anumiți biți pot ajunge schimbați la destinație. Pentru a detecta astfel de erori avem la dispoziție mai multe tehnici.
@@ -304,7 +306,8 @@ uint16_t Crc16(const uint8_t *pu8Data, const uint32_t u32DataLen,
         u16Crc ^= (*pu8Data++) << 8;
         for(uint8_t bit=0; bit<8; ++bit)
         {
-            u16Crc = (u16Crc << 1) ^ ((u16Crc & 0x8000) ? u16Poly : 0);
+            u16Crc = (u16Crc << 1) ^ ((u16Crc & 0x8000) ?
+                                      u16Poly : 0);
         }
     }
 
@@ -319,13 +322,26 @@ uint16_t Crc16(const uint8_t *pu8Data, const uint32_t u32DataLen,
 Folosind algoritmul exemplificat în listing-ul \ref{crcInC} atât expeditorul cât și destinatarul vor calcula codul ciclic. Dacă destinatarul observă că valoarea CRC-ului diferă înseamnă că au apărut erori la trimiterea datelor și cere o re-transmisiune până când erorile nu mai apar. Datorită faptului că discutăm despre un sistem embedded codurile de corecție a erorilor nu au fost considerate spre implementare, ci doar cele de detecție a erorilor, prezentate anterior.
 
 \subsection{Encripția și autentificarea datelor}
-TODO: despre al doilea tip de problema care poate interveni asupra datelor
-TODO: AES (figuri wiki)
-TODO: why I need GCM
+
+Unul dintre scopurile bootloader-ului este reducerea costurilor prin acționarea sa "de la distanță". Pentru a face acest lucru dezvoltatorul de aplicații trebuie să îi trimită clientului o aplicație care să fie folosită de bootloader. Bine-înțeles acest lucru se poate face pe internet (de exemplu prin email sau upload pe web), dar expunerea aplicației pe web presupune riscul de a expune aplicația la modificări malițioase. O persoană cu rele intenții poate pune la cale un atac de tip man-in-the-middle\footnote{tradus literalmente: om în mijloc} în care clientul este practic păcălit că descarca aplicația dezvoltatorului, dar de fapt descarcă un virus, care va fi apoi încărcat pe dispozitivul său. Datorită naturii sale embedded dispozitivul ar putea părea că își face treaba pe care a fost proiectat să o facă, dar, în plus, poate să adune și date despre utilizator sau chiar să permită controlul neautorizat asupra dispozitivului. Gradul de gravitate al acestei breșe de securitate diferă în funcție de dispozitiv și de întrebuințarea lui, dar ne dorim totuși să prevenim aceste modificări nedorite ale aplicației.
+
+Trebuie să observăm că de data aceasta modificările aduse aplicației nu mai sunt ne-intenționate, ci intenționate, așadar nu mai putem sa folosim CRC-urile, având nevoie de un sistem dedicat pentru această gamă de probleme. Codurile polinomiale nu sunt o opțiune deoarece, în general, acestea se atașează la finalul datelor utile și pot fi recalculate cu ușurință, un atacator putând să schimbe o porțiune de cod și apoi să recalculeze CRC-ul și să îl înlocuiască pe cel original.
+
+Soluția pe care o căutăm este una de natură criptografică. Pentru a evita orice fel de contact cu mediul exterior aplicația trebuie să fie criptată în momentul în care dezvoltatorul o publică și trebuie să fie decriptată doar pe dispozitivul embedded, de către bootloader. În acest mod dezvoltatorul și clientul pot fi siguri că aplicația nu poate fi modificată deoarece conținutul ei decriptat nu este expus niciodată. Algoritmul de criptare ales este Advanced Encryption Standard - Galois Counter Mode\footnote{AES-GCM} \cite{wikiAes} cu o cheie de 128 de biți deoarece acest algoritm se găsește implementat în biblioteci special create pentru mediul embedded\footnote{\url{https://tls.mbed.org/}} și, dacă este implementat corect, până acum nu s-a descoperit nicio vulnerabilitate practică asupra lui, metodele curente având o complexitate de timp de aproximativ $2^{120}$ \cite{bogdanov}.
+
+%TODO:  https://en.wikipedia.org/wiki/Advanced_Encryption_Standard
+
+TODO: AES (figuri wiki) și pseudo-cod
+TODO: why I need GCM and what it is, daca am cheia pot reface aplicatia, dar cu gcm ar trebui sa am si iv-ul.
 TODO: GCM vs CRC
-TODO: securitatea flash-ului
+
+
+TODO: Despre chei si faptul ca acestea trebuie scrise pe dispozitiv, tocmai ca sa nu vada lumina zilei.
+TODO: Spune cum faptul ca cheile se afla pe dispozitiv nu este o problema pt. ca flash-ul trebuie sters cand este securizat, detalii in sectiunea viitoare.
 
 \section{Procesul de flashing al unui microcontroller}
+TODO: securitatea flash-ului, reference Using the Kinetis Security and
+Flash Protection Features
 TODO: scrie-ma, despre JTAG, stergerea flash-ului, tehnologii de flash, el de fapt este pe 1 si cand scriem se duce pe 0
 
 \newpage
@@ -339,6 +355,9 @@ TODO: despre cum se scrie codul in lumea embedded, fara bootloader prima data (f
 TODO: memory map, cum sta bootloader-ul si aplicatia guest in memorie
 
 TODO: scrie-ma
+
+TODO: AES "constant -time" comparison și implemenatre fara tabele (meorie vs viteza)
+TODO: aes block vs stream
 
 TODO: %https://mcuoneclipse.com/2013/04/19/why-i-dont-like-printf/
 
