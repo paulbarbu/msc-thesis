@@ -20,6 +20,12 @@
 
 \usepackage{caption}
 
+\usepackage{algorithm} %[plain] ?
+\usepackage{algpseudocode}
+\makeatletter
+\renewcommand*{\ALG@name}{Pseudocod}
+\makeatother
+
 \author{Barbu Paul - Gheorghe}
 
 %TODO: coperta
@@ -327,19 +333,64 @@ Unul dintre scopurile bootloader-ului este reducerea costurilor prin acționarea
 
 Trebuie să observăm că de data aceasta modificările aduse aplicației nu mai sunt ne-intenționate, ci intenționate, așadar nu mai putem sa folosim CRC-urile, având nevoie de un sistem dedicat pentru această gamă de probleme. Codurile polinomiale nu sunt o opțiune deoarece, în general, acestea se atașează la finalul datelor utile și pot fi recalculate cu ușurință, un atacator putând să schimbe o porțiune de cod și apoi să recalculeze CRC-ul și să îl înlocuiască pe cel original.
 
-Soluția pe care o căutăm este una de natură criptografică. Pentru a evita orice fel de contact cu mediul exterior aplicația trebuie să fie criptată în momentul în care dezvoltatorul o publică și trebuie să fie decriptată doar pe dispozitivul embedded, de către bootloader. În acest mod dezvoltatorul și clientul pot fi siguri că aplicația nu poate fi modificată deoarece conținutul ei decriptat nu este expus niciodată. Algoritmul de criptare ales este Advanced Encryption Standard - Galois Counter Mode\footnote{AES-GCM} \cite{wikiAes} cu o cheie de 128 de biți deoarece acest algoritm se găsește implementat în biblioteci special create pentru mediul embedded\footnote{\url{https://tls.mbed.org/}} și, dacă este implementat corect, până acum nu s-a descoperit nicio vulnerabilitate practică asupra lui, metodele curente având o complexitate de timp de aproximativ $2^{120}$ \cite{bogdanov}.
+Soluția pe care o căutăm este una de natură criptografică. Pentru a evita orice fel de contact cu mediul exterior aplicația trebuie să fie criptată în momentul în care dezvoltatorul o publică și trebuie să fie decriptată doar pe dispozitivul embedded, de către bootloader. În acest mod dezvoltatorul și clientul pot fi siguri că aplicația nu poate fi modificată deoarece conținutul ei decriptat nu este expus niciodată. Standardul de criptare ales este Advanced Encryption Standard - Galois Counter Mode\footnote{AES-GCM} \cite{wikiAes} cu o cheie de 128 de biți deoarece acest standard se găsește implementat în biblioteci special create pentru mediul embedded\footnote{\url{https://tls.mbed.org/}} și, dacă este implementat corect, până acum nu s-a descoperit nicio vulnerabilitate practică asupra lui, metodele curente având o complexitate de timp de aproximativ $2^{120}$ \cite{bogdanov}.
 
-%TODO:  https://en.wikipedia.org/wiki/Advanced_Encryption_Standard
+Pe scurt, acest standard de criptare este bazat pe algoritmul Rijndael, dezvoltat de Joan Daemen și Vincent Rijmen \cite{rijndael}, modul de funcționare al algoritmului este prezentat în pseudocodul \ref{impl-aes}.
 
-TODO: AES (figuri wiki) și pseudo-cod
-TODO: why I need GCM and what it is, daca am cheia pot reface aplicatia, dar cu gcm ar trebui sa am si iv-ul.
-TODO: GCM vs CRC
+\begin{algorithm}
+\begin{algorithmic}
+\State n $\gets$ numărul de runde
+\State keys $\gets$ generează cheile specifice fiecărei runde
+\State S $\gets$ creează matricea de stare
+\State \Comment{Runda inițială}
+\State S $\gets$ S $\oplus$ keys[0]
+
+\State \Comment{Rundele intermediare}
+\State i $\gets$ 1
+\While{i < n}
+\State SubBytes(S)
+\State ShiftRows(S)
+\State MixColumns(S)
+\State S $\gets$ S $\oplus$ keys[i]
+\State i $\gets$ i + 1
+\EndWhile
+\State \Comment{Runda finală}
+\State SubBytes(S)
+\State ShiftRows(S)
+\State S $\gets$ S $\oplus$ keys[n]
+
+\end{algorithmic}
+
+\caption{Pseudocodul algoritmului AES (Rijndael)}
+\label{impl-aes}
+\end{algorithm}
+
+Pentru simplitatea explicației vom considera cazul particular AES-128. Algoritmul are nevoie de 10 iterații pentru a produce o criptare sigură a datelor de intrare, trebuie așadar să genereze 10 chei distincte pornind de la cheia de criptare inițială. Acest lucru se face folosind algoritmul "Rijndael key schedule", care împarte cheia de criptare în blocuri de 16 octeți, aranjați sub forma unei matrici. Pentru fiecare cheie, care corespunde unei alte runde, elementele matricii și anumite coloane sunt interschimbate, apoi sunt combinate (prin sau-exclusiv) cu alte elemente ale cheii anterioare. Se generează astfel chei distincte și dependente de cheia de criptare inițială.
+după generarea cheilor specifice fiecărei runde, urmează ca datele de intrare care vor fi criptate să fie organizate în blocuri de 16 octeți, sub forma unei matrici, rezultând matricea de stare \texttt{S}.
+
+În runda inițială această matrice este combinată cu cheia de criptare, iar apoi încep rundele intermediare, unde elementele matricii sunt substituite cu alte elemente (asemeni uni cifru Caesar), acesta este pasul \texttt{SubBytes}. Urmează permutarea circulară a liniilor din matrice (pasul \texttt{ShiftRows}) și pasul de amestecare a biților de pe o coloană, \texttt{MixColumns}. Ultima parte constă în combinarea noii matrici de stare cu cheia de criptare aferentă rundei în care se află algoritmul. Algoritmul se încheie cu runda finală, repetând aceeași pași, cu excepția celui de \texttt{MixColumns}.
+
+Rezultatul criptării este matricea de stare, care este transformată înapoi într-un șir de biți. Acest sir, criptat fiind, pentru a-i afla semnificația, tebuie decriptat folosind procesul invers celui descris anterior. Proprietățile acestui algoritm își au fundamentul în grupurile Galois și calculul cu polinoame, asemănător codurilor ciclice. Așadar pot fi implementate simplu în software și chiar și în hardware, cu unii producători de procesoare ca Intel și AMD care au introdus instrucțiuni speciale pentru criptarea și decriptarea AES \cite{intel64}.
+
+Criptarea de una singură nu este totuși suficientă pentru a asigura și autenticitatea datelor. Ea poate doar să asigure doar confidențialitatea, pentru a asigura și integritatea datelor trebuie să folosim un "mod de operare" al algoritmului AES. Dorim sa facem acest lucru deoarece metoda de transmisie a aplicației poate introduce erori sau datele criptate pot fi înlocuite de un atacator. 
+
+Modul de operare pentru AES ales aici este AES-GCM, Galois/Counter Mode. Alegerea a fost făcută datorită faptului că modul acesta de operare este recomandat de Institutul Național de Standarde și Tehnologie al Statelor Unite\footnote{NIST - National Institude of Standards and Technology} \cite{nistGCM} și că a fost proiectat în așa fel încât să fie rapid \cite{gcmSpec}. Pentru a putea folosi AES-GCM, în afară de datele pe care vrem să le criptăm și autentificăm avem nevoie de o cheie cu care să criptăm datele, aceasta trebuie să fie păstrată secretă și de un vector de inițializare\footnote{IV - Initialization Vector} pentru algoritmul de autentificare. Algoritmul de autentificare va folosi acest vector pentru a crea o etichetă unică (numită tag) a combinației datelor de intrare și vectorului de inițializare. Trebuie notat că această metodă este diferită de CRC-uri deoarece ea se bazează pe cheia de criptare și pe faptul că un potențial atacator nu are acces la ea, deci atacatorul nu poate pur și simplu să re-cripteze datele și să genereze un nou tag dacă nu are cheia de criptare corectă. Modul general de criptare și de decriptare, cât și fluxul datelor pe care se bazează AES-GCM este ilustrat în figura \ref{howAesWorks}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{aes-gcm}
+    \caption{Fluxul datelor între dezvoltator și client prin prisma AES-GCM}
+\label{howAesWorks}
+\end{figure}
 
 
+De fiecare dată când se criptează date, pentru ca algoritmul să își păstreze proprietățile, vectorul de inițializare trebuie să fie diferit. Acesta, împreună cu tag-ul și cu datele criptate rezultate în urma rulării AES-GCM trebuie trimise spre destinatar, acesta va folosi IV-ul pentru a inițializa algoritmul și pentru a verifica dacă obține același tag ca cel primit de la expeditor, dacă o face, atunci datele primite sunt cele trimise de expeditor și nu au fost interceptate și modificate între timp. Evident este de importanță maximă ca sistemul să protejeze cheile de criptare, vom explora cum se poate face acest lucru în secțiunea următoare.
+
+\section{Procesul de flashing al unui microcontroller și protecția cheilor de criptare}
 TODO: Despre chei si faptul ca acestea trebuie scrise pe dispozitiv, tocmai ca sa nu vada lumina zilei.
 TODO: Spune cum faptul ca cheile se afla pe dispozitiv nu este o problema pt. ca flash-ul trebuie sters cand este securizat, detalii in sectiunea viitoare.
 
-\section{Procesul de flashing al unui microcontroller}
+
 TODO: securitatea flash-ului, reference Using the Kinetis Security and
 Flash Protection Features
 TODO: scrie-ma, despre JTAG, stergerea flash-ului, tehnologii de flash, el de fapt este pe 1 si cand scriem se duce pe 0
