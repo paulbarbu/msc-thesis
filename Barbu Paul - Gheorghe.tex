@@ -383,17 +383,21 @@ Modul de operare pentru AES ales aici este AES-GCM, Galois/Counter Mode. Alegere
 \label{howAesWorks}
 \end{figure}
 
-
 De fiecare dată când se criptează date, pentru ca algoritmul să își păstreze proprietățile, vectorul de inițializare trebuie să fie diferit. Acesta, împreună cu tag-ul și cu datele criptate rezultate în urma rulării AES-GCM trebuie trimise spre destinatar, acesta va folosi IV-ul pentru a inițializa algoritmul și pentru a verifica dacă obține același tag ca cel primit de la expeditor, dacă o face, atunci datele primite sunt cele trimise de expeditor și nu au fost interceptate și modificate între timp. Evident este de importanță maximă ca sistemul să protejeze cheile de criptare, vom explora cum se poate face acest lucru în secțiunea următoare.
 
 \section{Procesul de flashing al unui microcontroller și protecția cheilor de criptare}
-TODO: Despre chei si faptul ca acestea trebuie scrise pe dispozitiv, tocmai ca sa nu vada lumina zilei.
-TODO: Spune cum faptul ca cheile se afla pe dispozitiv nu este o problema pt. ca flash-ul trebuie sters cand este securizat, detalii in sectiunea viitoare.
+După cum am aflat în secțiunea anterioară cheile de criptare trebuie să fie păstrate un secret.
+Într-o instanță ele se află pe sistemele dezvoltatorului, pe care le considerăm sigure și private. Aceste sisteme sunt folosite pentru criptarea aplicației care va fi folosită de bootloader și care va rula la final pe microcontroller. Într-o altă instanță cheile trebuie să se regăsească și pe microcontroller, unde sunt folosite de către bootloader pentru a decripta aplicația ce urmează să ruleze pe dispozitiv. Considerând faptul că dispozitivul ajunge în medii necunoscute, nu mai putem presupune că păstrează cheile siguranță.
 
+Dacă cheile de criptare sunt cumva citite de către cineva, acea persoană le poate folosi pentru a crea o aplicație care nu ar trebui să ajungă să ruleze pe microcontroller și revenim la situația anterioară, înainte să introduce orice fel de protecție. Din fericire producătorii de microcontroller-e oferă funcționalități care previn citirea memoriei flash și pe care le vom folosi pentru a proteja cheile de criptare.
 
-TODO: securitatea flash-ului, reference Using the Kinetis Security and
-Flash Protection Features
-TODO: scrie-ma, despre JTAG, stergerea flash-ului, tehnologii de flash, el de fapt este pe 1 si cand scriem se duce pe 0
+Înainte de a prezenta această funcționalitate, trebuie să vedem care este procesul de scriere al unui program pe microcontroller, acest proces este numit și "flashing", numele venind de la memoria flash care este scrisă. În general acest lucru se face prin dispozitive dedicate (numite adaptoare de depanare\footnote{http://www2.keil.com/mdk5/ulink}) care folosesc portul JTAG\footnote{Joint Test Action Group} al microcontroller-ului pentru a permite dezvoltatorului să scrie, să citească și să șteargă memoria flash a dispozitivului. Tot prin această interfață se permite depanarea programelor prin accesul la registrele interne ale procesorului. Practic dacă ne conectăm prin intermediul unui adaptor de depanare la microcontroller, avem controlul deplin asupra lui. Evident acest lucru este de dorit în timpul dezvoltării, dar după livrarea în producție nu mai este.
+
+O primă soluție în acest sens ar fi eliminarea conectorului JTAG de pe dispozitiv după programarea lui, dar acest lucru face producția mai scumpă, deoarece este un pas în plus și nu este nici 100\% sigur, deoarece o persoană motivată ar putea găsi totuși contactele pe PCB-ul dispozitivului și să improvizeze un conector \cite{hddHack}. Eliminarea completă a contactelor de pe PCB-ul dispozitivului nu este fezabilă deoarece în cazul unui defect acoperit de garanție, dezvoltatorul nu are cum să depaneze problema.
+
+Producătorii de microcontroller-e au soluționat definitiv problema printr-o combinație de software și hardware (dar de data aceasta la nivelul porților logice din interiorul microcontroller-ului). Soluția permite dezvoltatorului să lase conectorul JTAG pe dispozitiv fără grija că dispozitivul va fi compromis si poartă numele de "Flash Security"\footnote{securitatea memoriei flash} \cite{nxpSecurity}. În momentul în care aplicația este scrisă pe microcontroller prin JTAG (în idea de a fi trimisă în producție), dezvoltatorul trebuie doar să seteze o anumită zonă de memorie la o valoare specifică. Acest lucru va duce la imposibilitatea citirii memoriei flash din exteriorul microcontroller-ului prin JTAG, împiedicând accesul la conținutul acesteia. Memoria nu este totuși blocată definitiv, ea poate fi ștearsă și rescrisă prin JTAG, dar cu precizarea că ștergerea ei va putea fi făcută doar în întregime, aceasta fiind singura operație cu memoria care mai este posibilă în urma activării securității flash-ului. Bine-înțeles că aplicația care va rula pe microcontroller va avea acces ne-restricționat la memorie, flash security fiind relevant doar pentru accesul din exterior.
+
+Bootloader-ul proiectat în această lucrare va folosi funcționalitatea de securitate a flash-ului pentru a proteja cheile de criptare de citirea neautorizată, detaliile de implementare fiind prezentate în următorul capitol.
 
 \newpage
 \chapter{Rezolvarea temei de proiect}
@@ -409,6 +413,11 @@ TODO: scrie-ma
 
 TODO: AES "constant -time" comparison și implemenatre fara tabele (meorie vs viteza)
 TODO: aes block vs stream
+TODO: relativ la cheile de criptare, spune cum vor fi ele scrise
+
+TODO: scrie-ma, despre JTAG, stergerea flash-ului, tehnologii de flash, el de fapt este pe 1 si cand scriem se duce pe 0
+
+TODO: explica zonele de memorie, scriptul .ld
 
 TODO: %https://mcuoneclipse.com/2013/04/19/why-i-dont-like-printf/
 
