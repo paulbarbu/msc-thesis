@@ -454,7 +454,21 @@ După cum observăm în listingul \ref{UARTWriteBlocking}, funcția \texttt{UART
 
 Dacă nu ar exista acest nivel de abstractizare, programatorul ar trebui să îl creeze sau să folosească în mod direct regiștrii microprocesorului. Folosirea SDK-ului Kinetis, prezentat mai sus, nu restricționează programatorul de la folosirea directă a registrelor, acesta fiind liber să combine cele două moduri de lucru după nevoie. În cazul bootloader-ului se va folosi acest SDK deoarece, stratul de abstractizare pe care îl oferă ne permite să ne axăm mai mult pe funcționalitățile bootloader-ului, decât pe detaliile de utilizare ale microcontroller-ului.
 
+\section{Încărcarea unei aplicații pe microcontroller}
+Procesul rulării unei aplicații pe microcontroller este în mare parte diferit față de rularea unei aplicații pe un desktop, unde rulează deja un sistem de operare. Lucrul acesta se datorează faptului că aplicația trebuie cumva încărcată pe microcontroller. Așa cum am prezentat în capitolul anterior, procesul de flashing pe microcontroller este dependent de un adaptor hardware.
 
+Acest adaptor are rolul de a prelua aplicația în formă binară și de a o scrie în memoria flash a microcontroller-ului. De acolo se va declanșa apoi mecanismul prezentat în capitolul anterior de pornire al microcontroller-ului prin apelarea \texttt{Reset\_Handler}-ului.
+
+Inițial codul programului este compilat pe calculatorul dezvoltatorului, având în vedere că acel sistem este foarte probabil sa nu ruleze pe o arhitectură ARM, ci x86 sau x64, iar sistemul embedded este ARM, procesul de compilare se numește de fapt cross-compilare. Cross-compilation reprezintă procesul în care un compilator produce cod mașină pentru o altă arhitectură decât cea pe care rulează. \cite{crossCompilation}
+
+Scrierea în memoria flash a aplicației în general duce la suprascrierea întregii memorii. Această scriere se face în conformitate cu un memory map\footnote{hartă de memorie}. Harta de memorie este gestionată de linker, el definind adresele variabilelor și ale funcțiilor în urma procesului de compilare cu ajutorul acestui memory map.
+
+Deoarece bootloader-ul, pentru a fi util, trebuie să acomodeze și spațiu pentru aplicația pe care acesta o va rula. Așadar se impune o limitare a spațiului ocupat de bootloader, pentru a păstra și spațiu neocupat, rezervat aplicațiilor care vor fi încărcate dinamic de către bootloader.
+
+\section{Memory map-ul bootloader-ului și spațiul revendicat de acesta}
+TODO: %https://mcuoneclipse.com/2013/04/19/why-i-dont-like-printf/
+
+TODO: %size_comp_debug_release.ods
 
 TODO: despre cum se scrie codul in lumea embedded, fara bootloader prima data (flashuirea din fabrica)
 
@@ -462,16 +476,18 @@ TODO: scrie-ma, despre JTAG, stergerea flash-ului, tehnologii de flash, el de fa
 
 
 TODO: memory map, cum sta bootloader-ul si aplicatia guest in memorie
+TODO: explica zonele de memorie, scriptul .ld
+
 TODO: encryptie end-to-end
 TODO: AES "constant -time" comparison și implemenatre fara tabele (meorie vs viteza)
 TODO: aes block vs stream
 TODO: relativ la cheile de criptare, spune cum vor fi ele scrise
 
-TODO: explica zonele de memorie, scriptul .ld
 
-TODO: %https://mcuoneclipse.com/2013/04/19/why-i-dont-like-printf/
+TODO: sectiune: cum functioneaza (la nivel de utilizator) bootloader-ul, bundler-ul si flasher-ul
+TODO: arhitectura bootloader-ului UML + cod
+TODO: arhitectura flasher si bundler si cum share-uiesc ele codul (e reutilizabil!) UML + cod
 
-TODO: %size_comp_debug_release.ods
 
 \section{Concluzii și dezvoltări ulterioare}
 TODO: alegerea unei aplicatii dintre mai multe
