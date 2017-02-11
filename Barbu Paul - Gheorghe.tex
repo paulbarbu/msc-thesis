@@ -54,8 +54,9 @@ programabile
 \vfill
 {
 \raggedright
-Conducător ştiinţific: TODO: c.d. cu  grad şi titlul de doctor \\
-Îndrumător: TODO: c.d. ce s-a ocupat de student
+Conducător ştiinţific: Conf. dr. ing. Morariu Daniel \\
+%TODO: razvan?
+Îndrumător: Conf. dr. ing. Morariu Daniel
 }
 \vfill
 
@@ -403,9 +404,36 @@ Bootloader-ul proiectat în această lucrare va folosi funcționalitatea de secu
 \chapter{Rezolvarea temei de proiect}
 \section{Introducere}
 
+În concordanță cu scopurile propuse la începutul acestei lucrări, vom prezenta modul în care aceste cerințe s-au materializat în cod. Bootloader-ul este scris de la zero, în crearea lui nu s-a folosit niciun framework și nicio bibliotecă pentru a scrie funcționalitatea de bază. Singura bibliotecă externă folosită este cea de criptare, decizie ce va fi argumentată într-o secțiune viitoare.
+
+Așadar, făcând totul manual, bootloader-ul poate fi structurat îndeajuns de simplu pentru a putea fi modificat, întreținut și reparat în viitor. În comparație cu KBoot, codul și funcționalitățile descrise aici sunt gândite să fie simple, fără a acorda importanță administrării microcontroller-ului din linia de comandă. În comparație cu Das U-Boot, codul meu vizează în principal arhitecturile ARM, cu posibilitatea portării pe alte arhitecturi embedded, dar nu este destinat folosirii și pe platforme desktop, bazate pe arhitectura x86 sau x64.
+
+\section{Hardware-ul ales pentru dezvoltare}
+
+Bootloader-ul dezvoltat în această lucrare este destinat cu precădere arhitecturilor ARM, specifice dispozitivelor embedded, dar poate fi portat cu ușurință și spre alte arhitecturi embedded în caz de nevoie.
+
+Procesoarele pe care codul a fost dezvoltat și testat sunt \texttt{MKV58F1M0VLQ24} și \texttt{MK26FN2M0VLQ18}, bazate pe core-urile Cortex M4 și respectiv Cortex M7. Aceste procesoare sunt produse și comercializate de NXP, iar bibliotecile care abstractizează hardware-ul sunt specifice gamei de produse Kinetis.
+
+Nu există un motiv anume pentru care aceste microcontroller-e au fost alese, ci mai degrabă au fost alese pentru faptul că ele sunt reprezentative unui grup mare de microcontroller-e, pentru faptul că prezintă caracteristici generale decente.
+Diferența dintre cele două nuclee, Cortex M4 și Cortex M7, este în principal adăugarea de cache-uri separate pentru instrucțiuni și pentru date în versiunea mai recentă a microcontroller-ului, în afară de asta, nucleul M7 are o frecvență de tact mai ridicată și, drept consecință, un pipeline mai lung. \cite{cortexM7} \cite{cortexM4}
+
+\section{Mediul de lucru și limbajul de programare}
+
+Pentru orice proiect software trebuie să ne alegem un mediu de programare în care vom scrie și vom compila software-ul nostru. Proiectul fiind unul embedded, limbajul pe care îl vom folosi va fi fără îndoială C, deoarece acesta permite lucrul direct cu memoria și acces ușor la hardware.
+
+În general, în domeniul dispozitivelor embedded, producătorii de microcontroller-e dezvoltă și mediul de lucru software cu acestea.
+De exemplu cei de la Atmel creează microcontroller-ele AVR, iar pentru a le programa recomandă folosirea mediului de dezvoltare Atmel Studio IDE\footnote{http://www.atmel.com/products/microcontrollers/avr/}\footnote{IDE - Integrated Development Environment}. Platforma Arduino, una renumită pentru ușurința folosirii ei și foarte folosită de pasionați, deși bazată pe microcontroller-ele AVR, ARM și chiar Intel, recomandă folosirea Arduino IDE\footnote{https://www.arduino.cc/en/main/software}.
+
+Există și companii care integrează mai multe microcontroller-e de la diverși producători într-un singur pachet. Un caz particular ar fi Keil, care dezvoltă mediul de programare uVision\footnote{http://www.keil.com/boards2/}. Totuși, deși suportat de o companie și cu o gamă largă de dispozitive disponibile, acest mediu de programare are dezavantajul de a necesita o licență plătită pentru a putea fi folosit.
+
+Din fericire există proiecte open-source, unde codul este disponibil gratuit on-line și care pot fi folosite pentru a compila codul C în cod mașină specific arhitecturilor ARM. Un asemenea proiect este "GNU ARM Embedded Toolchain"\footnote{https://developer.arm.com/open-source/gnu-toolchain/gnu-rm}. Colecția aceasta de programe include atât un compilator, un linker, cât și o bibliotecă standard C de dimensiuni reduse, special făcută pentru sisteme cu resurse minimale. Această suită de aplicații a fost integrată în mediul de dezvoltare Eclipse\footnote{https://www.eclipse.org/ide/} de către NXP sub numele de "Kinetis\textregistered Design Studio IDE"\footnote{http://www.nxp.com/kds}. IDE-ul este orientat spre familia de procesoare Kinetis, familie din care fac parte și procesoarele alese pentru a testa și dezvolta bootloader-ul. Așadar alegerea mediului de programare Kinetis Design Studio pare alegerea firească, având în vedere că se bazează doar pe programe gratuite și familiare, precum compilatorul GCC și mediul Eclipse. 
+
+
+
+
 TODO: despre cum se scrie codul in lumea embedded, fara bootloader prima data (flashuirea din fabrica)
-%TODO: precizeaza faptul ca codul meu este 100% scris de mine fara legatura cu codul celor de la KBoot spre exemplu
-%TODO: al meu vrea encryptie end-to-end, simplitate (fata de kboot) si portabilitate doar pe ramura embedded (fata de dat u-boot)
+TODO: encryptie end-to-end
+
 
 TODO: memory map, cum sta bootloader-ul si aplicatia guest in memorie
 
