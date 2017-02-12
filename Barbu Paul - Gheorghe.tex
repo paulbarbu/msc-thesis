@@ -454,6 +454,22 @@ După cum observăm în listingul \ref{UARTWriteBlocking}, funcția \texttt{UART
 
 Dacă nu ar exista acest nivel de abstractizare, programatorul ar trebui să îl creeze sau să folosească în mod direct regiștrii microprocesorului. Folosirea SDK-ului Kinetis, prezentat mai sus, nu restricționează programatorul de la folosirea directă a registrelor, acesta fiind liber să combine cele două moduri de lucru după nevoie. În cazul bootloader-ului se va folosi acest SDK deoarece, stratul de abstractizare pe care îl oferă ne permite să ne axăm mai mult pe funcționalitățile bootloader-ului, decât pe detaliile de utilizare ale microcontroller-ului.
 
+\section{Criptarea aplicației utilizator}
+După cum spuneam în secțiunile anterioare, asigurarea securității aplicației împotriva atacatorilor joacă un rol important pentru bootloader. Prin criptare ascundem de fapt conținutul aplicației de oricine care nu deține cheia de criptare, vom face acest lucru folosind algoritmul AES-GCM.
+
+Pentru a evita scrierea unui algoritm defectuos vom recurge la alegerea unei biblioteci deja existente. În acest mod suntem siguri că algoritmul este implementat corect, deoarece bibliotecile sunt deja testat în medii reale și evaluate de cercetători de securitate. De asemenea, având o bază de utilizatori mare putem fi mai încrezători în calitatea codului.
+
+Pentru că vom alege o bibliotecă care va fi folosită în mediul embedded, criteriul principal după care se va face alegerea este după mărimea pe care o ocupă executabilul compilat cu biblioteca inclusă. Este important ca biblioteca să ocupe un spațiu minim, pentru a putea minimiza dimensiunile bootloader-ului, astfel că pe memoria flash a microcontroller-ului va rămâne spațiu suficient pentru o aplicație utilizator. Totuși spațiul ocupat nu este singurul factor în alegerea bibliotecii, este la fel de important ca biblioteca să fie susținută de o comunitate puternică, care poate să acționeze rapid și să repare prompt eventuale găuri de securitate.
+
+Cele două biblioteci evaluate în acest proiect sunt "mbed TLS"\footnote{https://tls.mbed.org/}, recent preluată de compania ARM și biblioteca AES a lui Brian Gladman\footnote{http://www.gladman.me.uk/AES}. Codul de benchmark pe care am măsurat mărimea executabilului este prezentat în listing-ul \ref{aesBench}.
+
+\inputminted{c}{aes_bench.c}
+\captionof{listing}{Codul de benchmark AES\label{aesBench}}
+
+%TODO: AES + size, memory map + size + printf, user guide & features, architecture
+
+
+
 \section{Încărcarea unei aplicații pe microcontroller}
 Procesul rulării unei aplicații pe microcontroller este în mare parte diferit față de rularea unei aplicații pe un desktop, unde rulează deja un sistem de operare. Lucrul acesta se datorează faptului că aplicația trebuie cumva încărcată pe microcontroller. Așa cum am prezentat în capitolul anterior, procesul de flashing pe microcontroller este dependent de un adaptor hardware.
 
