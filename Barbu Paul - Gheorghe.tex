@@ -463,8 +463,28 @@ Pentru că vom alege o bibliotecă care va fi folosită în mediul embedded, cri
 
 Cele două biblioteci evaluate în acest proiect sunt "mbed TLS"\footnote{https://tls.mbed.org/}, recent preluată de compania ARM și biblioteca AES a lui Brian Gladman\footnote{http://www.gladman.me.uk/AES}. Codul de benchmark pe care am măsurat mărimea executabilului este prezentat în listing-ul \ref{aesBench}.
 
-\inputminted{c}{aes_bench.c}
+\inputminted{c}{aes_bench_short.c}
 \captionof{listing}{Codul de benchmark AES\label{aesBench}}
+
+Acest benchmark urmărește doar funcțiile de bază, cum ar fi criptarea și decriptarea inputului. Doar aceste funcții vor fi necesare și în cadrul bootloader-ului deoarece dezvoltatorul va cripta aplicația înainte de livrarea ei spre client și apoi, după încărcarea pe microcontroller, bootloader-ul o va decripta. Codul din acest listing arată API-ul\footnote{Application Programming Interface} pe care biblioteca mbedTLS îl pune la dispoziție. Un fragment de cod asemănător a fost folosit pentru biblioteca creată de Brian Gladman.
+
+În urma măsurătorilor codul executabil static pentru cele două biblioteci pe cele două programe de benchmark arată conform tabelului \ref{aesSizeTable}.
+
+\begin{table}[h]
+    \begin{tabular}{ | c | c | c |}
+        \hline
+        \textbf{Bibliotecă} & \textbf{Mărime Release (octeți)} & \textbf{Mărime Debug (octeți)} \\ \hline
+        \texttt{Gladman} & 7 744 & 35 416 \\ \hline
+        \texttt{mbedTLS} & 9 788 & 35 696 \\ \hline
+    \end{tabular}
+    \centering
+    \caption{Mărimea codului generat de mbedTLS și biblioteca lui Gladman}
+    \label{aesSizeTable}
+\end{table}
+
+Trebuie să precizăm că pentru ambele biblioteci am aplicat toate setările care conduc la diminuarea spațiului static ocupat de cod. Ambele biblioteci pun la dispoziție optimizări ale algoritmului AES care se bazează pe tabele pre-calculate (de lookup), dar aceste optimizări au fost eliminate, toate valorile fiind calculate la run-time. Cele două biblioteci de asemenea ar putea face și operația de optimizare loop unrolling, prin care codul ar deveni mai mare, dar această optimizare a fost și ea oprită din aceleași motive de spațiu. Așadar s-a făcut compromisul tradițional între spațiul ocupat pe disc (pe flash în cazul bootloader-ului) și timpul de rulare al aplicației.
+
+Tabelul ne arată că în variantă de release (cea care va ajunge în final la client) executabilul va avea cu aproximativ 2 KB mai puțin dacă am alege varianta lui Brian Gladman de implementare a algoritmului AES. Totuși consider acest avantaj de spațiu neglijabil având în vedere că microcontrollere-le actuale (inclusiv cele alese pentru această lucrare) au măcar un megabyte de memorie flash. Cei doi kiloocteți reprezintă doar 0.19\% din spațiul total de un megabyte, așadar vom prefera biblioteca mbedTLS datorită comunității din spatele ei și datorită faptului că este susținută de compania ARM.
 
 %TODO: AES + size, memory map + size + printf, user guide & features, architecture
 
