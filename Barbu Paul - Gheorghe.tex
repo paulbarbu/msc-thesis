@@ -428,7 +428,7 @@ Există și companii care integrează mai multe microcontroller-e de la diverși
 
 Din fericire există proiecte open-source, unde codul este disponibil gratuit on-line și care pot fi folosite pentru a compila codul C în cod mașină specific arhitecturilor ARM. Un asemenea proiect este "GNU ARM Embedded Toolchain"\footnote{https://developer.arm.com/open-source/gnu-toolchain/gnu-rm}. Colecția aceasta de programe include atât un compilator, un linker, cât și o bibliotecă standard C de dimensiuni reduse, special făcută pentru sisteme cu resurse minimale. Această suită de aplicații a fost integrată în mediul de dezvoltare Eclipse\footnote{https://www.eclipse.org/ide/} de către NXP sub numele de "Kinetis\textregistered Design Studio IDE"\footnote{http://www.nxp.com/kds}. IDE-ul este orientat spre familia de procesoare Kinetis, familie din care fac parte și procesoarele alese pentru a testa și dezvolta bootloader-ul. Așadar alegerea mediului de programare Kinetis Design Studio pare alegerea firească, având în vedere că se bazează doar pe programe gratuite și familiare, precum compilatorul GCC și mediul Eclipse. 
 
-Setarea mediului de programare implică doar instalarea Kinetis Design Studio, în urma instalării atât compilatorul, cât și alte programe auxiliare acestuia sunt disponibile automat. Totuși pentru a putea dezvolta rapid aplicații pentru un microcontroller Kinetis, este necesar să descarcăm un software development kit\footnote{SDK}. SDK-ul ne va oferi accesul la hardware-ul pus la dispoziție de către microcontroller și ne oferă documentația specifică acestui hardware. Practic software development kit-ul este o colecție de biblioteci C care vin în ajutorul programatorului și abstractizează accesul la componentele hardware. Diferența între a programa pe un microcontroller folosind un asemenea set de biblioteci este faptul că programatorul se distanțează de detaliile de construcție ale microcontroller-ului, deoarece nu mai trebuie să folosească manual regiștrii, ci doar să apeleze funcții care manipulează acești regiștrii ca să ajungă la același rezultat, conform documentației.
+Setarea mediului de programare implică doar instalarea Kinetis Design Studio, în urma instalării atât compilatorul, cât și alte programe auxiliare acestuia sunt disponibile automat. Totuși pentru a putea dezvolta rapid aplicații pentru un microcontroller Kinetis, este necesar să descarcăm un software development kit\footnote{SDK}. SDK-ul ne va oferi accesul la hardware-ul pus la dispoziție de către microcontroller și ne oferă documentația specifică acestui hardware. Practic software development kit-ul este o colecție de biblioteci C care vin în ajutorul programatorului și abstractizează accesul la componentele hardware. Diferența între a programa pe un microcontroller folosind un asemenea set de biblioteci este faptul că programatorul se distanțează de detaliile de construcție ale microcontroller-ului, deoarece nu mai trebuie să folosească manual regiștrii, ci doar să apeleze funcții care manipulează acești regiștrii ca să ajungă la același rezultat, conform documentației \cite{ksdk}.
 
 Listingul \ref{UARTWriteBlocking} prezintă funcția de scriere al unui șir de octeți pe un port serial.
 
@@ -450,15 +450,16 @@ void UART_WriteBlocking(UART_Type *base, const uint8_t *data, size_t length)
 \label{UARTWriteBlocking}
 \end{listing}
 
-După cum observăm în listingul \ref{UARTWriteBlocking}, funcția \texttt{UART\_WriteBlocking} primește ca prim parametru un pointer spre portul serial pe care dorim să scriem datele pasate ca pointer prin al doilea parametru. Al treilea parametru este relevant pentru a ști ce lungime au datele care urmează să fie transmise. Corpul funcției folosește regiștrii puși la dispoziție de către microcontroller pentru a îndeplini sarcina. Portul serial având un registru de date, numit \texttt{D}, în care datele de transmis se copiază și un registru de status, numit \texttt{S1}, care indică (printre altele) dacă registrul de date devine gol sau nu prin verificarea bitului TDRE\footnote{Transmit Data Register Empty}.
+După cum observăm în listingul \ref{UARTWriteBlocking}, funcția \texttt{UART\_WriteBlocking} primește ca prim parametru un pointer spre portul serial pe care dorim să scriem datele pasate ca pointer prin al doilea parametru. Al treilea parametru este relevant pentru a ști ce lungime au datele care urmează să fie transmise. Corpul funcției folosește regiștrii puși la dispoziție de către microcontroller pentru a îndeplini sarcina. Portul serial având un registru de date, numit \texttt{D}, în care datele de transmis se copiază și un registru de status, numit \texttt{S1}, care indică (printre altele) dacă registrul de date devine gol sau nu prin verificarea bitului TDRE\footnote{Transmit Data Register Empty} \cite{kv5x}.
 
-Dacă nu ar exista acest nivel de abstractizare, programatorul ar trebui să îl creeze sau să folosească în mod direct regiștrii microprocesorului. Folosirea SDK-ului Kinetis, prezentat mai sus, nu restricționează programatorul de la folosirea directă a registrelor, acesta fiind liber să combine cele două moduri de lucru după nevoie. În cazul bootloader-ului se va folosi acest SDK deoarece, stratul de abstractizare pe care îl oferă ne permite să ne axăm mai mult pe funcționalitățile bootloader-ului, decât pe detaliile de utilizare ale microcontroller-ului.
+Dacă nu ar exista acest nivel de abstractizare, programatorul ar trebui să îl creeze sau să folosească în mod direct regiștrii microprocesorului, așa cum este prezentat în listing. Folosirea SDK-ului Kinetis, prezentat mai sus, nu restricționează programatorul de la folosirea directă a registrelor, acesta fiind liber să combine cele două moduri de lucru după nevoie. În cazul bootloader-ului se va folosi acest SDK deoarece, stratul de abstractizare pe care îl oferă ne permite să ne axăm mai mult pe funcționalitățile bootloader-ului, decât pe detaliile de utilizare ale microcontroller-ului.
 
-\section{Criptarea aplicației utilizator}
+\section{Biblioteca de criptare}
 După cum spuneam în secțiunile anterioare, asigurarea securității aplicației împotriva atacatorilor joacă un rol important pentru bootloader. Prin criptare ascundem de fapt conținutul aplicației de oricine care nu deține cheia de criptare, vom face acest lucru folosind algoritmul AES-GCM.
 
-Pentru a evita scrierea unui algoritm defectuos vom recurge la alegerea unei biblioteci deja existente. În acest mod suntem siguri că algoritmul este implementat corect, deoarece bibliotecile sunt deja testat în medii reale și evaluate de cercetători de securitate. De asemenea, având o bază de utilizatori mare putem fi mai încrezători în calitatea codului.
+Pentru a evita scrierea unui algoritm defectuos vom recurge la alegerea unei biblioteci deja existente. În acest mod suntem siguri că algoritmul este implementat corect, deoarece bibliotecile sunt deja testate în medii reale și evaluate de cercetători de securitate. De asemenea, având o bază de utilizatori mare putem fi mai încrezători în calitatea codului.
 
+\subsection{Mărimea bibliotecii de criptare}
 Pentru că vom alege o bibliotecă care va fi folosită în mediul embedded, criteriul principal după care se va face alegerea este după mărimea pe care o ocupă executabilul compilat cu biblioteca inclusă. Este important ca biblioteca să ocupe un spațiu minim, pentru a putea minimiza dimensiunile bootloader-ului, astfel că pe memoria flash a microcontroller-ului va rămâne spațiu suficient pentru o aplicație utilizator. Totuși spațiul ocupat nu este singurul factor în alegerea bibliotecii, este la fel de important ca biblioteca să fie susținută de o comunitate puternică, care poate să acționeze rapid și să repare prompt eventuale găuri de securitate.
 
 Cele două biblioteci evaluate în acest proiect sunt "mbed TLS"\footnote{https://tls.mbed.org/}, recent preluată de compania ARM și biblioteca AES a lui Brian Gladman\footnote{http://www.gladman.me.uk/AES}. Codul de benchmark pe care am măsurat mărimea executabilului este prezentat în listing-ul \ref{aesBench}.
@@ -482,13 +483,21 @@ Acest benchmark urmărește doar funcțiile de bază, cum ar fi criptarea și de
     \label{aesSizeTable}
 \end{table}
 
-Trebuie să precizăm că pentru ambele biblioteci am aplicat toate setările care conduc la diminuarea spațiului static ocupat de cod. Ambele biblioteci pun la dispoziție optimizări ale algoritmului AES care se bazează pe tabele pre-calculate (de lookup), dar aceste optimizări au fost eliminate, toate valorile fiind calculate la run-time. Cele două biblioteci de asemenea ar putea face și operația de optimizare loop unrolling, prin care codul ar deveni mai mare, dar această optimizare a fost și ea oprită din aceleași motive de spațiu. Așadar s-a făcut compromisul tradițional între spațiul ocupat pe disc (pe flash în cazul bootloader-ului) și timpul de rulare al aplicației.
+Trebuie să precizăm că pentru ambele biblioteci am aplicat toate setările care conduc la diminuarea spațiului static ocupat de cod. Ambele biblioteci pun la dispoziție optimizări ale algoritmului AES care se bazează pe tabele pre-calculate (de lookup), dar aceste optimizări au fost eliminate, toate valorile fiind calculate la run-time. Cele două biblioteci de asemenea ar putea face și operația de optimizare loop unrolling\footnote{desfășurarea buclelor}, prin care codul ar deveni mai mare, dar această optimizare a fost și ea oprită din aceleași motive de spațiu. Așadar s-a făcut compromisul tradițional între spațiul ocupat pe disc (pe flash în cazul bootloader-ului) și timpul de rulare al aplicației.
 
-Tabelul ne arată că în variantă de release (cea care va ajunge în final la client) executabilul va avea cu aproximativ 2 KB mai puțin dacă am alege varianta lui Brian Gladman de implementare a algoritmului AES. Totuși consider acest avantaj de spațiu neglijabil având în vedere că microcontrollere-le actuale (inclusiv cele alese pentru această lucrare) au măcar un megabyte de memorie flash. Cei doi kiloocteți reprezintă doar 0.19\% din spațiul total de un megabyte, așadar vom prefera biblioteca mbedTLS datorită comunității din spatele ei și datorită faptului că este susținută de compania ARM.
+Tabelul ne arată că în variantă de release (cea care va ajunge în final la client) executabilul va avea cu aproximativ 2 KB mai puțin dacă am alege varianta lui Brian Gladman de implementare a algoritmului AES. Totuși consider acest avantaj de spațiu neglijabil având în vedere că microcontrollere-le actuale (inclusiv cele alese pentru această lucrare) au măcar un megabyte de memorie flash. Cei doi kiloocteți reprezintă doar 0.19\% din spațiul total de un megabyte, așadar vom prefera biblioteca mbedTLS datorită comunității din spatele ei și datorită faptului că este susținută de compania ARM. De asemenea, la o primă vedere, codul mbedTLS pare mai modular și ușor de citit.
+
+Tabelul \ref{aesSizeTable} ne arată atât dimensiunea executabilului compilat în mod release cât și în mod debug. Diferența mare de dimensiune vine de la faptul că varianta de debug include informații adiționale cum ar fi nume de funcții, nume de fișiere și numărul liniilor de cod, toate acestea ajutând programatorul la depanarea problemelor și în același timp ducând la o creștere a executabilului. În ciuda diferenței mari, cele două executabile (cel de release și cel de debug) trebuie să fie identice din punct de vedere funcțional. Codul a fost compilat cu compilatorul \texttt{arm-none-eabi-gcc} livrat de Kinetis Design Studio, mediul de programare cu care ne-am propus să lucrăm și care creează executabile specifice arhitecturii ARM.
+
+\subsection{Modurile de lucru AES}
+TODO: scrie-ma
+TODO: aes block vs stream
+
+\subsection{Evitarea atacurilor de timp asupra algoritmului de decriptare}
+TODO: scrie-ma
+TODO: AES "constant -time" comparison și implemenatre fara tabele (meorie vs viteza)
 
 %TODO: AES + size, memory map + size + printf, user guide & features, architecture
-
-
 
 \section{Încărcarea unei aplicații pe microcontroller}
 Procesul rulării unei aplicații pe microcontroller este în mare parte diferit față de rularea unei aplicații pe un desktop, unde rulează deja un sistem de operare. Lucrul acesta se datorează faptului că aplicația trebuie cumva încărcată pe microcontroller. Așa cum am prezentat în capitolul anterior, procesul de flashing pe microcontroller este dependent de un adaptor hardware.
@@ -508,17 +517,12 @@ TODO: %size_comp_debug_release.ods
 
 TODO: despre cum se scrie codul in lumea embedded, fara bootloader prima data (flashuirea din fabrica)
 
-TODO: scrie-ma, despre JTAG, stergerea flash-ului, tehnologii de flash, el de fapt este pe 1 si cand scriem se duce pe 0
-
-
+TODO: despre JTAG, stergerea flash-ului, tehnologii de flash, el de fapt este pe 1 si cand scriem se duce pe 0
 TODO: memory map, cum sta bootloader-ul si aplicatia guest in memorie
 TODO: explica zonele de memorie, scriptul .ld
 
 TODO: encryptie end-to-end
-TODO: AES "constant -time" comparison și implemenatre fara tabele (meorie vs viteza)
-TODO: aes block vs stream
 TODO: relativ la cheile de criptare, spune cum vor fi ele scrise
-
 
 TODO: sectiune: cum functioneaza (la nivel de utilizator) bootloader-ul, bundler-ul si flasher-ul
 TODO: arhitectura bootloader-ului UML + cod
