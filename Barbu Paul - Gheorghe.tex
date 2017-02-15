@@ -506,13 +506,13 @@ Listingul \ref{aesBench} prezintă modul de lucru bazat pe blocuri al algoritmul
 %TODO:spatiu: daca trebuie explic pe alrg apelurile mbedtls, cu parametrii lor
 
 \subsection{Evitarea atacurilor de timp asupra algoritmului de decriptare}
-În timp ce criptarea și decriptarea se face de către biblioteca mbedTLS, verificarea autenticității datelor este o sarcină care îi revine bootloader-ului. Conform cu cele prezentate în capitolul anterior bootloader-ului îi va fi trimis tag-ul generat la criptare, iar acesta trebuie să îl compare cu tag-ul generat în urma decriptării. Dacă cele doua tag-uri sunt identice, însemnă că datele nu au fost modificate de un atacator sau de o infrastructura defectuoasă și putem considera că sunt într-adevăr copia exacta a ceea ce a trimis dezvoltatorul.
+În timp ce criptarea și decriptarea se face de către biblioteca mbedTLS, verificarea autenticității datelor este o sarcină care îi revine bootloader-ului. Conform cu cele prezentate în capitolul anterior bootloader-ului îi va fi trimis tag-ul generat la criptare, iar acesta trebuie să îl compare cu tag-ul generat în urma decriptării. Dacă cele două tag-uri sunt identice, însemnă că datele nu au fost modificate de un atacator sau de o infrastructură defectuoasă și putem considera că sunt într-adevăr copia exactă a ceea ce a trimis dezvoltatorul.
 
 În timp ce biblioteca de criptare, în detaliile sale de implementare trebuie să se asigure că este protejată împotriva unei game largi de atacuri, noi în exteriorul bibliotecii trebuie să ne asigurăm că păstrăm protecțiile intacte. Singurul lucru legat de criptare care se face explicit în afara bibliotecii este comparația de tag-uri despre care am spus mai devreme.
 
 Dacă pornim de la premiza că un atacator dorește să afle cheia de criptare și că poate măsura diferența de timp între compararea unui tag generat de anumite date criptate și a altui tag, generat de un set diferit de date criptate, atunci atacatorul poate încerca să decripteze diverse seturi de date (criptate cu chei diferite) până când timpul de comparare al tag-ului va crește. Creșterea timpului semnificând că o parte mai mare din tag-ul obținut în urma decriptării se potrivește cu tag-ul creat în urma criptării datelor de către atacator. Acest lucru semnifică mai departe faptul că cheia de criptare încercată de atacator se potrivește cu cea a bootloader-ului \cite{timingAttack}. Bine-înțeles că nu ne dorim să lăsăm posibilitatea de a avea loc asemenea atacuri.
 
-Un program care compară două șiruri de elemente de aceeași lungime (fie șirul \texttt{a} și șirul \texttt{b}, de lungimea \texttt{n}), program care ar permite deducerea succesului sau eșecului comparației bazându-se pe diferența de timp între pornirea comparației și finalul ei este prezentat în listing-ul \ref{timingNOTOK}.
+Un program care compară două șiruri de elemente de aceeași lungime (fie șirul \texttt{a} și șirul \texttt{b}, de lungimea \texttt{n}), program care ar permite deducerea succesului sau eșecului comparației bazându-se pe diferența de timp între pornirea comparației și finalul ei, este prezentat în listing-ul \ref{timingNOTOK}.
 
 \begin{listing}[h]
 \begin{minted}{c}
@@ -532,7 +532,7 @@ for(int i=0; i<n; i++)
 \label{timingNOTOK}
 \end{listing}
 
-Observăm că la prima diferență între elementele celor două șiruri comparația se oprește, dacă cele două șiruri sunt suficient de lungi, atunci o diferență la începutul lor se va materializa într-un timp scurt de rulare, pe când o diferență aflată la finalul șirurilor se va materializa într-un timp mai lung de rulare.
+Observăm că la primul element diferit din cele două șiruri comparația se oprește, dacă cele două șiruri sunt suficient de lungi, atunci o diferență la începutul lor se va materializa într-un timp scurt de rulare, pe când o diferență aflată la finalul șirurilor se va materializa într-un timp mai lung de rulare.
 
 Deși mai costisitoare din punct de vedere al timpului, soluția este să executăm procedura de comparare a celor două șiruri în timp constant.
 Timpul constant se referă aici la timpul de comparație a două șiruri de aceeași lungime, dar cu conținut posibil diferit. Faptul că șirurile conțin elemente diferite sau egale nu ar trebui să aibă niciun impact asupra timpului de rulare al algoritmului.
@@ -554,11 +554,13 @@ bool equal = (aux == 0);
 \label{timingOK}
 \end{listing}
 
-Listing-ul \ref{timingOK} împrumută concepte din hardware, în ideea în care comparația este făcută asemeni unei implementări hardware a unui comparator. Fiecărei perechi de elemente din cele două șiruri îi este aplicat operatorul XOR, iar rezultatul este acumulat într-o variabilă auxiliară, dacă la finalul șirurilor această variabilă auxiliară are valoarea zero atunci șirurile sunt egale, altfel sunt diferite. Algoritmul se bazează în primul rând pe faptul că ambele șiruri sunt parcurse în întregimea lor, indiferent de rezultatul până în momentul curent, iar în al doilea rând se bazează pe faptul că operatorul XOR va fi transformat de către compilator (făcând abstracție de eventualele optimizări) într-o instrucțiune XOR și apoi procesorul va folosi într-adevăr o poartă logică XOR, lucru pe care nu îl putem garanta pentru operatorul \texttt{==} (de egalitate).
+Listing-ul \ref{timingOK} împrumută concepte din hardware, în ideea în care comparația este făcută asemeni unei implementări hardware a unui comparator. Fiecărei perechi de elemente din cele două șiruri îi este aplicat operatorul XOR, iar rezultatul este acumulat într-o variabilă auxiliară, dacă la finalul șirurilor această variabilă auxiliară are valoarea zero atunci șirurile sunt egale, altfel sunt diferite. Algoritmul se bazează în primul rând pe faptul că ambele șiruri sunt parcurse în întregimea lor, indiferent de rezultatul până în momentul curent, iar în al doilea rând se bazează pe faptul că operatorul XOR va fi transformat de către compilator (făcând abstracție de eventualele optimizări) într-o instrucțiune de asamblare XOR și apoi procesorul va folosi într-adevăr o poartă logică XOR, lucru pe care nu îl putem garanta pentru operatorul \texttt{==} (de egalitate).
 
-TODO: AES implemenatre fara tabele (memorie vs viteza)
+Atacurile de acest gen, pe lângă faptul că sunt greu de realizat din cauza măsurătorilor care trebuie efectuate cât mai exact, sunt influențate și de alți factori, cum ar fi latențele liniilor pe care se comunică anumite date și conținutul cache-urilor, diminuându-le astfel importanța. Totuși un sistem este la fel de puternic ca cea mai slabă verigă din componența sa, iar soluția prevenirii acestor atacuri este extrem de simplă, ne-introducând niciun fel de neajunsuri. De aceea ea a fost implementată în bootloader. %TODO: la modulul de crypto spune despre asta!
 
-%TODO: AES + size, memory map + size + printf, user guide & features, architecture
+%TODO: ??? AES implemenatre fara tabele (memorie vs viteza)
+
+%TODO: memory map + size + printf, user guide & features, architecture
 
 \section{Încărcarea unei aplicații pe microcontroller}
 Procesul rulării unei aplicații pe microcontroller este în mare parte diferit față de rularea unei aplicații pe un desktop, unde rulează deja un sistem de operare. Lucrul acesta se datorează faptului că aplicația trebuie cumva încărcată pe microcontroller. Așa cum am prezentat în capitolul anterior, procesul de flashing pe microcontroller este dependent de un adaptor hardware.
