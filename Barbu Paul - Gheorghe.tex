@@ -556,11 +556,8 @@ bool equal = (aux == 0);
 
 Listing-ul \ref{timingOK} împrumută concepte din hardware, în ideea în care comparația este făcută asemeni unei implementări hardware a unui comparator. Fiecărei perechi de elemente din cele două șiruri îi este aplicat operatorul XOR, iar rezultatul este acumulat într-o variabilă auxiliară, dacă la finalul șirurilor această variabilă auxiliară are valoarea zero atunci șirurile sunt egale, altfel sunt diferite. Algoritmul se bazează în primul rând pe faptul că ambele șiruri sunt parcurse în întregimea lor, indiferent de rezultatul până în momentul curent, iar în al doilea rând se bazează pe faptul că operatorul XOR va fi transformat de către compilator (făcând abstracție de eventualele optimizări) într-o instrucțiune de asamblare XOR și apoi procesorul va folosi într-adevăr o poartă logică XOR, lucru pe care nu îl putem garanta pentru operatorul \texttt{==} (de egalitate).
 
-Atacurile de acest gen, pe lângă faptul că sunt greu de realizat din cauza măsurătorilor care trebuie efectuate cât mai exact, sunt influențate și de alți factori, cum ar fi latențele liniilor pe care se comunică anumite date și conținutul cache-urilor, diminuându-le astfel importanța. Totuși un sistem este la fel de puternic ca cea mai slabă verigă din componența sa, iar soluția prevenirii acestor atacuri este extrem de simplă, ne-introducând niciun fel de neajunsuri. De aceea ea a fost implementată în bootloader. %TODO: la modulul de crypto spune despre asta!
-
-%TODO: ??? AES implemenatre fara tabele (memorie vs viteza)
-
-%TODO: memory map + size + printf, user guide & features, architecture
+Atacurile de acest gen, pe lângă faptul că sunt greu de realizat din cauza măsurătorilor care trebuie efectuate cât mai exact, sunt influențate și de alți factori, cum ar fi latențele liniilor pe care se comunică anumite date și conținutul cache-urilor, diminuându-le astfel importanța. Totuși un sistem este la fel de puternic ca cea mai slabă verigă din componența sa, iar soluția prevenirii acestor atacuri este extrem de simplă, ne-introducând niciun fel de neajunsuri. De aceea ea a fost implementată în bootloader.
+%TODO: la modulul de crypto spune despre asta facand referire aici (chiar la listing-ul timingOK)!
 
 \section{Încărcarea unei aplicații pe microcontroller}
 Procesul rulării unei aplicații pe microcontroller este în mare parte diferit față de rularea unei aplicații pe un desktop, unde rulează deja un sistem de operare. Lucrul acesta se datorează faptului că aplicația trebuie cumva încărcată pe microcontroller. Așa cum am prezentat în capitolul anterior, procesul de flashing pe microcontroller este dependent de un adaptor hardware.
@@ -571,25 +568,53 @@ Inițial codul programului este compilat pe calculatorul dezvoltatorului, având
 
 Scrierea în memoria flash a aplicației în general duce la suprascrierea întregii memorii. Această scriere se face în conformitate cu un memory map\footnote{hartă de memorie}. Harta de memorie este gestionată de linker, el definind adresele variabilelor și ale funcțiilor în urma procesului de compilare cu ajutorul acestui memory map.
 
-Deoarece bootloader-ul, pentru a fi util, trebuie să acomodeze și spațiu pentru aplicația pe care acesta o va rula. Așadar se impune o limitare a spațiului ocupat de bootloader, pentru a păstra și spațiu neocupat, rezervat aplicațiilor care vor fi încărcate dinamic de către bootloader.
+Bootloader-ul, pentru a fi util, trebuie să rezerve spațiu în memoria flash pentru aplicația pe care acesta o va încărca și rula. Așadar se impune o limitare a spațiului ocupat de bootloader, pentru a păstra și spațiu neocupat, rezervat aplicațiilor care vor fi încărcate dinamic de către bootloader.
 
-\section{Memory map-ul bootloader-ului și spațiul revendicat de acesta}
+\section{Memory map-ul și spațiul revendicat de bootloader}
+
+Selecția bibliotecii externe folosite la criptarea și decriptarea datelor a fost făcută deja având în vedere considerentele de mărime ale codului executabil generat. Tot ce trebuie să facem este să delimităm clar zona de memorie rezervată bootloader-ului și cea rezervată aplicației.
+
+\subsection{Linker-ul și scriptul de linking}
+
+În urma compilării unei unități de cod (combinația fișierului header \texttt{.h} și a sursei din fișierul \texttt{.c}) se generează fișierele obiect, cu extensia \texttt{.o}. Aceste fișiere nu pot fi executate de către un procesor direct, lor le lipsesc implementările din funcțiile bibliotecii standard de C, care se află în sistem, parte a compilatorului și implementările celorlalte funcții din program, care se află în alte fișiere obiect. Responsabilitatea linker-ului este de a aduce toate aceste implementări împreună, de a da o anumită adresă funcțiilor și variabilelor și de a se asigura ca nicio implementare a niciunei funcții nu lipsește.
+
+Pentru ca fiecare funcție și variabilă din cod să primească o adresă, linker-ul folosește un script de linking pentru a ști în ce zone este împărțit codul și ce mărime au aceste zone.
+
+TODO: despre zone, in mare, BSS, const, text, data, etc, ram
+TODO: arata exemplu default de .ld si explica-l
+TODO: arata exemplu .ld modificat cu marimea bootloader-ului
+TODO: spune ca aceasta marime a variat si ea s-a asezat doar dupa ce codul s-a stabilizat
+
+TODO: schema cu memoria, dreptunghi.
+TODO: relativ la cheile de criptare, spune cum vor fi ele scrise si de ce necesita o zona separata de memorie
+
 TODO: %https://mcuoneclipse.com/2013/04/19/why-i-dont-like-printf/
-
 TODO: %size_comp_debug_release.ods
 
 TODO: despre cum se scrie codul in lumea embedded, fara bootloader prima data (flashuirea din fabrica)
 
 TODO: despre JTAG, stergerea flash-ului, tehnologii de flash, el de fapt este pe 1 si cand scriem se duce pe 0
 TODO: memory map, cum sta bootloader-ul si aplicatia guest in memorie
-TODO: explica zonele de memorie, scriptul .ld
 
 TODO: encryptie end-to-end
-TODO: relativ la cheile de criptare, spune cum vor fi ele scrise
 
+
+
+
+%TODO: memory map + size + printf, user guide & features, architecture
+% ---- 
 TODO: sectiune: cum functioneaza (la nivel de utilizator) bootloader-ul, bundler-ul si flasher-ul
+TODO: formatul cheilor
+TODO: formatul .fw
+TODO: protocolul folosit de bootloader-flasher (diagrame de mesaje)
+
 TODO: arhitectura bootloader-ului UML + cod
 TODO: arhitectura flasher si bundler si cum share-uiesc ele codul (e reutilizabil!) UML + cod
+
+
+%----
+
+%TODO: ??? AES implemenatre fara tabele (memorie vs viteza)
 
 
 \section{Concluzii și dezvoltări ulterioare}
