@@ -87,7 +87,7 @@ nu ar trebui să poată fi făcută de oricine țin în mică parte de protejare
 
 În afară de îmbunătățirea securității unui sistem embedded precum a fost descris mai sus, rolul bootloader-ului ar trebui să fie și de a mări flexibilitatea unui astfel de sistem. Acest rol este îndeplinit prin faptul că aplicația utilizator de pe microcontroller poate fi schimbată fără modificări hardware asupra sistemului. Schimbarea aplicației utilizator poate surveni din diverse motive, printre care: dezvoltatorul sistemului embedded hotărăște că este timpul să introducă funcționalități noi în aplicație sau că aplicația veche are unele defecte (bug-uri) care trebuie reparate sau chiar că sistemul embedded care înainte îndeplinea un rol trebuie să îndeplinească un rol complet nou, diferit față de cel vechi. Toate aceste scenarii implică folosirea bootloader-ului pre-instalat pe un dispozitiv pentru a încărca o altă aplicație (fie că e una complet nouă sau doar puțin modificată datorită remedierii defectelor din versiunea anterioară).
 
-Bootloader-ul dezvoltat ar trebui să ne permită de asemenea reducerea costurilor. Prin costuri putem să considerăm de exemplu costurile survenite în urma livrării unui sistem embedded. Prin definiție mecanismele interne ale unui astfel de sistem nu sunt accesibile consumatorilor, deci orice modificare, fie ea chiar și software trebuie să fie făcută de producător. Așadar dispozitivul trebuie să fie livrat la producător, acesta aplică modificările și livrează înapoi dispozitivul clientului. Prin intermediul bootloader-ului ne propunem să putem face aceste modificări software la distanță. În esență aceste modificări se vor putea face independent de către fiecare utilizator al sistemului.
+Bootloader-ul dezvoltat ar trebui să ne permită de asemenea reducerea costurilor. Prin costuri putem să considerăm de exemplu costurile survenite în urma livrării unui sistem embedded. Prin definiție mecanismele interne ale unui astfel de sistem nu sunt accesibile consumatorilor, deci orice modificare, fie ea chiar și software trebuie să fie făcută de producător. Așadar dispozitivul trebuie să fie livrat la producător, acesta aplică modificările și livrează înapoi dispozitivul clientului. Prin intermediul bootloader-ului ne propunem să putem face aceste modificări software la distanță. În esență aceste modificări se vor putea face independent, de către fiecare utilizator al sistemului.
 
 Succint cerințele pe care trebuie să le satisfacă bootloader-ul sunt:
 \begin{itemize}
@@ -679,8 +679,20 @@ După cum am văzut mai sus orice aplicație scrisă pentru a fi încărcată de
 % https://mcuoneclipse.com/2013/04/19/why-i-dont-like-printf/
 
 \section{Modul de utilizare al bootloader-ului}
-TODO: flashuirea fara bootloader si cea cu bootloader
-TODO: sectiune: cum functioneaza (la nivel de utilizator) bootloader-ul, bundler-ul si flasher-ul
+
+Înainte de a arăta cum anume funcționează bootloader-ul din punct de vedere al utilizatorului, al clientului vom re-itera cum funcționează procesul de încărcare a unei aplicații pe un microcontroller fără bootloader.
+
+Fiecare producător de microcontroller oferă modul lor proprietar de a încărca o aplicație în memoria flash a microcontroller-ului. Din punct de vedere software toate aceste metode au în comun faptul că memoria flash este în întregime ștearsă înaintea încărcării noii aplicații. Dispozitivele hardware cu care cu care se face această încărcare, numite și programatoare sau adaptoare de depanare (debugging adaptors) sunt cele care diferă. Așa cum a fost prezentat în capitolul trecut, aceste programatoare, pentru a efectua încărcarea sau flash-uirea aplicației pe microcontroller se conectează la sistemul desktop prin USB\footnote{Universal Serial Bus}, iar la sistemul embedded se conectează prin intermediul unei mufe proprietară producătorilor de microprocesoare \cite{ulinkConnections}. Multe dintre aceste programatoare se bazează pe standardul JTAG. Acest lucru ducând la îmbunătățirea situației din punct de vedere al standardizării.
+
+Totuși rămâne în discuție problema dispozitivelor hardware cu care se face programarea microcontroller-e. O dată ce microcontroller-ele au fost livrate clienților, ele nu pot fi re-programate în lipsa adaptoarelor de debug și a aplicațiilor software care le acompaniază și care trebuie licențiate. Așa cum ne-am propus la începutul acestei lucrări, bootloader-ul dezvoltat aici are rolul de a reduce aceste costuri. Modul în care se realizează acest lucru este prin încărcarea bootloader-ului pe microcontroller (prin programarea clasică, descrisă până acum) înainte de a-l trimite clientului.
+
+Îndată ce avem bootloader-ul încărcat pe microcontroller procesul de încărcare al aplicației se simplifică, în sensul în care bootloader-ul va folosi comunicația serială (bazată pe standardul RS232) pentru a încărca o aplicație.
+Acest lucru are efect atât pe partea software, cât și pe cea hardware. Partea hardware este simplificată deoarece acum este nevoie doar de un cablu serial generic, nu de un adaptor specific unui producător. Pentru a putea comunica de pe un calculator personal cu bootloader-ul, care se află pe microcontroller, avem nevoie și de software-ul care trimite aplicația ce va fi încărcată și apoi rulată. Această aplicație este una simplă, de transmisie a unor date pe portul serial al calculatorului. Acest utilitar va fi denumit sugestiv "Flasher", de la "flashing", reprezentând operația de încărcare a unei aplicații în memoria flash. Protocolul de comunicație folosit de Flasher și de bootloader va fi descris într-o secțiune următoare.
+
+Înainte să putem trimite o aplicație spre microcontroller trebuie să avem în vedere că pe lângă aplicația în sine ...
+TODO: trebuie criptata + IV + TAG -> format de fisier -> bundler
+
+TODO: sectiune: cum functioneaza (la nivel de utilizator)  bundler-ul , bootloader-ul,si flasher-ul
 TODO: formatul cheilor
 TODO: formatul .fw
 TODO: protocolul folosit de bootloader-flasher (diagrame de mesaje)
