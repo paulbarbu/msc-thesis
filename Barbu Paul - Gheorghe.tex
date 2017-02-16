@@ -687,12 +687,14 @@ Fiecare producător de microcontroller oferă modul lor proprietar de a încărc
 Totuși rămâne în discuție problema dispozitivelor hardware cu care se face programarea microcontroller-e. O dată ce microcontroller-ele au fost livrate clienților, ele nu pot fi re-programate în lipsa adaptoarelor de debug și a aplicațiilor software care le acompaniază și care trebuie licențiate. Așa cum ne-am propus la începutul acestei lucrări, bootloader-ul dezvoltat aici are rolul de a reduce aceste costuri. Modul în care se realizează acest lucru este prin încărcarea bootloader-ului pe microcontroller (prin programarea clasică, descrisă până acum) înainte de a-l trimite clientului.
 
 Îndată ce avem bootloader-ul încărcat pe microcontroller procesul de încărcare al aplicației se simplifică, în sensul în care bootloader-ul va folosi comunicația serială (bazată pe standardul RS232) pentru a încărca o aplicație.
-Acest lucru are efect atât pe partea software, cât și pe cea hardware. Partea hardware este simplificată deoarece acum este nevoie doar de un cablu serial generic, nu de un adaptor specific unui producător. Pentru a putea comunica de pe un calculator personal cu bootloader-ul, care se află pe microcontroller, avem nevoie și de software-ul care trimite aplicația ce va fi încărcată și apoi rulată. Această aplicație este una simplă, de transmisie a unor date pe portul serial al calculatorului. Acest utilitar va fi denumit sugestiv "Flasher", de la "flashing", reprezentând operația de încărcare a unei aplicații în memoria flash. Protocolul de comunicație folosit de Flasher și de bootloader va fi descris într-o secțiune următoare.
+Acest lucru are efect atât pe partea software, cât și pe cea hardware. Partea hardware este simplificată deoarece acum este nevoie doar de un cablu serial generic, nu de un adaptor specific unui producător. Pentru a putea comunica de pe un calculator personal cu bootloader-ul, care se află pe microcontroller, avem nevoie și de software-ul care trimite aplicația ce va fi încărcată și apoi rulată. Această aplicație este una simplă, de transmisie a unor date pe portul serial al calculatorului. Acest utilitar va fi denumit sugestiv "Flasher", de la "flashing", reprezentând operația de încărcare a unei aplicații în memoria flash și va fi dezvoltat drept software auxiliar în cadrul acestei lucrări. Flasher-ul va fi pus la dispoziția clientului, în final scopul este ca utilizatorul să poată încărca singur o aplicație pe sistemul embedded, acest lucru presupune comunicația PC-ului cu bootloader-ul de pe microcontroller, lucru făcut posibil de Flasher. Protocolul de comunicație folosit de Flasher și de bootloader va fi descris într-o secțiune următoare.
 
-Înainte să putem trimite o aplicație spre microcontroller trebuie să avem în vedere că pe lângă aplicația în sine ...
+Înainte să putem trimite o aplicație spre microcontroller folosind Flasher-ul, trebuie să avem în vedere că pe lângă aplicația în sine ...
 TODO: trebuie criptata + IV + TAG -> format de fisier -> bundler
 
-TODO: sectiune: cum functioneaza (la nivel de utilizator)  bundler-ul , bootloader-ul,si flasher-ul
+
+TODO: reitereaza ce are clientul (flasher + app criptata), ce face dezvoltatorul (flash bootloader, bundle app), ce face clientul (run flasher), si ce se intampla la final (bootloader + app)
+TODO: sectiune: cum functioneaza si cum se foloseste (la nivel de utilizator)  bundler-ul , bootloader-ul (jumper),si flasher-ul
 TODO: formatul cheilor
 TODO: formatul .fw
 TODO: protocolul folosit de bootloader-flasher (diagrame de mesaje)
@@ -705,6 +707,8 @@ TODO: arhitectura flasher si bundler si cum share-uiesc ele codul (e reutilizabi
 \section{Concluzii și dezvoltări ulterioare}
 TODO: alegerea unei aplicatii dintre mai multe
 TODO: evitarea folosirii unui script de linker pentru aplicatiile utilizator
+TODO: mesaje mai bune din bundler/flasher
+TODO: indicatie pe microcontroller ca bootloader-ul ruleaza!
 
 \newpage
 \bibliographystyle{plain}
