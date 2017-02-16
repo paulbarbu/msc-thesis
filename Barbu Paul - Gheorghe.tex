@@ -568,7 +568,7 @@ Inițial codul programului este compilat pe calculatorul dezvoltatorului, având
 
 Scrierea în memoria flash a aplicației în general duce la suprascrierea întregii memorii. Această scriere se face în conformitate cu un memory map\footnote{hartă de memorie}. Harta de memorie este gestionată de linker, el definind adresele variabilelor și ale funcțiilor în urma procesului de compilare cu ajutorul acestui memory map.
 
-Bootloader-ul, pentru a fi util, trebuie să rezerve spațiu în memoria flash pentru aplicația pe care acesta o va încărca și rula. Așadar se impune o limitare a spațiului ocupat de bootloader, pentru a păstra și spațiu neocupat, rezervat aplicațiilor care vor fi încărcate dinamic de către bootloader.
+Bootloader-ul, pentru a fi util, trebuie să rezerve spațiu în memoria flash pentru aplicația pe care acesta o va încărca și rula. Așadar se impune o limitare a spațiului ocupat de bootloader, pentru a păstra și spațiu liber, rezervat aplicației care va fi încărcată dinamic de către bootloader.
 
 \section{Memory map-ul și spațiul revendicat de bootloader}
 
@@ -583,23 +583,22 @@ Pentru ca fiecare funcție și variabilă din cod să primească o adresă, link
 Așadar cele mai importante secțiuni ale unui executabil în formatul ELF sunt:
 \begin{itemize}
 \item \textbf{text}: Această zonă stochează codul executabil al programului, instrucțiunile care vor fi citite și rulate de către procesor. Orice linie nouă de cod care va produce cod va fi adăugată în final acestei secțiuni a executabilului. De asemenea această secțiune va stoca și orice constantă scrisă în cod. Secțiunea \texttt{text} va revendica exclusiv spațiu în memoria flash a microcontroller-ului.
-\item \textbf{data}: Orice variabilă inițializată va ajunge în această secțiune, aici găsindu-se toate variabilele care o au valoare inițială. Secțiunea \texttt{data} revendică spațiu atât în memoria flash, cât și in RAM, deoarece valorile inițiale ale variabilelor sunt stocate în executabil, deci în memoria flash, iar aceste variabile trebuie să poată fi accesate și la run-time, deci vor revendica și memorie RAM.
-\item \textbf{bss}: Ultima secțiune importantă, ea conține spațiu neinițializat alocat de compilator și linker pentru variabilele declarate în cod, dar care nu au fost și definite, urmând să primească valori la rulare. Din acest motiv secțiunea \texttt{bss} revendică doar memorie RAM, neexistând date constante care ar trebui stocate în executabil.
+\item \textbf{data}: Orice variabilă inițializată va ajunge în această secțiune, aici găsindu-se toate variabilele care o au valoare inițială. Secțiunea \texttt{data} revendică spațiu atât în memoria flash, cât și în RAM, deoarece valorile inițiale ale variabilelor sunt stocate în executabil, deci în memoria flash, iar aceste variabile trebuie să poată fi accesate și la run-time, deci vor revendica și memorie RAM.
+\item \textbf{bss}: Ultima secțiune importantă, ea conține spațiu neinițializat, alocat de compilator și linker pentru variabilele declarate în cod, dar care nu au fost și definite, urmând să primească valori la rulare. Din acest motiv secțiunea \texttt{bss} revendică doar memorie RAM, neexistând date constante care ar trebui stocate în executabil.
 \end{itemize}
 
-În afară de aceste trei secțiuni există și altele, cum ar fi \texttt{rodata} sau \texttt{debug}, dar pe acestea trei le consider cele mai importante deoarece orice executabil o să le conțină, chiar dacă în funcție de formatul folosit sau de linker, ele vor apărea sub alte nume, numele prezentate anterior fiind specifice utilitarelor din suita GNU. De exemplu mediul de lucru Keil va denumi secțiunea \texttt{text} drept \texttt{code}, secțiunea \texttt{data} va primi numele de \texttt{RW-data}, iar secțiunea \texttt{bss} va fi denumită \texttt{ZI-data}, dar scopul acestora se va păstra.
+În afară de aceste trei secțiuni există și altele, cum ar fi \texttt{rodata} sau \texttt{debug}, dar pe acestea trei le consider cele mai importante deoarece orice executabil o să le conțină, chiar dacă în funcție de formatul folosit sau de linker, ele vor apărea sub alte nume. Numele prezentate anterior sunt specifice utilitarelor din suita GNU. De exemplu mediul de lucru Keil va denumi secțiunea \texttt{text} drept \texttt{code}, secțiunea \texttt{data} va primi numele de \texttt{RW-data}, iar secțiunea \texttt{bss} va fi denumită \texttt{ZI-data}, dar scopul acestora se va păstra.
 
-Conform celor prezentate mai sus, primele două secțiuni, \texttt{text} și \texttt{data} vor contribui la mărimea executabilului pe disc. Însumând mărimea acestor două segmente rezultă mărimea totală a executabilului. Având în vedere că memoria flash a microcontroller-elor este limitată, linker-ul ne permite să specificăm atât mărimea segmentelor de cod și date cât și adresa locației din memoria flash unde dorim să le stocăm. Aceasta adresă reprezintă adresa de start a segmentului și ne va fi utilă pentru a specifica locația aplicației utilizator, care va fi încărcată de către bootloader pe microcontroller și care va trebui să ruleze de la o altă adresă față de cea standard.
+Conform celor prezentate mai sus, primele două secțiuni, \texttt{text} și \texttt{data} vor contribui la mărimea executabilului pe disc. Însumând mărimea acestor două segmente rezultă mărimea totală a executabilului. Având în vedere că memoria flash a microcontroller-elor este limitată, linker-ul ne permite să specificăm atât mărimea segmentelor de cod și date cât și adresa locației din memoria flash unde dorim să le stocăm. Această adresă reprezintă adresa de start a segmentului și ne va fi utilă pentru a specifica locația aplicației utilizator, care va fi încărcată de către bootloader pe microcontroller și care va trebui să ruleze de la o altă adresă față de cea standard. Adresa "standard" este în general prima adresă a memoriei flash. 
 
-Specificarea adreselor de start și mărimea lor se face în scriptul de linking, un fișier text cu extensia \texttt{.ld} pe care linker-ul îl citește și conform lui va seta adresele funcțiilor și ale variabilelor.
+Specificarea adreselor de start și mărimea lor se face în scriptul de linking, un fișier text cu extensia \texttt{.ld} pe care linker-ul îl citește și conform căruia va seta adresele funcțiilor și ale variabilelor.
 
-Partea relevantă a unui asemenea script este prezentată în listing-ul \ref{ldScript}.
+Partea relevantă a script-ului folosit de către bootloader este prezentată în listing-ul \ref{ldScript}.
 
 \begin{listing}[h]
 \begin{minted}{c}
 /* ... */
 
-/* Specify the memory areas */
 MEMORY
 {
   m_interrupts   (RX): ORIGIN = 0x10000000, LENGTH = 0x00000400
@@ -612,7 +611,7 @@ MEMORY
 /* ... */
 \end{minted}
 
-\caption{Fragmente dintr-un script de linker}
+\caption{Fragment din scriptul de linker al bootloader-ului}
 \label{ldScript}
 \end{listing}
 
@@ -626,7 +625,7 @@ Mărimea curentă a bootloader-ului, împărțită pe secțiunile executabilului
 \begin{minted}{bash}
 > arm-none-eabi-size --format=berkeley "bootloader.elf"
 text  data  bss    dec    hex   filename
-24500  112   11724  36336  8df0  bootloader.elf
+24500 112   11724  36336  8df0  bootloader.elf
 \end{minted}
 
 \caption{Mărimea secțiunilor bootloader-ului}
@@ -637,7 +636,7 @@ Prin însumarea secțiunii \texttt{text} și \texttt{data} concluzionăm că boo
 
 După alocarea spațiului pentru bootloader și implicit pentru aplicație, mai trebuie totuși să rezervăm spațiu și pentru cheile de criptare. Având în vedere că algoritmul ales pentru criptare și decriptare este AES-128, va trebui să rezervăm minimum 16 octeți (128 biți) pentru cheia de criptare.
 
-Bootloader-ul, după cum am descris la început, este gândit să fie flexibil, acest lucru implică și schimbarea cheii de criptare în caz că aceasta este compromisă. În cazul memoriilor flash suprascrierea datelor se face din perechea de operații ștergere, urmată de scriere. Datorită unor limitări hardware ale memoriei flash, ea poate fi ștearsă doar în bucăți egale cu mărimea unui segment. De aceea va trebui să alocăm un segment întreg pentru cheia de criptare. Microcontroller-ul nostru are mărimea segmentului de opt kilo-octeți \cite{kv5x}, suficient spațiu pentru mai multe chei de criptare.
+Bootloader-ul, după cum am descris la început, este gândit să fie flexibil, acest lucru implică și schimbarea cheii de criptare în caz că aceasta este compromisă. În cazul memoriilor flash suprascrierea datelor se face din perechea de operații ștergere, urmată de scriere. Datorită unor limitări hardware ale memoriei flash, ea poate fi ștearsă doar în bucăți egale cu mărimea unui segment \cite{kv5x}. De aceea va trebui să alocăm un segment întreg pentru cheia de criptare. Microcontroller-ul nostru are mărimea segmentului de opt kilo-octeți \cite{kv5x}, suficient spațiu pentru mai multe chei de criptare.
 
 Spațiul de 8 KB va fi plasat în continuarea bootloader-ului, deci începând cu adresa \texttt{0x8000}, aceasta fiind limita până la care poate ajunge bootloader-ul. Așadar spațiul total ocupat de bootloader și cel auxiliar, rezervat pentru cheile de criptare, este de 40 KB. Aplicația utilizator trebuie să înceapă deci la adresa 0xA000 față de începutul memoriei flash a microcontroller-lui, acest offset poate fi observat în listing-ul \ref{ldAppScript}.
 
@@ -645,7 +644,6 @@ Spațiul de 8 KB va fi plasat în continuarea bootloader-ului, deci începând c
 \begin{minted}{c}
 /* ... */
 
-/* Specify the memory areas */
 MEMORY
 {
   m_interrupts   (RX): ORIGIN = 0x1000a000, LENGTH = 0x00000400
@@ -662,32 +660,39 @@ MEMORY
 \label{ldAppScript}
 \end{listing}
 
-Se observă din acest script de linker că toate secțiunile care conțin cod executabil (RX) sunt mutate cu 0xA000 față de începutul memoriei flash, aflat la adresa 0x10000000. De asemenea, pentru a preveni aplicația din a ocupa mai mult spațiu decât este posibil, am micșorat și mărimea secțiunii \texttt{m\_text} ca să luăm în calcul spațiul ocupat de bootloader și cheile de criptare. Din păcate nu există un mecanism automat de a face acest lucru pentru orice aplicație pe care bootloader-ul o va întâlni, acest script va trebui folosit de fiecare dezvoltator de aplicație în parte. Datorită faptului că bootloader-ul accepta doar aplicații criptate cu o anumita cheie, nu văd acest lucru ca pe o problemă pentru că un dezvoltator o dată ce a scris o aplicație corecta pentru bootloader, doar el o poate înlocui, doar el fiind în posesia cheii de criptare.
+Se observă din acest script de linker că toate secțiunile care conțin cod executabil (marcate cu RX) sunt mutate cu 0xA000 față de începutul memoriei flash, aflat la adresa 0x10000000. De asemenea, pentru a preveni aplicația din a ocupa mai mult spațiu decât este posibil, am micșorat și mărimea secțiunii \texttt{m\_text} ca să luăm în calcul spațiul ocupat de bootloader și cheile de criptare. Din fericire dacă o secțiune depășește spațiul care îi este alocat, linker-ul va da o eroare indicând acest lucru. Eroarea poate fi cauzată de o greșeală de scriere sau de calcul în scriptul \texttt{.ld}, caz în care ea se repară ușor, dar poate fi de asemenea cauzată de faptul că secțiunea respectivă devine prea mare. De exemplu dacă programatorul scrie mai mult de 1 MB de cod sau scrie un program care în urma compilării generează mai mult de 1 MB de cod mașină. Evident că această problemă este mai greu de rezolvat, dar în același timp aceste constrângeri se cunosc înainte ca ciclul de dezvoltare să înceapă, ceea ce le face predictibile.
 
-În figura \ref{memMap} se poate vedea, grafic, cum este împărțită memoria între cele două entități care se află pe microcontoller, bootloader-ul (împreună cu cheile de securitate) și aplicația utilizator, cea care va fi încărcată de către bootloader. În partea stângă a figurii sunt notate adresele de memorie la care bootloader-ul, cheile de criptare și aplicația încep, iar în partea dreaptă se află dimensiunea lor maximă.
+După cum am văzut mai sus orice aplicație scrisă pentru a fi încărcată de bootloader-ul dezvoltat în cadrul acestei lucrări trebuie să folosească sau să modifice scriptul de linker pentru a schimba adresele de start ale secțiunilor. Din păcate nu există un mecanism automat de a face acest lucru pentru orice aplicație pe care bootloader-ul o va întâlni. Scriptul va trebui adaptat de către fiecare dezvoltator de aplicație în parte. Datorită faptului că bootloader-ul acceptă doar aplicații criptate cu o anumită cheie, nu văd acest lucru ca pe o problemă. O dată ce un dezvoltator a scris o aplicație corectă pentru bootloader, doar el o poate înlocui, doar el fiind în posesia cheii de criptare. Așadar nu există riscul încărcării unei aplicații invalide care ar putea duce la brick-uirea sistemului embedded.
+
+În figura \ref{memMap} se poate vedea, grafic, cum este împărțită memoria între cele două entități care se află pe microcontroller, bootloader-ul (împreună cu cheile de securitate) și aplicația utilizator, cea care va fi încărcată de către bootloader. În partea stângă a figurii, chiar dacă nu este desenată la scară, sunt notate adresele de memorie la care bootloader-ul, cheile de criptare și aplicația încep, iar în partea dreaptă se află dimensiunea lor maximă.
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.8\textwidth]{memory_map}
-    \caption{Memory map}
+    \caption{Memory map-ul aferent microprocesorului MKV58F1M0VLQ24}
     \label{memMap}
 \end{figure}
 
-%TODO: https://mcuoneclipse.com/2013/04/19/why-i-dont-like-printf/
+%TODO:size: daca imi mai trebuie text 
+% spune despre cum pot micsora marimea bootloaderului daca e necesar
+% si cum asta m-ar ajuta cu compatibilitatea aplicatiilor (sa nu le recompilez)
+% https://mcuoneclipse.com/2013/04/19/why-i-dont-like-printf/
 
+\section{Modul de utilizare al bootloader-ului}
 TODO: flashuirea fara bootloader si cea cu bootloader
 TODO: sectiune: cum functioneaza (la nivel de utilizator) bootloader-ul, bundler-ul si flasher-ul
 TODO: formatul cheilor
 TODO: formatul .fw
 TODO: protocolul folosit de bootloader-flasher (diagrame de mesaje)
 
-TODO: la Crypto și KeyManger spune ca ele ajuta la schimbarea cheilor și cum se poate face (vezi doc. SVN)
+TODO: la Crypto și KeyManger spune ca ele ajuta la schimbarea cheilor și cum se poate face (vezi doc. SVN + keychanger)
 
 TODO: arhitectura bootloader-ului UML + cod
 TODO: arhitectura flasher si bundler si cum share-uiesc ele codul (e reutilizabil!) UML + cod
 
 \section{Concluzii și dezvoltări ulterioare}
 TODO: alegerea unei aplicatii dintre mai multe
+TODO: evitarea folosirii unui script de linker pentru aplicatiile utilizator
 
 \newpage
 \bibliographystyle{plain}
