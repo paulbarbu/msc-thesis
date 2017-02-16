@@ -639,26 +639,43 @@ După alocarea spațiului pentru bootloader și implicit pentru aplicație, mai 
 
 Bootloader-ul, după cum am descris la început, este gândit să fie flexibil, acest lucru implică și schimbarea cheii de criptare în caz că aceasta este compromisă. În cazul memoriilor flash suprascrierea datelor se face din perechea de operații ștergere, urmată de scriere. Datorită unor limitări hardware ale memoriei flash, ea poate fi ștearsă doar în bucăți egale cu mărimea unui segment. De aceea va trebui să alocăm un segment întreg pentru cheia de criptare. Microcontroller-ul nostru are mărimea segmentului de opt kilo-octeți \cite{kv5x}, suficient spațiu pentru mai multe chei de criptare.
 
-Spațiul de 8 KB va fi plasat în continuarea bootloader-ului, deci începând cu adresa \texttt{0x8000}, aceasta fiind limita până la care poate ajunge bootloader-ul. Așadar spațiul total ocupat de bootloader și cel auxiliar, rezervat pentru cheile de criptare este de 40 KB.
+Spațiul de 8 KB va fi plasat în continuarea bootloader-ului, deci începând cu adresa \texttt{0x8000}, aceasta fiind limita până la care poate ajunge bootloader-ul. Așadar spațiul total ocupat de bootloader și cel auxiliar, rezervat pentru cheile de criptare, este de 40 KB. Aplicația utilizator trebuie să înceapă deci la adresa 0xA000 față de începutul memoriei flash a microcontroller-lui, acest offset poate fi observat în listing-ul \ref{ldAppScript}.
 
-TODO: scriptul aplicației, ca acolo se vede spațiul rezervat pt. chei
-TODO: schema cu memoria, tabel, vezi doc SVN.
+\begin{listing}[h]
+\begin{minted}{c}
+/* ... */
 
-TODO: %https://mcuoneclipse.com/2013/04/19/why-i-dont-like-printf/
-TODO: %size_comp_debug_release.ods
+/* Specify the memory areas */
+MEMORY
+{
+  m_interrupts   (RX): ORIGIN = 0x1000a000, LENGTH = 0x00000400
+  m_flash_config (RX): ORIGIN = 0x1000a400, LENGTH = 0x00000010
+  m_text         (RX): ORIGIN = 0x1000a410, LENGTH = (0x000FFBF0 - 0x8000)
+  m_data         (RW): ORIGIN = 0x20000000, LENGTH = 0x00020000
+  m_data_2       (RW): ORIGIN = 0x2F000000, LENGTH = 0x00010000
+}
 
-TODO: despre cum se scrie codul in lumea embedded, fara bootloader prima data (flashuirea din fabrica)
+/* ... */
+\end{minted}
 
-TODO: despre JTAG, stergerea flash-ului, tehnologii de flash, el de fapt este pe 1 si cand scriem se duce pe 0
-TODO: memory map, cum sta bootloader-ul si aplicatia guest in memorie
+\caption{Memory map-ul unei aplicații încărcate de bootloader}
+\label{ldAppScript}
+\end{listing}
 
-TODO: encryptie end-to-end
+Se observă din acest script de linker că toate secțiunile care conțin cod executabil (RX) sunt mutate cu 0xA000 față de începutul memoriei flash, aflat la adresa 0x10000000. De asemenea, pentru a preveni aplicația din a ocupa mai mult spațiu decât este posibil, am micșorat și mărimea secțiunii \texttt{m\_text} ca să luăm în calcul spațiul ocupat de bootloader și cheile de criptare. Din păcate nu există un mecanism automat de a face acest lucru pentru orice aplicație pe care bootloader-ul o va întâlni, acest script va trebui folosit de fiecare dezvoltator de aplicație în parte. Datorită faptului că bootloader-ul accepta doar aplicații criptate cu o anumita cheie, nu văd acest lucru ca pe o problemă pentru că un dezvoltator o dată ce a scris o aplicație corecta pentru bootloader, doar el o poate înlocui, doar el fiind în posesia cheii de criptare.
 
+În figura \ref{memMap} se poate vedea, grafic, cum este împărțită memoria între cele două entități care se află pe microcontoller, bootloader-ul (împreună cu cheile de securitate) și aplicația utilizator, cea care va fi încărcată de către bootloader. În partea stângă a figurii sunt notate adresele de memorie la care bootloader-ul, cheile de criptare și aplicația încep, iar în partea dreaptă se află dimensiunea lor maximă.
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{memory_map}
+    \caption{Memory map}
+    \label{memMap}
+\end{figure}
 
+%TODO: https://mcuoneclipse.com/2013/04/19/why-i-dont-like-printf/
 
-%TODO: memory map + size + printf, user guide & features, architecture
-% ---- 
+TODO: flashuirea fara bootloader si cea cu bootloader
 TODO: sectiune: cum functioneaza (la nivel de utilizator) bootloader-ul, bundler-ul si flasher-ul
 TODO: formatul cheilor
 TODO: formatul .fw
@@ -669,16 +686,8 @@ TODO: la Crypto și KeyManger spune ca ele ajuta la schimbarea cheilor și cum s
 TODO: arhitectura bootloader-ului UML + cod
 TODO: arhitectura flasher si bundler si cum share-uiesc ele codul (e reutilizabil!) UML + cod
 
-
-%----
-
-%TODO: ??? AES implemenatre fara tabele (memorie vs viteza)
-
-
 \section{Concluzii și dezvoltări ulterioare}
 TODO: alegerea unei aplicatii dintre mai multe
-TODO: scrie-ma
-
 
 \newpage
 \bibliographystyle{plain}
