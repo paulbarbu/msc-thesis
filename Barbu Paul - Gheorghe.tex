@@ -680,28 +680,53 @@ După cum am văzut mai sus orice aplicație scrisă pentru a fi încărcată de
 
 \section{Modul de utilizare al bootloader-ului}
 
-Înainte de a arăta cum anume funcționează bootloader-ul din punct de vedere al utilizatorului, al clientului vom re-itera cum funcționează procesul de încărcare a unei aplicații pe un microcontroller fără bootloader.
+Înainte de a arăta cum anume funcționează bootloader-ul din punct de vedere al utilizatorului vom re-itera cum funcționează procesul de încărcare a unei aplicații pe un microcontroller fără bootloader.
 
+\subsection{Încărcarea unei aplicații fără bootloader}
 Fiecare producător de microcontroller oferă modul lor proprietar de a încărca o aplicație în memoria flash a microcontroller-ului. Din punct de vedere software toate aceste metode au în comun faptul că memoria flash este în întregime ștearsă înaintea încărcării noii aplicații. Dispozitivele hardware cu care cu care se face această încărcare, numite și programatoare sau adaptoare de depanare (debugging adaptors) sunt cele care diferă. Așa cum a fost prezentat în capitolul trecut, aceste programatoare, pentru a efectua încărcarea sau flash-uirea aplicației pe microcontroller se conectează la sistemul desktop prin USB\footnote{Universal Serial Bus}, iar la sistemul embedded se conectează prin intermediul unei mufe proprietară producătorilor de microprocesoare \cite{ulinkConnections}. Multe dintre aceste programatoare se bazează pe standardul JTAG. Acest lucru ducând la îmbunătățirea situației din punct de vedere al standardizării.
 
 Totuși rămâne în discuție problema dispozitivelor hardware cu care se face programarea microcontroller-e. O dată ce microcontroller-ele au fost livrate clienților, ele nu pot fi re-programate în lipsa adaptoarelor de debug și a aplicațiilor software care le acompaniază și care trebuie licențiate. Așa cum ne-am propus la începutul acestei lucrări, bootloader-ul dezvoltat aici are rolul de a reduce aceste costuri. Modul în care se realizează acest lucru este prin încărcarea bootloader-ului pe microcontroller (prin programarea clasică, descrisă până acum) înainte de a-l trimite clientului.
 
+\subsection{Bootloader-ul și nevoia de utilitare auxiliare}
 Îndată ce avem bootloader-ul încărcat pe microcontroller procesul de încărcare al aplicației se simplifică, în sensul în care bootloader-ul va folosi comunicația serială (bazată pe standardul RS232) pentru a încărca o aplicație.
 Acest lucru are efect atât pe partea software, cât și pe cea hardware. Partea hardware este simplificată deoarece acum este nevoie doar de un cablu serial generic, nu de un adaptor specific unui producător. Pentru a putea comunica de pe un calculator personal cu bootloader-ul, care se află pe microcontroller, avem nevoie și de software-ul care trimite aplicația ce va fi încărcată și apoi rulată. Această aplicație este una simplă, de transmisie a unor date pe portul serial al calculatorului. Acest utilitar va fi denumit sugestiv "Flasher", de la "flashing", reprezentând operația de încărcare a unei aplicații în memoria flash și va fi dezvoltat drept software auxiliar în cadrul acestei lucrări. Flasher-ul va fi pus la dispoziția clientului, în final scopul este ca utilizatorul să poată încărca singur o aplicație pe sistemul embedded, acest lucru presupune comunicația PC-ului cu bootloader-ul de pe microcontroller, lucru făcut posibil de Flasher. Protocolul de comunicație folosit de Flasher și de bootloader va fi descris într-o secțiune următoare.
 
-Înainte să putem trimite o aplicație spre microcontroller folosind Flasher-ul, trebuie să avem în vedere că pe lângă aplicația în sine ...
-TODO: trebuie criptata + IV + TAG -> format de fisier -> bundler
+Înainte ca un client sa poată folosi Flasher-ul pentru a trimite o aplicație spre microcontroller, trebuie să avem în vedere că aplicația trebuie criptată și că pe lângă aplicație Flasher-ul trebuie să cunoască și vectorul de inițializare și tag-ul de autentificare, Două elemente necesare algoritmului de decriptare aplicat de bootloader în timp ce primește aplicația de la Flasher. Așadar clientul trebuie să ajungă și în posesia celor două elemente suplimentare, iar pentru a simplifica procedura de criptare și generare a acestor elemente, vom crea încă o aplicație auxiliară, pentru PC, care va fi responsabilă cu crearea unui singur fișier care conține cele trei elemente: vectorul de inițializare, tag-ul de autentificare și aplicația criptată.
+Utilitarul se va numi "Bundler", nume care vine de la verbul "to bundle", sugerând faptul că va crea un pachet unic din cele 3 componente distincte. Pachetul creat va purta numele de fișier firmware, iar acest fișier va fi folosit de către Flasher. Clientul nu va avea acces la Bundler, deoarece doar developer-ul trebuie să poată crea firmware-uri valide pentru un microcontroller. În schimb clientul va folosi Flasher-ul și firmware-ul pentru a re-programa sistemul embedded dotat cu bootloader-ul dezvoltat aici de ori de câte ori este nevoie. Formatul fișierului firmware va fi descris într-o secțiune viitoare.
 
+În concluzie, vor exista trei aplicații, Bundler-ul, Flasher-ul și bootloader-ul, toate trei având în comun fișierul firmware, care reprezintă de fapt aplicația care trebuie scrisă de către bootloader pe sistemul embedded. În cele ce urmează voi prezenta modul de lucru al acestor aplicații și al sistemului embedded.
 
-TODO: reitereaza ce are clientul (flasher + app criptata), ce face dezvoltatorul (flash bootloader, bundle app), ce face clientul (run flasher), si ce se intampla la final (bootloader + app)
+\subsection{Utilizarea practică a bootloader-ului}
+
+În urma comenzii unui sistem embedded, dezvoltatorul trebuie să creeze aplicația care va rula pe respectivul sistem și, înainte de a-l livra clientului, să încarce pe microcontroller bootloader-ul dezvoltat în cadrul acestei lucrări. Această încărcare se va face folosind tehnologiile clasice, și anume cu un programator hardware.
+
+Din acest moment sistemul embedded poate fi trimis clientului pentru a fi pus în funcțiune. Utilizatorul va primi de asemenea și utilitarul Flasher. Microcontroller-ul împreună cu bootloader-ul nu oferă prea multă funcționalitate, pentru aceasta este necesară aplicația care va fi scrisă pe microcontroller.
+
+Dezvoltatorul, folosind Bundler-ul, va împacheta aplicația cerută de client într-un fișier firmware și o va trimite clientului. Client-ul, având sistemul embedded și Flasher-ul va putea să pornească bootloader-ul pe microcontroller (prin setarea unui jumper sau apăsarea unui buton) și să trimită spre bootloader firmware-ul primit de la dezvoltator. Evident acest lucru presupune mai întâi conectarea cablului serial între calculator și microcontroller. Operația descrisă anterior poate fi repetată de câte ori este necesar, de exemplu de fiecare dată când dezvoltatorul îmbunătățește sau repară defecte ale aplicației de pe microcontroller. De fiecare dată clientul va trebui să pornească bootloader-ul pentru a încărca o aplicație și să o trimită cu Flasher-ul.
+
+La pornirea microcontroller-ului, bootloader-ul este primul care rulează, totuși acest lucru nu este întotdeauna evident deoarece dacă o aplicație validă este deja prezentă în memoria flash, acesta o va execută fără să aștepte alte input-uri. 
+Dacă în memoria flash nu există o aplicație validă, bootloader-ul va aștepta trimiterea unei astfel de aplicații pe portul serial. Așadar dacă avem deja o aplicație validă pe microcontroller și vrem să o schimbam (ca în cazul unui update) la pornirea bootloader-ului trebuie să apăsăm pe un buton pentru a indica bootloader-ului că vrem să îi trimitem date pe portul serial. Acest proces este similar cu procesul observat în cadrul bootloader-elor de la sistemele x86, de exemplu bootloader-ul GRUB alege o intrare din meniu, iar dacă nu se apasă niciun buton al tastaturii, această intrare va fi selectată automat.
+Singura diferență a bootloader-ului dezvoltat aici este că la apăsarea butonului nu se alege o altă aplicație existentă în memorie, ci se va declanșa înlocuirea ei.
+
+\subsection{Schimbarea cheilor de criptare}
+
+\section{Utilitarul Bundler}
 TODO: sectiune: cum functioneaza si cum se foloseste (la nivel de utilizator)  bundler-ul , bootloader-ul (jumper),si flasher-ul
+\section{Utilitarul Flasher}
+
+\section{Formatul fișierelor .key și .fw}
 TODO: formatul cheilor
 TODO: formatul .fw
+
+\section{Protocolul de comunicație serială}
 TODO: protocolul folosit de bootloader-flasher (diagrame de mesaje)
 
+\section{Architectura și codul bootloader-ului}
 TODO: la Crypto și KeyManger spune ca ele ajuta la schimbarea cheilor și cum se poate face (vezi doc. SVN + keychanger)
 
 TODO: arhitectura bootloader-ului UML + cod
+
+\section{Architectura și codul utilitarelor Flasher și Bundler}
 TODO: arhitectura flasher si bundler si cum share-uiesc ele codul (e reutilizabil!) UML + cod
 
 \section{Concluzii și dezvoltări ulterioare}
@@ -709,6 +734,7 @@ TODO: alegerea unei aplicatii dintre mai multe
 TODO: evitarea folosirii unui script de linker pentru aplicatiile utilizator
 TODO: mesaje mai bune din bundler/flasher
 TODO: indicatie pe microcontroller ca bootloader-ul ruleaza!
+TODO: management al cheilor via bundler
 
 \newpage
 \bibliographystyle{plain}
