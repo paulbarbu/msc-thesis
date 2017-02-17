@@ -709,8 +709,24 @@ Dacă în memoria flash nu există o aplicație validă, bootloader-ul va aștep
 Singura diferență a bootloader-ului dezvoltat aici este că la apăsarea butonului nu se alege o altă aplicație existentă în memorie, ci se va declanșa înlocuirea ei.
 
 \subsection{Schimbarea cheilor de criptare}
+Pentru a păstra flexibilitatea sistemului și securitatea acestuia, țeluri propuse la începutul lucrării, trebuie să avem în vedere și faptul că securitatea sistemului poate fi compromisă, iar dacă se întâmplă acest lucru avem nevoie de un plan de rezervă. Compromiterea sistemului, din punct de vedere al algoritmului de criptare și decriptare, poate avea loc dacă un atacator reușește să deducă cheia de criptare folosită de bootloader. Așa cum am prezentat anterior, citirea în mod direct de pe microcontroller, din memoria flash nu este posibilă deoarece bootloader-ul folosește funcționalitatea de securitate a flash-ului, împiedicând citirile de pe portul JTAG. Așadar un potențial atacator trebuie să creeze un atac mai complex asupra angrenajelor din sistem pentru a putea intra în posesia cheilor de criptare.
+
+Totuși pentru a preveni acest scenariu, chiar dacă nu pare posibil, în secțiunea anterioară am prezentat așezarea în memoria flash a bootloader-ului, unde am ținut cont și de dimensiunea cheii de criptare. Datorită limitărilor hardware ale memoriei flash a fost necesar să rezervăm un întreg sector pentru cheia de criptare. Cei 8 kilo-octeți aferenți unui sector sunt suficienți pentru mai multe chei de criptare, nu doar pentru una singură, considerând că o cheie are doar 16 octeți.
+
+Această zonă de memorie va fi locul în care se vor stoca cheile de criptare și unde ele se vor înlocui la nevoie.
+Pentru a face înlocuirea cheilor, nu am ales calea evidentă, de a implementa această funcționalitate în cadrul bootloader-ului, ci vom lăsa aplicația utilizator să facă acest lucru. Motivul din spatele acestei decizii este faptul că atacuri de acest tip, unde un atacator poate afla cheile de securitate, sunt destul de improbabile. În plus, lăsând aplicația să implementeze cod pentru această funcționalitate putem menține simplitatea bootloader-ului, astfel că pe microcontroller nu există cod redundant. Există posibilitatea ca anumite dispozitive embedded dotate cu bootloader-ul să fie configurate o singură dată de către client și apoi să nu mai fie modificate sau conectate la vreo rețea, lucru care duce în mod sigur la menținerea cheilor de securitate. Dacă am fi implementat acest mecanism în bootloader el ar fi devenit mai complex, deoarece ar fi trebuit să pună la dispoziție un mod expres de a face schimbarea cheilor prin comunicația serială. Această funcționalitate s-ar fi reflectat și asupra Flasher-ului, care ar fi trebuit să poată declanșa mecanismul de înlocuire al cheilor, cât și să facă trimiterea propriu-zisă a lor spre microcontroller.
+
+În urma transferului de responsabilitate de a schimba cheile spre aplicație nu introducem niciun risc de securitate datorită faptului că aplicația care schimbă cheile este deja criptată de către dezvoltator, folosind Bundler-ul. La fel cum nu există niciun pericol ca un atacator să descopere codul mașină al aplicației în tranziția sa la client, tot așa nu se pot citi nici eventuale chei de securitate incluse în aplicație.
+
+Dacă cheile de criptare sunt setate și schimbate prin intermediul unei aplicații care se presupune că este deja criptată cu o cheie existentă pe microcontroller-ul unde rulează bootloader-ul, putem ajunge la o problemă de tipul "Ce a fost mai întâi, oul sau găina?". Pentru a rupe acest ciclu, bootloader-ul va conține, încă de la scrierea sa de către dezvoltator pe microcontroller, o cheie de criptare de rezervă, numită cheie de fallback.
+Aceasta cheie va fi folosită pentru a cripta prima aplicație care se va încărca cu ajutorul bootloader-ului, astfel bootloader-ul va fi capabil să decripteze aplicația fără să se fi schimbat cheia în prealabil.
+
+Așadar înainte de livrarea sistemului embedded spre client, dezvoltatorul care dorește să schimbe cheia de criptare va flash-ui prin metoda clasică bootloader-ul pe microcontroller. Apoi, folosind Bundler-ul, va cripta (cu cheia de fallback) o aplicație de schimbare a cheii. Mai departe, dezvoltatorul trebuie să încarce aplicația pe microcontroller folosind în tandem Flasher-ul și bootloader-ul. În urma încărcării și rulării aplicației, cheia va fi modificată și sistemul embedded poate fi trimis spre clienți. Aplicațiile care trebuie scrise pe sistem, vor trebui acum criptate cu noua cheie de criptare.
+
+Structura exactă a cheilor de criptare și cum sunt stocate acestea în memoria flash vor fi prezentate în secțiunile viitoare, de asemenea voi prezenta codul care ar putea fi folosit într-o aplicație pentru a face înlocuirea cheilor.
 
 \section{Utilitarul Bundler}
+TODO: input/output
 TODO: spune despre fisierele .key
 
 \subsection{Formatul fișierelor .key}
@@ -722,15 +738,19 @@ TODO: formatul .fw
 TODO: sectiune: cum functioneaza si cum se foloseste (la nivel de utilizator)  bundler-ul , bootloader-ul (jumper),si flasher-ul
 
 \section{Utilitarul Flasher}
+TODO: input/oputput
 TODO: Spune ca flasher-ul nu stie despre formatul .fw, el doar trimite date (asta ajuta contra reverse engineering de catre un atacator)
 TODO; Flasher user guide
 
 \section{Protocolul de comunicație serială}
+TODO: relativ simplu, transmite doar un fisier nu si chei de criptare
 TODO: protocolul folosit de bootloader-flasher (diagrame de mesaje)
 TODO: vezi emailuri + notitele din caiet
 
 \section{Architectura și codul bootloader-ului}
 TODO: la Crypto și KeyManger spune ca ele ajuta la schimbarea cheilor și cum se poate face (vezi doc. SVN + keychanger)
+
+Datorită faptului că nu este un atac probabil, limităm numărul de chei la două și nu lăsăm bootloader-ul să se ocupe de acest lucru.
 
 TODO: arhitectura bootloader-ului UML + cod
 
