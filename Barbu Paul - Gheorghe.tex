@@ -727,8 +727,29 @@ Structura exactă a cheilor de criptare și cum sunt stocate acestea în memoria
 
 \section{Utilitarul Bundler}
 
-Bundler-ul este aplicația care ...
+Bundler-ul este utilitarul care criptează și apoi împachetează aplicațiile utilizator care urmează a fi scrise pe microcontroller prin intermediul bootloader-ului dezvoltat în această lucrare.
+Bundler-ul rulează pe arhitecturi x86 si x64, deci pe sisteme desktop, dotate cu un sistem de operare Windows sau GNU/Linux.
+
+Practic el transformă o aplicație pregătită pentru microcontroller, într-un fișier firmware. Fișier care va fi trimis clientului și care mai apoi va fi trimis spre sistemul embedded prin intermediul utilitarului Flasher.
+
+Pentru a putea cripta o aplicație, Bundler-ul are nevoie de o cheie de criptare, aceasta îi va fi furnizată ca argument, din linia de comandă. Argumentul va reprezenta calea pe disc spre fișierul care conține cheia de criptare. De asemenea, Bundler-ul trebuie să știe locația aplicației care trebuie criptată și transformată în fișierul firmware.
+
+Un exemplu de invocare al acestui utilitar este prezentat în listingul \ref{bundlerInvoke}.
+
+\begin{listing}[h]
+\begin{minted}{batch}
+bundler.exe keys\xyz.key app.bin
+\end{minted}
+
+\caption{Exemplu de folosire al utilitarului Bundler}
+\label{bundlerInvoke}
+\end{listing}
+
+După cum se vede în acest listing, cele două argumente sunt căile pe disc spre fișierul care conține cheia de criptare (\texttt{keys.xyz.key}) și respectiv spre fișierul binar al aplicației destinată microcontroller-ului (\texttt{app.bin}). Ordinea celor doi parametrii nu este importantă, ce este important este prezența amândurora și prezența extensiei fișierului, în acest mod se poate identifica care cale indică spre cheia de criptare și care spre aplicație. Rezultatul rulării Bundler-ului constă într-un fișier numit la fel ca aplicația, dar cu extensia \texttt{.fw}: \texttt{app.fw}. Acest fișier se va găsi în același director cu aplicația folosită ca input.
+
+
 TODO: input/output
+%TODO: despre fișierul bin si cum poate fi el generat (din hex) srec_cat
 TODO: spune despre fisierele .key
 
 \subsection{Formatul fișierelor .key}
