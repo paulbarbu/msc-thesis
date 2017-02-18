@@ -719,13 +719,15 @@ Pentru a face înlocuirea cheilor, nu am ales calea evidentă, de a implementa a
 În urma transferului de responsabilitate de a schimba cheile spre aplicație nu introducem niciun risc de securitate datorită faptului că aplicația care schimbă cheile este deja criptată de către dezvoltator, folosind Bundler-ul. La fel cum nu există niciun pericol ca un atacator să descopere codul mașină al aplicației în tranziția sa la client, tot așa nu se pot citi nici eventuale chei de securitate incluse în aplicație.
 
 Dacă cheile de criptare sunt setate și schimbate prin intermediul unei aplicații care se presupune că este deja criptată cu o cheie existentă pe microcontroller-ul unde rulează bootloader-ul, putem ajunge la o problemă de tipul "Ce a fost mai întâi, oul sau găina?". Pentru a rupe acest ciclu, bootloader-ul va conține, încă de la scrierea sa de către dezvoltator pe microcontroller, o cheie de criptare de rezervă, numită cheie de fallback.
-Aceasta cheie va fi folosită pentru a cripta prima aplicație care se va încărca cu ajutorul bootloader-ului, astfel bootloader-ul va fi capabil să decripteze aplicația fără să se fi schimbat cheia în prealabil.
+Această cheie va fi folosită pentru a cripta prima aplicație care se va încărca cu ajutorul bootloader-ului, astfel bootloader-ul va fi capabil să decripteze aplicația fără să se fi schimbat cheia în prealabil.
 
-Așadar înainte de livrarea sistemului embedded spre client, dezvoltatorul care dorește să schimbe cheia de criptare va flash-ui prin metoda clasică bootloader-ul pe microcontroller. Apoi, folosind Bundler-ul, va cripta (cu cheia de fallback) o aplicație de schimbare a cheii. Mai departe, dezvoltatorul trebuie să încarce aplicația pe microcontroller folosind în tandem Flasher-ul și bootloader-ul. În urma încărcării și rulării aplicației, cheia va fi modificată și sistemul embedded poate fi trimis spre clienți. Aplicațiile care trebuie scrise pe sistem, vor trebui acum criptate cu noua cheie de criptare.
+Așadar înainte de livrarea sistemului embedded spre client, dezvoltatorul care dorește să schimbe cheia de criptare va flash-ui prin metoda clasică bootloader-ul pe microcontroller. Apoi, folosind Bundler-ul, va cripta (cu cheia de fallback) o aplicație de schimbare a cheii. Mai departe, dezvoltatorul trebuie să încarce aplicația pe microcontroller folosind în tandem Flasher-ul și bootloader-ul. În urma încărcării și rulării aplicației, cheia va fi modificată și sistemul embedded poate fi trimis spre clienți. Aplicațiile care trebuie scrise pe microcontroller, vor trebui acum criptate cu noua cheie de criptare.
 
 Structura exactă a cheilor de criptare și cum sunt stocate acestea în memoria flash vor fi prezentate în secțiunile viitoare, de asemenea voi prezenta codul care ar putea fi folosit într-o aplicație pentru a face înlocuirea cheilor.
 
 \section{Utilitarul Bundler}
+
+Bundler-ul este aplicația care ...
 TODO: input/output
 TODO: spune despre fisierele .key
 
@@ -752,7 +754,7 @@ TODO: arhitectura bootloader-ului UML + cod
 TODO: la Crypto și KeyManger spune ca ele ajuta la schimbarea cheilor și cum se poate face (vezi doc. SVN + keychanger)
 
 TODO: Datorită faptului că nu este un atac probabil, limităm numărul de chei la două și nu lăsăm bootloader-ul să se ocupe de acest lucru.
-TODO: Bootloader & Bundler UG -> detalii tehnice despre schimbarea cheilor
+%TODO: Bootloader & Bundler UG -> detalii tehnice despre schimbarea cheilor
 
 \section{Architectura și codul utilitarelor Flasher și Bundler}
 TODO: arhitectura flasher si bundler si cum share-uiesc ele codul (e reutilizabil!) UML + cod
