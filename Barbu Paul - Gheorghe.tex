@@ -920,12 +920,9 @@ Figura \ref{protocol-msd} prezintă cazul optimist, când toate pachetele sosesc
     \label{protocol-msd-timeout}
 \end{figure}
 
-În această figură este reprezentat cazul de timeout al protocolului. În această situație Flasher-ul trimite un pachet care nu ajunge la bootloader, iar acesta încearcă recuperarea sa fără succes. Se observă faptul că după patru pachete de status cu statusul \texttt{STATUS\_RETRY}, se declară eroare la transmisiune prin \texttt{STATUS\_ERROR}. În acest caz utilizatorul ar trebui să repornească procesul ...
+În această figură este reprezentat cazul de timeout al protocolului. În această situație Flasher-ul trimite un pachet care nu ajunge la bootloader, iar acesta încearcă recuperarea sa fără succes. Se observă faptul că după patru pachete de status cu statusul \texttt{STATUS\_RETRY}, se declară eroare la transmisiune prin \texttt{STATUS\_ERROR}. În acest caz utilizatorul ar trebui să repornească procesul de încărcare al aplicației deoarece Flasher-ul a încetat să mai trimită părți din aplicație. Flasher-ul poate primi sau nu pachetele de status pe care le trimite bootloader-ul. În caz că Flasher-ul primește aceste pachete (cazul ilustrat în figura \ref{protocol-msd-timeout}) el va raporta corespunzător eroarea de flashing utilizatorului. În cazul în care Flasher-ul nu primește pachetele de status, acesta va aștepta și el 25 de secunde sau până când primește un pachet de status. Flasher-ul, spre deosebire de bootloader, nu trimite pachete se status cu status-ul \texttt{STATUS\_RETRY} în timp ce așteaptă scurgerea timpului de timeout.
 
-TODO: spune cum poate fi flasher-ul acum (timout sau sa primeasca raspounsulile)
-
-TODO: relativ simplu (nu continua pana nu rezolva cu un pachet), transmite doar un fisier nu si chei de criptare
-TODO: robust, permite timeout-uri si re-trimiteri
+Așadar printr-un protocol simplu am reușit creerea unui mecanism robust de trimitere al fișierului de firmware de la Flasher spre bootloader care rezistă și la interferențele rețelei, dar și la erorile apărute intern în cadrul bootloader-ului. Trebuie să precizăm și că această simplitate a fost posibilă datorită faptului că responsabilitatea de schimbare a cheilor de criptare a fost transferată aplicației utilizator. Dacă am fi implementat această funcționalitate în interiorul bootloader-ului protocolul ar fi devenit mai complex, fiind necesar să diferențieze între pachete care transportă părți ale aplicației și pachete care transportă chei de criptare.
 
 \section{Arhitectura și codul bootloader-ului}
 TODO: arhitectura bootloader-ului UML + cod
@@ -943,6 +940,7 @@ TODO: evitarea folosirii unui script de linker pentru aplicatiile utilizator
 TODO: mesaje mai bune din bundler/flasher
 TODO: indicatie pe microcontroller ca bootloader-ul ruleaza!
 TODO: management al cheilor via bundler
+TODO: mesaje sugestive cu privite la erori in pachetele de status
 
 \newpage
 \bibliographystyle{plain}
