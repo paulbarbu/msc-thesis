@@ -26,6 +26,8 @@
 \renewcommand*{\ALG@name}{Pseudocod}
 \makeatother
 
+\usepackage{multirow}
+
 \author{Barbu Paul - Gheorghe}
 
 %TODO: coperta
@@ -777,7 +779,7 @@ Motivul din spatele folosirii formatului binar și nu cel hex sau ELF, este fapt
 
 \subsection{Formatul fișierelor .key}
 În ceea ce privește formatul fișierelor care conțin cheia de criptare, și ele au fost gândite să fie cât mai simple.
-Așadar am formatat aceste fișier tot în binar, acest lucru făcând simplă citirea lor și folosirea cheii drept parametru al algoritmului de criptare. Fișierul binar seamănă cu modul în care este stocată cheia în memorie. Acesta constă doar în 16 octeți, doar atât cât este necesar stocării unei singure chei. Dacă dezvoltatorul trebuie să gestioneze mai multe chei de criptare, eventual pentru mai mulți clienți, acesta va trebui să folosească mai multe fișiere.
+Așadar am formatat acest fișier tot în binar, acest lucru făcând simplă citirea lor și folosirea cheii drept parametru al algoritmului de criptare. Fișierul binar seamănă cu modul în care este stocată cheia în memorie. Acesta constă doar din 16 octeți, doar atât cât este necesar stocării unei singure chei. Dacă dezvoltatorul trebuie să gestioneze mai multe chei de criptare, eventual pentru mai mulți clienți, acesta va trebui să folosească mai multe fișiere.
 
 Crearea cheilor de criptare nu este automatizată, dar poate fi ușor automatizată pe un sistem de operare GNU/Linux folosind codul din listing-ul \ref{genRandKey}.
 
@@ -793,11 +795,33 @@ head -c 16 /dev/urandom > encryption.key
 Rularea comenzii va declanșa generarea unui flux de octeți aleatori, iar primii 16 octeți din acest șir vor fi scriși în fișierul \texttt{encryption.key}.
 
 \subsection{Formatul fișierelor .fw}
-TODO: formatul .fw
+Nesurprinzător, fișierele firmware sunt proiectate tot ca fișiere binare, acestea având rolul să împacheteze atât aplicația utilizator criptată, cât și tag-ul de autentificare și vectorul de inițializare al algoritmului AES.
+Toate aceste informații îi sunt necesare bootloader-ului pentru a putea inițializa în mod corect algoritmul de decriptare AES, folosind vectorul de inițializare și pentru a verifica autenticitatea fișierului firmware în urma transmisiei lui pe canale potențial nesigure. Verificarea autenticității se face folosind tag-ul de autentificare așa cum a fost descris în secțiunile anterioare.
 
-TODO: sectiune: cum functioneaza si cum se foloseste (la nivel de utilizator)  bundler-ul , bootloader-ul (jumper),si flasher-ul
+Tabelul \ref{fwStruct} prezintă structura binară a fișierului \texttt{.fw}.
+
+\begin{table}[h]
+    \begin{tabular}{ | c | c | c | c | }
+        \hline
+        \textbf{Zonă} & \textbf{Adresă} & \textbf{Descriere} & \textbf{Mărime (octeți)} \\ \hline
+        \multirow{4}{*}{Antet} & \texttt{0x00} & Vector de inițializare & 16 \\ \cline{2-4}
+        & \texttt{0x10} & Tag autentificare & 16 \\ \cline{2-4}
+        & \texttt{0x20} & Mărimea aplicației & 4 \\ \cline{2-4}   
+        & \texttt{0x24} & Padding & 12 \\ \hline
+        Date & \texttt{0x30} & Aplicația criptată & variabil \\ \hline
+    \end{tabular}
+    \centering
+    \caption{Structura fișierului .fw}
+    \label{fwStruct}
+\end{table}
+
+Motivul plasării la începutul fișierului al vectorului de inițializare și al tag-ului de autentificare este faptul că, dacă Flasher-ul trimite pe portul serial acest fișier, cele două elemente trebuie să ajungă primele la bootloader pentru ca acesta să poată începe decriptarea aplicației. Câmpul "mărimea aplicației" are rolul de a indica dimensiunea ocupată de aplicația care începe la adresa 0x30 de la începutul fișierului. Câmpul padding, nu reprezintă date utile, ci este un câmp auxiliar, fiind ultimul din antetul fișierului el este necesar pentru a asigura faptul că dimensiunea antetului este un multiplu de mărimea minimă decriptabilă a algoritmului AES, 16 octeți în cazul acesta. Concret, prin adăugarea zonei de padding, antetul va avea dimensiunea de 48 de octeți.
+
+Antetul fișierului nu este criptat, deci nu va necesita decriptare din partea bootloader-ului. Totuși este necesar să ne asigurăm că el are o mărime agreată de algoritmul de decriptare, deoarece Flasher-ul, când va trimite date spre bootloader va avea grijă ca pachetele să fie de o dimensiune potrivită pentru decriptare ca să putem folosi modul flux al AES, descris într-una din secțiunile anterioare. Primul pachet, dacă va conține atât date ne-criptate cât și date criptate, în urma înlăturării datelor ne-criptate, datele criptate trebuie să aibă o lungime potrivită decriptării. Așadar dacă întreg pachetul este o mărime multiplu de 16, iar datele criptate sunt și ele o mărime multiplu de 16, restul datelor trebuie să aibă și ele această proprietate, de unde reiese nevoia de padding a datelor.
 
 \section{Utilitarul Flasher}
+TODO: cum functioneaza si cum se foloseste (la nivel de utilizator)  bundler-ul , bootloader-ul (jumper),si flasher-ul
+
 TODO: input/oputput
 TODO: Spune ca flasher-ul nu stie despre formatul .fw, el doar trimite date (asta ajuta contra reverse engineering de catre un atacator)
 TODO; Flasher user guide
