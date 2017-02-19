@@ -847,6 +847,14 @@ Pe scurt Flasher-ul necesită următoarele elemente ca input:
 
 Flasher-ul nu creează un output material, cum ar fi un fișier, ci el determină trimiterea fișierului firmware spre microcontroller așa cum va fi prezentat în secțiunea următoare. Este important să subliniem faptul că Flasher-ul, aflat în posesia clientului, nu va face decriptarea aplicației aflată în fișierul firmware, ci el se va ocupa exclusiv de trimiterea fișierului, decriptarea lui și interpretarea lui, făcându-se doar de către bootloader, care prin funcționalitatea de securitate flash descrisă anterior poate să facă aceste operații fără ca un atacator să le observe prin reverse engineering.
 
+În urma procesului de flashing există patru posibile rezultate:
+\begin{enumerate}
+\item Aplicația a fost încărcată cu succes, caz în care acest lucru va fi raportat de Flasher cu următorul mesaj: \textit{ Successfully flashed firmware file app.fw} și bootloader-ul va porni aplicația, iar pe dispozitiv se vor vedea efectele rulării ei.
+\item Dacă Flasher-ul pare că s-a blocat și nu funcționează este posibil ca portul serial indicat prin parametrul \texttt{-p} să fie greșit, iar aplicația trebuie repornită cu portul corect.
+\item Bootloader-ul, de la apăsarea butonului, așteaptă 20 de secunde începerea transferului, dacă acest timp se scurge și pe microcontroller există o aplicație existentă, ea va fi rulată, iar procesul trebuie repornit.
+\item Procesul a eșuat, posibil pentru că aplicația a fost modificată și tag-ul de autentificare nu se potrivește cu cel corect. Flasher-ul va raporta acest caz prin mesajul: \textit{*ERR* Failed to flash firmware file app.fw}, iar procesul trebuie repornit. Dacă situația se repetă există posibilitatea ca fișierul firmware să fi fost modificat în timpul descărcării de la dezvoltator și o re-descărcare poate rezolva problema. De asemenea acest scenariu poate fi cauzat de criptarea aplicației cu o cheie de criptare greșită, caz în care trebuie contactat dezvoltatorul aplicației.
+\end{enumerate}
+
 \section{Protocolul de comunicație serială}
 TODO: relativ simplu, transmite doar un fisier nu si chei de criptare
 TODO: protocolul folosit de bootloader-flasher (diagrame de mesaje)
