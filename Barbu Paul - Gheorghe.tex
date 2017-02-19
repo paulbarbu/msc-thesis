@@ -745,12 +745,35 @@ bundler.exe keys\xyz.key app.bin
 \label{bundlerInvoke}
 \end{listing}
 
-După cum se vede în acest listing, cele două argumente sunt căile pe disc spre fișierul care conține cheia de criptare (\texttt{keys.xyz.key}) și respectiv spre fișierul binar al aplicației destinată microcontroller-ului (\texttt{app.bin}). Ordinea celor doi parametrii nu este importantă, ce este important este prezența amândurora și prezența extensiei fișierului, în acest mod se poate identifica care cale indică spre cheia de criptare și care spre aplicație. Rezultatul rulării Bundler-ului constă într-un fișier numit la fel ca aplicația, dar cu extensia \texttt{.fw}: \texttt{app.fw}. Acest fișier se va găsi în același director cu aplicația folosită ca input.
+După cum se vede în acest listing, cele două argumente sunt căile pe disc spre fișierul care conține cheia de criptare (\texttt{keys/xyz.key}) și respectiv spre fișierul binar al aplicației destinată microcontroller-ului (\texttt{app.bin}). Ordinea celor doi parametrii nu este importantă, ce este important este prezența amândurora și prezența extensiei fișierului, în acest mod se poate identifica care cale indică spre cheia de criptare și care spre aplicație. Rezultatul rulării Bundler-ului constă într-un fișier numit la fel ca aplicația, dar cu extensia \texttt{.fw}: \texttt{app.fw}. Acest fișier se va găsi în același director cu aplicația folosită ca input.
 
+Succint putem spune ca Bundler-ul primește ca input:
+\begin{itemize}
+\item cheia de criptare în fișierul \texttt{key}
+\item un fișier binar conținând codul mașină generat de către compilator
+\end{itemize}
 
-TODO: input/output
-%TODO: despre fișierul bin si cum poate fi el generat (din hex) srec_cat
-TODO: spune despre fisierele .key
+Iar ca output Bundler-ul generează:
+\begin{itemize}
+\item fișierul firmware criptat, destinat clientului
+\end{itemize}
+
+În ceea ce privește formatul fișierului binar, acesta poate fi generat de către un compilator în mod direct, sau dacă acest lucru nu este disponibil, se poate folosi utilitarul \texttt{srec\_cat} care permite conversia între diferite formate de fișiere destinate mediilor embedded.
+De exemplu pentru a converti un fișier hex (un format bine cunoscut în lumea embedded \cite{hexFormat}) în echivalentul său binar se poate folosi comanda din listing-ul \ref{sreccatHexToBin}.
+
+\begin{listing}[h]
+\begin{minted}{batch}
+srec_cat app.hex -intel -offset - -minimum-addr \
+         app.hex -intel -o app.bin -binary
+\end{minted}
+
+\caption{Converirea unui fișier .hex în .bin}
+\label{sreccatHexToBin}
+\end{listing}
+
+Comanda din listing-ul \ref{sreccatHexToBin} citește fișierul \texttt{app.hex} și îl convertește în fișierul \texttt{app.bin}. Fiind vorba de un fișier binar de output, \texttt{srec\_cat} trebuie instruit să folosească adresa de start a aplicației, adresă definită în scriptul de linker, în cazul nostru 0x1000a000. În caz contrar \texttt{srec\_cat} va genera un fișier binar care între adresa 0 și cea de start a aplicației conține zerouri \cite{srecExamples}.
+
+Motivul din spatele folosirii formatului binar și nu cel hex sau ELF, este faptul că, folosind formatul binar, bootloader-ul, când ajunge să primească de pe portul serial date, nu trebuie să le și parseze și interpreteze, ci trebuie doar să le scrie în memoria flash la locația corectă, acestea fiind deja formatate corespunzător. Un alt motiv este acela că formatul binar este mai compact decât formatul hex de exemplu, deoarece formatul hex este un format text și conține o singură instrucțiune mașină pe un rând al fișierului, instrucțiune care este acompaniată întotdeauna de o adresă și de meta-date, lucru care duce la mărirea spațiului necesar unui astfel de fișier \cite{hexFormat}.
 
 \subsection{Formatul fișierelor .key}
 TODO: formatul cheilor
