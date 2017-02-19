@@ -819,12 +819,33 @@ Motivul plasării la începutul fișierului al vectorului de inițializare și a
 
 Antetul fișierului nu este criptat, deci nu va necesita decriptare din partea bootloader-ului. Totuși este necesar să ne asigurăm că el are o mărime agreată de algoritmul de decriptare, deoarece Flasher-ul, când va trimite date spre bootloader va avea grijă ca pachetele să fie de o dimensiune potrivită pentru decriptare ca să putem folosi modul flux al AES, descris într-una din secțiunile anterioare. Primul pachet, dacă va conține atât date ne-criptate cât și date criptate, în urma înlăturării datelor ne-criptate, datele criptate trebuie să aibă o lungime potrivită decriptării. Așadar dacă întreg pachetul este o mărime multiplu de 16, iar datele criptate sunt și ele o mărime multiplu de 16, restul datelor trebuie să aibă și ele această proprietate, de unde reiese nevoia de padding a datelor.
 
-\section{Utilitarul Flasher}
-TODO: cum functioneaza si cum se foloseste (la nivel de utilizator)  bundler-ul , bootloader-ul (jumper),si flasher-ul
+Datele din fișier reprezintă aplicația criptată, aplicație care va urma să fie decriptată de către bootloader și care va rula pe microcontroller.
 
-TODO: input/oputput
-TODO: Spune ca flasher-ul nu stie despre formatul .fw, el doar trimite date (asta ajuta contra reverse engineering de catre un atacator)
-TODO; Flasher user guide
+\section{Utilitarul Flasher}
+în momentul în care clientul intră în posesia fișierului firmware, acesta poate declanșa mecanismul de încărcare pe microcontroller prin intermediul bootloader-ului și al utilitarului Flasher.
+
+O precondiție a pornirii procesului de încărcare pe microcontroller este faptul că utilizatorul apasă un buton. Așadar bootloader-ul va aștepta date de la Flasher, doar dacă utilizatorul apasă un buton al dispozitivului, în caz contrar bootloader-ul va încerca încărcarea unei aplicații existente, dacă ea există, daca nu există procesul de încărcare va fi pornit automat. O altă precondiție este ca microcontroller-ul să fie conectat la calculatorul unde va rula Flasher-ul prin portul serial, pentru ca cele două entități să poată comunica.
+
+Flasher-ul, asemeni Bundler-ului este o aplicație de consolă, care rulează pe sistemele de operare Windows și poate fi ușor portată pe sistemul de operare GNU/Linux. Modul de lucru cu această aplicație este înfățișat în listing-ul \ref{flasherInvoke}.
+
+\begin{listing}[h]
+\begin{minted}{batch}
+flasher.exe -p COM4 app.fw
+\end{minted}
+
+\caption{Exemplu de folosire al utilitarului Flasher}
+\label{bundlerInvoke}
+\end{listing}
+
+Din listing vedem că această aplicație acceptă un argument cu nume (\texttt{-p}) și un argument pozițional. Ordinea lor este irelevantă atât timp cât argumentul pozițional are extensia \texttt{.fw} și reprezintă calea spre fișierul firmware primit de la dezvoltatorul aplicației. Argumentul \texttt{-p} arată că după el urmează portul serial pe care se va face comunicația cu bootloader-ul, în acest exemplu portul este \texttt{COM4}.
+
+Pe scut Flasher-ul necesită următoarele elemente ca input:
+\begin{itemize}
+\item portul serial de comunicație
+\item calea spre fișierul firmware
+\end{itemize}
+
+Flasher-ul nu creează un output material, cum ar fi un fișier, ci el determină trimiterea fișierului firmware spre microcontroller așa cum va fi prezentat în secțiunea următoare. Este important să subliniem faptul că Flasher-ul, aflat în posesia clientului, nu va face decriptarea aplicației din fișierul firmware, ci el se va ocupa exclusiv de trimiterea fișierului, decriptarea lui și interpretarea lui, făcându-se doar de către bootloader, care prin funcționalitatea de securitate flash descrisă anterior poate să facă aceste operații fără ca un atacator să le observe.
 
 \section{Protocolul de comunicație serială}
 TODO: relativ simplu, transmite doar un fisier nu si chei de criptare
