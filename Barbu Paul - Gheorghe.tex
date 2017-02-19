@@ -762,7 +762,7 @@ Iar ca output Bundler-ul generează:
 De exemplu pentru a converti un fișier hex (un format bine cunoscut în lumea embedded \cite{hexFormat}) în echivalentul său binar se poate folosi comanda din listing-ul \ref{sreccatHexToBin}.
 
 \begin{listing}[h]
-\begin{minted}{batch}
+\begin{minted}{bash}
 srec_cat app.hex -intel -offset - -minimum-addr \
          app.hex -intel -o app.bin -binary
 \end{minted}
@@ -773,10 +773,24 @@ srec_cat app.hex -intel -offset - -minimum-addr \
 
 Comanda din listing-ul \ref{sreccatHexToBin} citește fișierul \texttt{app.hex} și îl convertește în fișierul \texttt{app.bin}. Fiind vorba de un fișier binar de output, \texttt{srec\_cat} trebuie instruit să folosească adresa de start a aplicației, adresă definită în scriptul de linker, în cazul nostru 0x1000a000. În caz contrar \texttt{srec\_cat} va genera un fișier binar care între adresa 0 și cea de start a aplicației conține zerouri \cite{srecExamples}.
 
-Motivul din spatele folosirii formatului binar și nu cel hex sau ELF, este faptul că, folosind formatul binar, bootloader-ul, când ajunge să primească de pe portul serial date, nu trebuie să le și parseze și interpreteze, ci trebuie doar să le scrie în memoria flash la locația corectă, acestea fiind deja formatate corespunzător. Un alt motiv este acela că formatul binar este mai compact decât formatul hex de exemplu, deoarece formatul hex este un format text și conține o singură instrucțiune mașină pe un rând al fișierului, instrucțiune care este acompaniată întotdeauna de o adresă și de meta-date, lucru care duce la mărirea spațiului necesar unui astfel de fișier \cite{hexFormat}.
+Motivul din spatele folosirii formatului binar și nu cel hex sau ELF, este faptul că, folosind formatul binar, bootloader-ul când primește de pe portul serial date, nu trebuie să le și parseze și interpreteze, ci trebuie doar să le scrie în memoria flash la locația corectă, acestea fiind deja formatate corespunzător. Un alt motiv este acela că formatul binar este mai compact decât formatul hex de exemplu, deoarece formatul hex este un format text și conține o singură instrucțiune mașină pe un rând al fișierului, instrucțiune care este acompaniată întotdeauna de o adresă și de meta-date, lucru care duce la mărirea spațiului necesar unui astfel de fișier \cite{hexFormat}.
 
 \subsection{Formatul fișierelor .key}
-TODO: formatul cheilor
+În ceea ce privește formatul fișierelor care conțin cheia de criptare, și ele au fost gândite să fie cât mai simple.
+Așadar am formatat aceste fișier tot în binar, acest lucru făcând simplă citirea lor și folosirea cheii drept parametru al algoritmului de criptare. Fișierul binar seamănă cu modul în care este stocată cheia în memorie. Acesta constă doar în 16 octeți, doar atât cât este necesar stocării unei singure chei. Dacă dezvoltatorul trebuie să gestioneze mai multe chei de criptare, eventual pentru mai mulți clienți, acesta va trebui să folosească mai multe fișiere.
+
+Crearea cheilor de criptare nu este automatizată, dar poate fi ușor automatizată pe un sistem de operare GNU/Linux folosind codul din listing-ul \ref{genRandKey}.
+
+\begin{listing}[h]
+\begin{minted}{bash}
+head -c 16 /dev/urandom > encryption.key
+\end{minted}
+
+\caption{Generarea unui fișier .key cu conținut pseudo-aleator}
+\label{genRandKey}
+\end{listing}
+
+Rularea comenzii va declanșa generarea unui flux de octeți aleatori, iar primii 16 octeți din acest șir vor fi scriși în fișierul \texttt{encryption.key}.
 
 \subsection{Formatul fișierelor .fw}
 TODO: formatul .fw
