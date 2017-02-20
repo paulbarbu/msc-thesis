@@ -925,13 +925,41 @@ Figura \ref{protocol-msd} prezintă cazul optimist, când toate pachetele sosesc
 Așadar printr-un protocol simplu am reușit crearea unui mecanism robust de trimitere al fișierului de firmware de la Flasher spre bootloader, protocol care rezistă și la interferențele rețelei, dar și la erorile apărute intern în cadrul bootloader-ului. Trebuie să precizăm și că această simplitate a fost posibilă datorită faptului că responsabilitatea de schimbare a cheilor de criptare a fost transferată aplicației utilizator. Dacă am fi implementat această funcționalitate în interiorul bootloader-ului protocolul ar fi devenit mai complex, fiind necesar să diferențieze între pachete care transportă părți ale aplicației și pachete care transportă chei de criptare.
 
 \section{Arhitectura și codul bootloader-ului}
-Scris in C, dar folosesc totuși o diagramă UML de clase deoarece conceptele de încapsulare sunt prezente și aici.
+Fiind necesar să ruleze în mediul embedded codul bootloader-ului este scris în limbajul C. Acesta a fost alegerea evidentă datorită suportului oferit de către producătorii de microcontroller-e, aceștia oferind și biblioteci care abstractizează hardware-ul oferit de microcontroller, biblioteci scrise în C. Omniprezența acestui limbaj în mediu embedded se datorează în mare parte simplității lui, nu oferă multe funcționalități și metode de abstractizare și organizare a codului. Pe lângă simplitate un avantaj major pentru lucrul cu hardware este faptul că memoria este gestionată manual de către programator, acest lucru făcându-l un limbaj destul de greu de înțeles pentru începători, nu datorită complexității sale, ci datorită faptului că totul trebuie făcut de către programator.
 
-TODO: explică cum encapsulez date in C față de C++
-TODO: UML: nu am pus constantele și membrii irelevanți pentru înțelegerea arhitecturii, de asemenea funcțiile sunt reprezentate fără parametrii din motive de spațiu
+Bootloader-ul este împărțit pe module, acestea aderând la scopul de flexibilitate propus la începutul lucrării. Fiecare modul este responsabil de o anumită sarcină (de exemplu comunicare pe portul serial sau scriere în memoria flash), în acest mod codul rămâne curat și extensibil. Modulele, datorită ortogonalității lor, vor lucra împreună pentru a realiza funcționalitățile bootloader-ului.
+
+Deși codul este scris în C, în cele ce urmează voi prezenta totuși diagrame UML ale modulelor. Aceste diagrame sunt specifice limbajelor orientate spre obiect, dar se pot aplica și în acest caz deoarece conceptele de încapsulare sunt prezente și aici. Diferența fața de un limbaj orientat spre obiect, cum ar fi C++, C\# sau Java, constă în faptul că un modul nu reprezintă un namespace sau o clasă, ci o pereche de fișiere header (\texttt{.h}) și sursă (\texttt{.c}). Încapsularea nu este implementată prin metode private sau protejate, ci prin intermediul funcțiilor statice dintr-un fișier \texttt{.c}.
+
+Secțiunile următoare vor arăta atât arhitectura modulelor importante, necesare pentru a realiza funcționalitatea de bază a bootloader-ului, cât și arhitectura modulelor auxiliare.
+Este important de precizat ca diagramele UML vor cuprinde doar funcțiile modulelor, membrii irelevanți pentru înțelegerea arhitecturii nefiind prezentați. De asemenea funcțiile sunt reprezentate fără parametrii din motive de spațiu.
 
 \subsection{Modulele principale}
-TODO: arhitectura bootloader-ului UML + cod
+
+Modulele principale ale bootloader-ului sunt acelea care contribuie în mod direct la funcționalitatea acestuia. Printre acestea considerăm importantă scrierea în memoria flash, deoarece o aplicație utilizator trebuie memorată.
+Pentru a ajunge în posesia unei aplicații utilizator trebuie să putem comunica, așadar avem nevoie de un protocol de comunicație, cât și de un canal de comunicație pe care să transmitem protocolul. În cele din urmă trebuie să putem decripta aplicația primită pe canalul de comunicație, pentru ca bootloader-ul să o poată executa mai târziu.
+
+Toate aceste concepte se vor materializa în module independente ale bootloader-ului, așa cum sunt prezentate în figura \ref{arhitectura}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{arhitectura}
+    \caption{Arhitectura modulelor importante ale bootloader-ului}
+    \label{arhitectura}
+\end{figure}
+
+În această figură distingem modulele:
+\begin{itemize}
+\item \textbf{Flash}: folosit la gestionarea scrierii, citirii și ștergerii memoriei flash a microcontroller-ului.
+\item \textbf{Crypto}: TODO
+\item \textbf{Communication}: TODO
+\item \textbf{Protocol}: TODO
+\item \textbf{KeyManager}: TODO
+\item \textbf{Loader}: TODO
+\end{itemize}
+
+TODO: ce fac ele, fucntionalitate principala
+TODO: arhitectura bootloader-ului:  cod
 TODO: spune care este entry point-ul -> main + loaduserapp sau main + startuserapp
 
 TODO: la Crypto și KeyManger spune ca ele ajuta la schimbarea cheilor și cum se poate face (vezi doc. SVN + keychanger)
@@ -940,6 +968,7 @@ TODO: Datorită faptului că nu este un atac probabil, limităm numărul de chei
 %TODO: Bootloader & Bundler UG -> detalii tehnice despre schimbarea cheilor
 
 \subsection{Modulele auxiliare}
+TODO: UML + cod
 TODO: module auxiliare: RingBuffer (Communication), Retarget, Hardware, Timer(Communication), Config, Crc, Log
 TODO: abc(xyz) sageata de la XYZ (fara membrii) spre ABC
 
