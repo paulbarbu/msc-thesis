@@ -950,22 +950,127 @@ Toate aceste concepte se vor materializa în module independente ale bootloader-
 
 În această figură distingem modulele:
 \begin{itemize}
-\item \textbf{Flash}: folosit la gestionarea scrierii, citirii și ștergerii memoriei flash a microcontroller-ului.
-\item \textbf{Crypto}: TODO
-\item \textbf{Communication}: TODO
-\item \textbf{Protocol}: TODO
-\item \textbf{KeyManager}: TODO
-\item \textbf{Loader}: TODO
+\item \textbf{Flash}: Folosit la gestionarea scrierii, citirii și ștergerii memoriei flash a microcontroller-ului.
+\item \textbf{Crypto}: Are rolul de a gestiona biblioteca de criptare, deci servește ca un start în plus de abstractizare.
+\item \textbf{Communication}: Implementează canalul de comunicație. Acest modul este responsabil cu deschiderea portului serial, trimiterea și primirea de date pe acesta și, bine-înțeles cu închiderea lui.
+\item \textbf{Protocol}: Împachetează și formatează datele în pachete pentru a facilita comunicarea așa cum a fost ea descrisă în secțiunea aferentă protocolului de date.
+\item \textbf{KeyManager}: Responsabil cu scrierea și citirea cheilor de criptare în zona de memorie rezervată lor.
+\item \textbf{Loader}: Modulul principal al aplicației, el le aduce împreună pe restul, punându-le în funcțiune.
 \end{itemize}
 
-TODO: ce fac ele, fucntionalitate principala
-TODO: arhitectura bootloader-ului:  cod
-TODO: spune care este entry point-ul -> main + loaduserapp sau main + startuserapp
+\subsubsection{Modulul Flash}
+În modulul "Flash" al bootloader-ului se gestionează, conform numelui, memoria flash a microcontroller-ului. Acest modul are codul în fișierele \texttt{Flash.h} și respectiv \texttt{Flash.c}.
+
+Conform interfeței publice acestui modul el pune la dispoziție următoarele funcții:
+\begin{itemize}
+\item \texttt{bool FlashInit(const uint32\_t u32StartAddress)}: Se ocupă cu inițializarea acestui modul. Argumentul reprezintă adresa de start de unde dorim să facem scrierile. Orice scriere va avansa un pointer intern, iar scrierile următoare vor avea loc de la noua adresă.
+\item \texttt{void FlashDeinit()}: Modulul și pointer-ul de adresă de scriere intern sunt eliberate.
+\item \texttt{bool FlashEraseAddr(const uint32\_t u32Addr, const uint32\_t u32Len)}: Șterge o zonă de memorie de o anumită lungime, de la o anumită adresă, oriunde în memoria flash.
+\item \texttt{bool FlashErase(const uint32\_t u32Len)}: Șterge o zonă de memorie de o anumită lungime începând de la adresa indicată de pointer-ul intern.
+\item \texttt{bool FlashWrite(const uint8\_t *pu8Data, const uint32\_t u32Len)}: Scrie date de o lungime dată începând cu adresa indicată de pointer-ul intern și avansează pointer-ul cu lungimea datelor. Lungimea datelor este necesar să fie un multiplu de \texttt{FLASH\_WRITE\_SIZE} (constantă publică definită în interiorul modulului), limitare impusă din nou de partea hardware a memoriei. 
+\item \texttt{bool FlashWriteLast(const uint8\_t *pu8Data, const uint32\_t u32Len)}: Asemănător cu funcția de mai sus, diferența este că aceasta funcție adaugă padding la finalul datelor dacă acestea nu sunt un multiplu de \texttt{FLASH\_WRITE\_SIZE}. Numele provine de la faptul că funcția este proiectată să scrie ultima bucată de date, inițial șirul de date fiind împărțit în bucăți care respectă regula, iar ultima bucată necesitând padding.
+\item \texttt{uint32\_t FlashGetMaxAppSize()}: Returnează care este dimensiunea maximă a aplicației utilizator care poate fi scrisă în memorie.
+\end{itemize}
+
+\subsubsection{Modulul Crypto}
+Modulul "Crypto" este layer-ul de abstractizare al bibliotecii de criptare mbedTLS, aleasă anterior pentru a cripta și respectiv decripta aplicațiile utilizator.
+
+Interfața publică a acestuia pune la dispoziție următoarele funcții:
+\begin{itemize}
+\item \texttt{bool CryptoInit(bool bEncrypt, const uint8\_t *pu8Iv, const uint8\_t *pu8Key, const uint8\_t u8KeyLength)}: Determină inițializarea modulului de criptografie în modul de criptare sau decriptare în funcție de primul argument. Inițializarea se face cu vectorul de inițializare primit de la utilitarul Flasher în antetul firmware-ului și cu cheia de criptare citită cu ajutorul modulului \texttt{KeyManager}.
+\item \texttt{void CryptoDeinit()}: Oprește și eliberează resursele alocate de modul.
+\item \texttt{bool CryptoUpdate(const uint8\_t *pu8Data, const uint32\_t u32Len, uint8\_t *pu8Output)}: Apelul acestei funcții declanșează criptarea sau decriptarea datelor pasate ca parametru. Rezultatul este scris în buffer-ul de output, care trebuie să fie alocat în memorie de codul apelant.
+\item \texttt{bool CryptoFinish(const uint8\_t *pu8Data, const uint32\_t u32Len, uint8\_t *pu8Output, uint8\_t *pu8Tag, const uint32\_t u32TagLen)}: Încheie criptarea sau decriptarea datelor, generând ultimul rezultat și tag-ul de autentificare necesar validării autenticității datelor.
+\item \texttt{bool CryptoCheckEquals(const uint8\_t *pu8Data1, const uint8\_t *pu8Data2, const uint32\_t u32Len)}: Implementează comparația a două șiruri de date în timp constant, așa cum a fost descris într-o secțiune anterioară.
+\end{itemize}
+
+În cadrul acestui modul este interesant de prezentat modul flux al algoritmului AES, lucrul cu acest mod fiind prezentat în listing-ul \ref{aesStream}.
+
+\begin{listing}[h]
+\begin{minted}{c}
+/* ... */
+
+bRetval = (0 == mbedtls_gcm_update(&_ctx, u32Len,
+                                   pu8Data, pu8Output));
+
+if(bRetval)
+{
+    bRetval = (0 == mbedtls_gcm_finish(&_ctx, pu8Tag, u32TagLen));
+    
+    /* ... */
+}
+
+/* ... */
+\end{minted}
+
+\caption{O fracțiune a funcției \texttt{CryptoFinish}}
+\label{aesStream}
+\end{listing}
+
+Dinn listing-ul \ref{aesStream} se observă cum modulul de criptografie este într-adevăr un strat de abstractizare mai înalt pentru biblioteca din spate. Modul flux al algoritmului de criptare constă doar în pasarea segmentată a datelor funcției de update (\texttt{mbedtls\_gcm\_update}), iar la final generarea tag-ului de autentificare (\texttt{mbedtls\_gcm\_finish}), operații care în modul bloc s-ar fi făcut într-un singur apel al funcției \texttt{mbedtls\_gcm\_crypt\_and\_tag} sau \texttt{mbedtls\_gcm\_auth\_decrypt}, așa cum a fost prezentat la începutul acestei lucrări.
+
+\subsubsection{Modulul Communication}
+Acest modul este cel care permite comunicația bootloader-ului pe portul serial, acesta făcând posibilă trimiterea și primirea datelor prin interfața sa publică:
+\begin{itemize}
+\item \texttt{bool CommInit()}: Inițializează și deschide portul serial de comunicație.
+\item \texttt{void CommDeinit()}: Închide portul serial.
+\item \texttt{void Send(const uint8\_t *pu8Data, const uint32\_t u32Len)}: Declanșează trimiterea unui șir de date de o anumita lungime. Apelul acestei funcții returnează abia în momentul în care toate datele au fost trimise spre portul de comunicație.
+\item \texttt{uint32\_t Recv(uint8\_t *pu8Data, const uint32\_t u32Len, uint32\_t *pu32Timeout)}: Așteaptă primirea de date de pe portul serial, datele urmând a fi scrise în primul argument, un buffer deja alocat de codul apelant. Acest apel va fi întrerupt dacă după un timp de timeout datele de lungimea cerută nu sosesc.
+\item \texttt{void CommEmptyBuffers()}: Echivalentul unei reinițializări. Forțează modulul să golească buffer-ele interne folosite la citirea datelor.
+\end{itemize}
+
+Un aspect interesant al acestui modul este faptul că primirea datelor se face folosind sistemul de întreruperi al microcontroller-ului. Portul serial fiind capabil să genereze o întrerupere atunci când are loc un eveniment. Codul de tratare al întreruperii este prezentat în listing-ul \ref{uartIRQ}.
+
+\begin{listing}[h]
+\begin{minted}{c}
+void COMM_IRQHandler()
+{
+  // check if new data arrived
+  if ((kUART_RxDataRegFullFlag | kUART_RxOverrunFlag) &
+      UART_GetStatusFlags(COMM_UART))
+  {
+      uint8_t u8Data = UART_ReadByte(COMM_UART);
+
+      // if the ring buffer is not full, add data to it
+      if (!RbIsFull())
+      {
+          RbWrite(u8Data);
+      }
+      else
+      {
+          LOG_ERR("Ring buffer full!");
+      }
+  }
+}
+
+\end{minted}
+
+\caption{Codul rutinei de tratare a întreruperii aferentă portului serial}
+\label{uartIRQ}
+\end{listing}
+
+Această rutină verifcă dacă întreruperea a fost generată din cauza primirii a noi date pe port, iar dacă acest lucru este adevărat, citește octetul sosit și îl pune într-un buffer circular. Buffer-ul circular este necesar pentru a gestiona caracterele primite până la un moment dat și pentru a evita alocarea de memorie pentru fiecare citire. Buffer-ul acesta va fi prezentat într-o secțiune următoare, drept un modul auxiliar al bootloader-ului.
+
+\subsubsection{Modulul Protocol}
+TODO:
+
+\subsubsection{Modulul KeyManager}
+TODO:
 
 TODO: la Crypto și KeyManger spune ca ele ajuta la schimbarea cheilor și cum se poate face (vezi doc. SVN + keychanger)
 
 TODO: Datorită faptului că nu este un atac probabil, limităm numărul de chei la două și nu lăsăm bootloader-ul să se ocupe de acest lucru.
 %TODO: Bootloader & Bundler UG -> detalii tehnice despre schimbarea cheilor
+
+\subsubsection{Modulul Loader}
+TODO:
+
+
+
+TODO: ce fac ele, fucntionalitate principala
+TODO: arhitectura bootloader-ului:  cod
+TODO: spune care este entry point-ul -> main + loaduserapp sau main + startuserapp
+
 
 \subsection{Modulele auxiliare}
 TODO: UML + cod
