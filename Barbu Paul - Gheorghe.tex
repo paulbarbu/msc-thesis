@@ -925,11 +925,23 @@ Figura \ref{protocol-msd} prezintă cazul optimist, când toate pachetele sosesc
 Așadar printr-un protocol simplu am reușit crearea unui mecanism robust de trimitere al fișierului de firmware de la Flasher spre bootloader, protocol care rezistă și la interferențele rețelei, dar și la erorile apărute intern în cadrul bootloader-ului. Trebuie să precizăm și că această simplitate a fost posibilă datorită faptului că responsabilitatea de schimbare a cheilor de criptare a fost transferată aplicației utilizator. Dacă am fi implementat această funcționalitate în interiorul bootloader-ului protocolul ar fi devenit mai complex, fiind necesar să diferențieze între pachete care transportă părți ale aplicației și pachete care transportă chei de criptare.
 
 \section{Arhitectura și codul bootloader-ului}
+Scris in C, dar folosesc totuși o diagramă UML de clase deoarece conceptele de încapsulare sunt prezente și aici.
+
+TODO: explică cum encapsulez date in C față de C++
+TODO: UML: nu am pus constantele și membrii irelevanți pentru înțelegerea arhitecturii, de asemenea funcțiile sunt reprezentate fără parametrii din motive de spațiu
+
+\subsection{Modulele principale}
 TODO: arhitectura bootloader-ului UML + cod
+TODO: spune care este entry point-ul -> main + loaduserapp sau main + startuserapp
+
 TODO: la Crypto și KeyManger spune ca ele ajuta la schimbarea cheilor și cum se poate face (vezi doc. SVN + keychanger)
 
 TODO: Datorită faptului că nu este un atac probabil, limităm numărul de chei la două și nu lăsăm bootloader-ul să se ocupe de acest lucru.
 %TODO: Bootloader & Bundler UG -> detalii tehnice despre schimbarea cheilor
+
+\subsection{Modulele auxiliare}
+TODO: module auxiliare: RingBuffer (Communication), Retarget, Hardware, Timer(Communication), Config, Crc, Log
+TODO: abc(xyz) sageata de la XYZ (fara membrii) spre ABC
 
 \section{Architectura și codul utilitarelor Flasher și Bundler}
 TODO: arhitectura flasher si bundler si cum share-uiesc ele codul (e reutilizabil!) UML + cod
