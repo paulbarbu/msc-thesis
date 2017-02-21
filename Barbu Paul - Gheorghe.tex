@@ -1049,10 +1049,88 @@ void COMM_IRQHandler()
 \label{uartIRQ}
 \end{listing}
 
-Această rutină verifcă dacă întreruperea a fost generată din cauza primirii a noi date pe port, iar dacă acest lucru este adevărat, citește octetul sosit și îl pune într-un buffer circular. Buffer-ul circular este necesar pentru a gestiona caracterele primite până la un moment dat și pentru a evita alocarea de memorie pentru fiecare citire. Buffer-ul acesta va fi prezentat într-o secțiune următoare, drept un modul auxiliar al bootloader-ului.
+Această rutină verifică dacă întreruperea a fost generată din cauza primirii a noi date pe port, iar dacă acest lucru este adevărat, citește octetul sosit și îl pune într-un buffer circular. Buffer-ul circular este necesar pentru a gestiona caracterele primite până la un moment dat și pentru a evita alocarea de memorie pentru fiecare citire. Buffer-ul acesta va fi prezentat într-o secțiune următoare, drept un modul auxiliar al bootloader-ului.
 
 \subsubsection{Modulul Protocol}
-TODO:
+Mai sus am arătat pe scurt cum se folosește modulul de comunicație, acesta permițând trimiterea de date și primirea lor pe portul serial. Datele trimise și primite de bootloader vor avea un anumit format, acest format este stabilit de modulul "Protocol". În urma împachetării datelor, conform protocolului prezentat într-o secțiune anterioară, se vor folosi funcțiile modulului \texttt{Communication} pentru a trimite pachetul pe portul serial.
+
+În primul rând interfața publică a acestuia este:
+\begin{itemize}
+\item \texttt{bool RecvPacket(uint8\_t *pu8Data, uint32\_t *pu32Len, EPacketType *peType, uint32\_t u32Timeout)}: Similar cu funcția \texttt{Recv} din modulul de comunicație, această funcție așteaptă să primească un pachet pe linia serială. Din pachet se vor extrage datele utile, împreună cu lungimea lor, cât și tipul pachetului care a sosit. Această funcție poate aștepta și ea un timeout până când pachetul poate fi primit.
+\item \texttt{void SendPacket(const uint8\_t *pu8Data, const uint32\_t u32Len, const EPacketType ePacketType)}: Trimite anumite date pe portul serial, împachetându-le într-un anumit tip de pachet.
+\item \texttt{void SendStatus(const EStatusType eStatus)}: Trimite un pachet de tip \texttt{STATUS\_PACKET}, cu un anumit status pe portul serial. Această funcție este folosită de bootloader pentru a indica starea transmisiunii până la un punct în timp.
+\end{itemize}
+
+Conform semnăturilor funcțiilor acest modul definește și tipurile înfățișate în listing-ul \ref{protocolTypes};
+\begin{listing}[h]
+\begin{minted}{c}
+enum EPacketType_
+{
+    FIRST_PACKET = 0x00,
+    NEXT_PACKET,
+    LAST_PACKET,
+    STATUS_PACKET,
+};
+typedef enum EPacketType_ EPacketType;
+
+enum EStatusType_
+{
+    STATUS_ACK = 0x00,
+    STATUS_ERROR,
+    STATUS_RETRY,
+    STATUS_SUCCESS,
+};
+typedef enum EStatusType_ EStatusType;
+
+#pragma pack(push, 1)
+struct TPacketHeader_
+{
+    uint16_t m_u16Id;
+    uint8_t m_u8Type;
+    uint8_t m_u8Length;
+};
+
+typedef struct TPacketHeader_ TPacketHeader;
+#pragma pack(pop)
+\end{minted}
+
+\caption{Tipurile definite de modulul \texttt{Protocol}}
+\label{protocolTypes}
+\end{listing}
+
+Listing-ul \ref{protocolTypes} poate fi considerat oglinda celor prezentate în secțiunea care descrie pe larg comportamentul protocolului. Se poate vedea în primul rând care sunt tipurile de pachet pe care bootloader-ul le poate trimite sau accepta: \texttt{FIRST\_PACKET}, \texttt{NEXT\_PACKET}, \texttt{LAST\_PACKET}, \texttt{STATUS\_PACKET}, acestea fiind stocate în câmpul \texttt{m\_u8Type} al antetului pachetului.
+Avem de asemenea definite și codurile de stare, de la \texttt{STATUS\_ACK}, până la \texttt{STATUS\_SUCCESS}.
+
+Antetul pachetului constă din structura \texttt{TPacketHeader} și arată exact așa cum a fost el prezentat în secțiunea dedicată protocolului. Singurul lucru care nu este descris de această structură este modul cum se așează datele după antet și mai important cum se atașează codul polinomial de 16 biți la finalul datelor din pachet. Prezint bucata de cod care face acest lucru în listing-ul \ref{SendPacket}.
+
+\begin{listing}[h]
+\begin{minted}{c}
+void SendPacket(const uint8_t *pu8Data, const uint32_t u32Len,
+                const EPacketType ePacketType)
+{
+  uint8_t au8Packet[256];
+
+  TPacketHeader *packetHeader = (TPacketHeader *)au8Packet;
+  packetHeader->m_u16Id = PACKET_ID;
+  packetHeader->m_u8Type = ePacketType;
+  packetHeader->m_u8Length = u32Len;
+
+  memcpy(au8Packet + sizeof(TPacketHeader), pu8Data, u32Len);
+  uint16_t u16Crc = Crc16Ccitt(pu8Data, u32Len);
+  memcpy(au8Packet + sizeof(TPacketHeader) + u32Len, &u16Crc, 2);
+
+  // size = header + data + crc
+  Send(au8Packet, sizeof(TPacketHeader) + u32Len + 2);
+}
+\end{minted}
+
+\caption{Funcția \texttt{SendPacket} a modulului \texttt{Protocol}}
+\label{SendPacket}
+\end{listing}
+
+O instanță a structurii de tipul \texttt{TPacketHeader} este populată cu datele necesare, instanța fiind suprapusă unui buffer de memorie \texttt{au8Packet} de ajuns de mare încât să poată memora un întreg pachet. În urma populării antetului, se copiază datele transportate de pachet și apoi se calculează codul polinomial CRC-16 peste datele utile, codul polinomial fiind apoi atașat la finalul pachetului. În cele din urmă, funcția \texttt{Send} a modulului \texttt{Communication} este folosită pentru a trimite întregul pachet pe portul serial.
+
+Datorită modularizării codului, dacă pe viitor se dorește comunicația și în alte medii, de exemplu folosind TCP/IP, tot ce trebuie să facă programatorul este să reimplementeze codul modulului de comunicație, iar dacă interfața rămâne neschimbată, atunci și modulul \texttt{Protocol} poate fi reutilizat.
 
 \subsubsection{Modulul KeyManager}
 TODO:
@@ -1063,12 +1141,7 @@ TODO: Datorită faptului că nu este un atac probabil, limităm numărul de chei
 %TODO: Bootloader & Bundler UG -> detalii tehnice despre schimbarea cheilor
 
 \subsubsection{Modulul Loader}
-TODO:
-
-
-
-TODO: ce fac ele, fucntionalitate principala
-TODO: arhitectura bootloader-ului:  cod
+TODO: detalii despre transfer user app si despre chestiile interne aici, state machine (ilustrat)
 TODO: spune care este entry point-ul -> main + loaduserapp sau main + startuserapp
 
 
