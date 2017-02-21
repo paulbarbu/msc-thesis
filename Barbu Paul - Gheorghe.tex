@@ -925,19 +925,19 @@ Figura \ref{protocol-msd} prezintă cazul optimist, când toate pachetele sosesc
 Așadar printr-un protocol simplu am reușit crearea unui mecanism robust de trimitere al fișierului de firmware de la Flasher spre bootloader, protocol care rezistă și la interferențele rețelei, dar și la erorile apărute intern în cadrul bootloader-ului. Trebuie să precizăm și că această simplitate a fost posibilă datorită faptului că responsabilitatea de schimbare a cheilor de criptare a fost transferată aplicației utilizator. Dacă am fi implementat această funcționalitate în interiorul bootloader-ului protocolul ar fi devenit mai complex, fiind necesar să diferențieze între pachete care transportă părți ale aplicației și pachete care transportă chei de criptare.
 
 \section{Arhitectura și codul bootloader-ului}
-Fiind necesar să ruleze în mediul embedded codul bootloader-ului este scris în limbajul C. Acesta a fost alegerea evidentă datorită suportului oferit de către producătorii de microcontroller-e, aceștia oferind și biblioteci care abstractizează hardware-ul oferit de microcontroller, biblioteci scrise în C. Omniprezența acestui limbaj în mediu embedded se datorează în mare parte simplității lui, nu oferă multe funcționalități și metode de abstractizare și organizare a codului. Pe lângă simplitate un avantaj major pentru lucrul cu hardware este faptul că memoria este gestionată manual de către programator, acest lucru făcându-l un limbaj destul de greu de înțeles pentru începători, nu datorită complexității sale, ci datorită faptului că totul trebuie făcut de către programator.
+Fiind necesar să ruleze în mediul embedded codul bootloader-ului este scris în limbajul C. Acesta a fost alegerea evidentă datorită suportului oferit de către producătorii de microcontroller-e, aceștia oferind și biblioteci care abstractizează hardware-ul oferit de microcontroller, biblioteci scrise în C. Omniprezența acestui limbaj în mediul embedded se datorează în mare parte simplității lui, nu oferă multe funcționalități și metode de abstractizare și organizare a codului. Pe lângă simplitate un avantaj major pentru lucrul cu hardware este faptul că memoria este gestionată manual de către programator, făcându-l un limbaj destul de greu de înțeles pentru începători, nu datorită complexității sale, ci datorită faptului că resursele trebuie gestionate în totalitate de către dezvoltator. 
 
 Bootloader-ul este împărțit pe module, acestea aderând la scopul de flexibilitate propus la începutul lucrării. Fiecare modul este responsabil de o anumită sarcină (de exemplu comunicare pe portul serial sau scriere în memoria flash), în acest mod codul rămâne curat și extensibil. Modulele, datorită ortogonalității lor, vor lucra împreună pentru a realiza funcționalitățile bootloader-ului.
 
 Deși codul este scris în C, în cele ce urmează voi prezenta totuși diagrame UML ale modulelor. Aceste diagrame sunt specifice limbajelor orientate spre obiect, dar se pot aplica și în acest caz deoarece conceptele de încapsulare sunt prezente și aici. Diferența fața de un limbaj orientat spre obiect, cum ar fi C++, C\# sau Java, constă în faptul că un modul nu reprezintă un namespace sau o clasă, ci o pereche de fișiere header (\texttt{.h}) și sursă (\texttt{.c}). Încapsularea nu este implementată prin metode private sau protejate, ci prin intermediul funcțiilor statice dintr-un fișier \texttt{.c}.
 
 Secțiunile următoare vor arăta atât arhitectura modulelor importante, necesare pentru a realiza funcționalitatea de bază a bootloader-ului, cât și arhitectura modulelor auxiliare.
-Este important de precizat ca diagramele UML vor cuprinde doar funcțiile modulelor, membrii irelevanți pentru înțelegerea arhitecturii nefiind prezentați. De asemenea funcțiile sunt reprezentate fără parametrii din motive de spațiu.
+Este important de precizat ca diagramele UML vor cuprinde doar funcțiile modulelor, membrii irelevanți pentru înțelegerea arhitecturii nefiind prezentați. De asemenea funcțiile sunt reprezentate grafic fără parametrii din motive de spațiu.
 
 \subsection{Modulele principale}
 
 Modulele principale ale bootloader-ului sunt acelea care contribuie în mod direct la funcționalitatea acestuia. Printre acestea considerăm importantă scrierea în memoria flash, deoarece o aplicație utilizator trebuie memorată.
-Pentru a ajunge în posesia unei aplicații utilizator trebuie să putem comunica, așadar avem nevoie de un protocol de comunicație, cât și de un canal de comunicație pe care să transmitem protocolul. În cele din urmă trebuie să putem decripta aplicația primită pe canalul de comunicație, pentru ca bootloader-ul să o poată executa mai târziu.
+Pentru a ajunge în posesia unei aplicații utilizator trebuie să putem comunica, așadar avem nevoie de un protocol de comunicație, cât și de un canal de comunicație pe care să transmitem pachetele protocolului. În cele din urmă trebuie să putem decripta aplicația primită pe canalul de comunicație, pentru ca bootloader-ul să o poată executa mai târziu.
 
 Toate aceste concepte se vor materializa în module independente ale bootloader-ului, așa cum sunt prezentate în figura \ref{arhitectura}.
 
@@ -951,7 +951,7 @@ Toate aceste concepte se vor materializa în module independente ale bootloader-
 În această figură distingem modulele:
 \begin{itemize}
 \item \textbf{Flash}: Folosit la gestionarea scrierii, citirii și ștergerii memoriei flash a microcontroller-ului.
-\item \textbf{Crypto}: Are rolul de a gestiona biblioteca de criptare, deci servește ca un start în plus de abstractizare.
+\item \textbf{Crypto}: Are rolul de a gestiona biblioteca de criptare, deci servește ca un strat în plus de abstractizare.
 \item \textbf{Communication}: Implementează canalul de comunicație. Acest modul este responsabil cu deschiderea portului serial, trimiterea și primirea de date pe acesta și, bine-înțeles cu închiderea lui.
 \item \textbf{Protocol}: Împachetează și formatează datele în pachete pentru a facilita comunicarea așa cum a fost ea descrisă în secțiunea aferentă protocolului de date.
 \item \textbf{KeyManager}: Responsabil cu scrierea și citirea cheilor de criptare în zona de memorie rezervată lor.
@@ -1014,7 +1014,7 @@ Acest modul este cel care permite comunicația bootloader-ului pe portul serial,
 \begin{itemize}
 \item \texttt{bool CommInit()}: Inițializează și deschide portul serial de comunicație.
 \item \texttt{void CommDeinit()}: Închide portul serial.
-\item \texttt{void Send(const uint8\_t *pu8Data, const uint32\_t u32Len)}: Declanșează trimiterea unui șir de date de o anumita lungime. Apelul acestei funcții returnează abia în momentul în care toate datele au fost trimise spre portul de comunicație.
+\item \texttt{void Send(const uint8\_t *pu8Data, const uint32\_t u32Len)}: Declanșează trimiterea unui șir de date de o anumită lungime. Apelul acestei funcții returnează abia în momentul în care toate datele au fost trimise spre portul de comunicație.
 \item \texttt{uint32\_t Recv(uint8\_t *pu8Data, const uint32\_t u32Len, uint32\_t *pu32Timeout)}: Așteaptă primirea de date de pe portul serial, datele urmând a fi scrise în primul argument, un buffer deja alocat de codul apelant. Acest apel va fi întrerupt dacă după un timp de timeout datele de lungimea cerută nu sosesc.
 \item \texttt{void CommEmptyBuffers()}: Echivalentul unei reinițializări. Forțează modulul să golească buffer-ele interne folosite la citirea datelor.
 \end{itemize}
@@ -1054,7 +1054,7 @@ Această rutină verifică dacă întreruperea a fost generată din cauza primir
 \subsubsection{Modulul Protocol}
 Mai sus am arătat pe scurt cum se folosește modulul de comunicație, acesta permițând trimiterea de date și primirea lor pe portul serial. Datele trimise și primite de bootloader vor avea un anumit format, acest format este stabilit de modulul "Protocol". În urma împachetării datelor, conform protocolului prezentat într-o secțiune anterioară, se vor folosi funcțiile modulului \texttt{Communication} pentru a trimite pachetul pe portul serial.
 
-În primul rând interfața publică a acestuia este:
+Interfața publică a acestui modul este:
 \begin{itemize}
 \item \texttt{bool RecvPacket(uint8\_t *pu8Data, uint32\_t *pu32Len, EPacketType *peType, uint32\_t u32Timeout)}: Similar cu funcția \texttt{Recv} din modulul de comunicație, această funcție așteaptă să primească un pachet pe linia serială. Din pachet se vor extrage datele utile, împreună cu lungimea lor, cât și tipul pachetului care a sosit. Această funcție poate aștepta și ea un timeout până când pachetul poate fi primit.
 \item \texttt{void SendPacket(const uint8\_t *pu8Data, const uint32\_t u32Len, const EPacketType ePacketType)}: Trimite anumite date pe portul serial, împachetându-le într-un anumit tip de pachet.
@@ -1134,7 +1134,7 @@ Datorită modularizării codului, dacă pe viitor se dorește comunicația și �
 
 \subsubsection{Modulul KeyManager}
 
-Modulul "KeyManager" este important datorită faptului că acesta se ocupă (în principal) cu citirea cheilor din memoria flash a  microcontroller-ului. Acest modul are următoarea interfață publică:
+Modulul "KeyManager" este important datorită faptului că acesta se ocupă cu citirea cheilor din memoria flash a  microcontroller-ului. Acest modul are următoarea interfață publică:
 
 \begin{itemize}
 \item \texttt{bool KeyGet(uint8\_t *pu8Key, uint8\_t *pu8Freshness)}: Citește o cheie de criptare din memorie și o scrie în primul argument pasat funcției, acest argument trebuie să fie deja alocat și destul de încăpător pentru o cheie de criptare (16 octeți).
@@ -1143,12 +1143,12 @@ Modulul "KeyManager" este important datorită faptului că acesta se ocupă (în
 
 Deși interfața sa publică pune la dispoziție și o funcție de scriere a unei chei de criptare, bootloader-ul nu o folosește. Această funcție a fost scrisă din considerente de reutilizare a codului, acest modul putând fi reutilizat de o aplicație utilizator care face scrierea cheilor.
 
-Cele două funcții, de citire și respectiv scriere, ambele cer un argument numit "freshness". Funcția de citire scrie acest argument, folosind-ul ca argument de ieșire, iar cea de scriere a unei chei, citește acest argument pentru a-l scrie în memoria flash, fără să îl modifice. Freshness-ul, reprezintă prospețimea unei chei de criptare, cu cât el are o valoare mai mare, cu atât bootloader-ul, respectiv funcția \texttt{KeyGet}, consideră că o cheie este mai nouă. Acest parametru a fost introdus pentru a putea face distincția intre diferitele chei stocate pe microcontroller.
+Cele două funcții, de citire și respectiv scriere, ambele cer un argument numit "freshness". Funcția de citire scrie acest argument, folosind-ul ca argument de ieșire, iar cea de scriere a unei chei, citește acest argument pentru a-l scrie în memoria flash, fără să îl modifice. Freshness-ul, reprezintă prospețimea unei chei de criptare, cu cât el are o valoare mai mare, cu atât bootloader-ul, respectiv funcția \texttt{KeyGet}, consideră că o cheie este mai nouă. Acest parametru a fost introdus pentru a putea face distincția între diferitele chei stocate pe microcontroller.
 Planul inițial fiind simplu și considerând o singură cheie de criptare nu ar fi necesitat un asemenea indicator. Totuși pentru că am mărit spațiul rezervat unei chei de criptare la un întreg sector (din considerente hardware), am decis să introduc acest indice de prospețime pentru a putea alege o cheie de criptare dintre toate cele existente în zona dedicată lor.
 
 În mod artificial am limitat numărul de chei de criptare la două, deoarece avem nevoie doar de o singură cheie de criptare și eventual de una de rezervă, nefiind nevoie de mai multe chei pentru că acestea se pot schimba. Bootloader-ul va prefera tot timpul o cheie de criptare cu un freshness mai mare, aceasta fiind considerată mai nouă.
 
-O aplicație utilizator care schimbă aceste chei poate folosi freshness-ul în avantajul său. Dacă pe microcontroller există două chei, un pe poziția 0 (\texttt{u8Index = 0}) cu freshness-ul 1 și una pe poziția 2 cu freshness-ul 0, inițial bootloader-ul va prefera cheia de pe poziția 0, având un indicator de prospețime mai mare. Când o aplicație dorește să schimbe a doua cheie și să îi seteze un freshness de 2 spre exemplu ar trebui să suprascrie datele din zona de memorie rezervată cheilor. În caz că scrierea noii chei nu se încheie cu succes, se poate întrerupe alimentarea microcontroller-ului de exemplu, indicatorul de freshness al primei chei este neschimbat, așadar, chiar dacă scrierea noii chei a eșuat bootloader-ul poate funcționa în continuare folosind tot prima cheie.
+O aplicație utilizator care schimbă aceste chei poate folosi freshness-ul în avantajul său. Dacă pe microcontroller există două chei, una pe prima poziție (\texttt{u8Index = 0}) cu freshness-ul 1 și una pe poziția a doua cu freshness-ul 0, inițial bootloader-ul va prefera cheia de pe poziția 0, având un indicator de prospețime mai mare. Când o aplicație dorește să schimbe a doua cheie și să îi seteze un freshness de 2, ar trebui să suprascrie datele din zona de memorie rezervată cheilor. În caz că scrierea noii chei nu se încheie cu succes, se poate întrerupe alimentarea microcontroller-ului de exemplu, indicatorul de freshness al primei chei este neschimbat, așadar, chiar dacă scrierea noii chei a eșuat, bootloader-ul poate funcționa în continuare folosind tot prima cheie.
 
 Structura unei chei care este stocată în memorie arată ca în listing-ul \ref{keyStruct}.
 
@@ -1160,7 +1160,7 @@ struct TKey_
     uint8_t m_u8Freshness;
     uint8_t m_au8Key[KEY_LEN];
     uint8_t m_u8Chksum;
-    uint8_t _au8Padding[(18/FLASH_ERASE_SIZE + 1) * FLASH_ERASE_SIZE - 18];
+    uint8_t _au8Padding[/* ... */];
 };
 #pragma pack(pop)
 \end{minted}
@@ -1169,11 +1169,12 @@ struct TKey_
 \label{keyStruct}
 \end{listing}
 
-În plus față de ceea ce am descris deja, listing-ul acesta ne mai arată și faptul că am folosit și aici un cod polinomial de detecție a erorilor, acesta fiind util în cazul în care memoria flash devine coruptă. Bootloader-ul va alege tot timpul cheia cea mai proaspătă (un indicator de prospețime mare) și care are și CRC-ul valid. Ultimul membru al structurii are rolul de a adăuga atât padding cât este necesar pentru ca toată structura să ajungă la mărimea minimă care poate fi ștearsă din memoria flash. Aplicația utilizator folosind această funcționalitate pentru a schimba cheile. Fiind vorba de o memorie flash, cheia trebuie întâi ștearsă apoi scrisă valoarea nouă.
+În plus față de ceea ce am descris deja, listing-ul acesta ne mai arată și faptul că am folosit și aici un cod polinomial de detecție a erorilor, acesta fiind util în cazul în care memoria flash devine coruptă. Bootloader-ul va alege tot timpul cheia cea mai proaspătă (un indicator de prospețime mare) și care are și CRC-ul valid. Ultimul membru al structurii are rolul de a adăuga atât padding cât este necesar pentru ca toată structura să ajungă la mărimea minimă care poate fi ștearsă din memoria flash. Aplicația utilizator folosind această funcționalitate pentru a schimba cheile. Fiind vorba de o memorie flash, cheia trebuie întâi ștearsă și abia apoi scrisă valoarea noii chei.
 
 \subsubsection{Modulul Loader}
 TODO: detalii despre transfer user app si despre chestiile interne aici, state machine (ilustrat)
 TODO: spune care este entry point-ul -> main + loaduserapp sau main + startuserapp
+TODO: despre dependentele dintre module
 
 
 \subsection{Modulele auxiliare}
