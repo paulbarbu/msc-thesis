@@ -1208,21 +1208,109 @@ Prezentăm în figura \ref{arhitectura-aux} diagrama UML a acestor module.
     \label{arhitectura-aux}
 \end{figure}
 
+Din diagramă distingem aceste module auxiliare:
+\begin{itemize}
+\item \textbf{Hardware}: Modulul responsabil cu gestiunea butonului de pornire al bootloader-ului. Mecanismul pe care acest modul îl folosește este unul simplu: pe un pin al microcontroller-ului se pune semnalul "1" logic, iar un alt pin este setat ca input. În momentul în care cele două sunt legate împreună (prin apăsarea unui buton sau setarea unui jumper) pin-ul de input va citi semnalul "1" logic. Deoarece bootloader-ul este interesat doar de starea pinului la pornire, este de ajuns un simplu if, deoarece starea înaltă a semnalului este păstrată în mod natural de utilizator prin apăsarea continuă a butonului.
+\item \textbf{Retarget}: Fiind vorba de un mediu embedded, acest modul redirecționează ieșirea funcției \texttt{printf} pe un port serial special rezervat pentru depanarea programelor care rulează pe microcontroller.
+\item \textbf{Crc}: Aici sunt implementate funcțiile care calculează codurile polinomiale așa cum au fost descrise ele în partea de început a acestei lucrări, în cadrul secțiunii cu noțiuni teoretice.
+\item \textbf{Timer}: Acest modul vine în ajutorul modulului de comunicație, facilitând măsurarea timpului și implementarea mecanismului de timeout.
+\item \textbf{RingBuffer}: Buffer-ul pe care modulul de comunicație îl populează atunci când primește date pe portul serial este implementat de acest modul. Este vorba de un buffer circular, de mărime fixă care evită alocarea de memorie pentru pachetele care vin din exterior.
+\end{itemize}
 
-TODO: UML + cod
-TODO: module auxiliare: RingBuffer (Communication), Retarget, Hardware, Timer(Communication), Config, Crc, Log
-TODO: abc(xyz) sageata de la XYZ (fara membrii) spre ABC
+Deoarece restul modulelor au o implementare trivială sau au fost deja prezentate aspectele importante legate de funcționarea lor, așa cum este cazul CRC-ului, voi prezenta în cele ce urmează trei dintre modulele auxiliare.
+
+\subsubsection{Modulul Retarget}
+În general, în lumea embedded, prin retargetting se înțelege redirectarea apelurilor \texttt{printf} sau \texttt{scanf} spre altceva decât ecran și tastatură. De exemplu \texttt{printf} poate scrie date pe un port serial, iar \texttt{scanf} poate citi date de pe acest port. Retarget-ul este necesar datorită limitării hardware pe care o impune dispozitivul embedded, acesta neavând un ecran și o tastatură încorporate și în general fiind necesar să ruleze fără asemenea periferice atașate.
+
+În cadrul bootloader-ului modulul \texttt{Retarget} este modulul care se ocupă doar cu redirectarea funcției \texttt{printf}. Acest lucru se face prin redefinirea a două funcții din biblioteca standard a C-ului \cite{retarget}: \texttt{int \_write(int fd, const void *buf, size\_t count)} și \texttt{int fputc(int ch, FILE *f)}. Noile implementări sunt vizibile în listing-ul \ref{retargetCode}.
+
+\begin{listing}[h]
+\begin{minted}{c}
+int fputc(int ch, FILE *f)
+{
+    UartSendChar(ch);
+    return ch;
+}
+
+int __attribute__((used)) _write(int fd,
+    const void *buf, size_t count)
+{
+    for(size_t i=0; i< count; ++i)
+    {
+        UartSendChar(((char *)buf)[i]);
+    }
+
+    return count;
+}
+\end{minted}
+
+\caption{Codul de retarget al bootloader-ului}
+\label{retargetCode}
+\end{listing}
+
+Cele două funcții își păstrează comportamentul conform interfeței lor, \texttt{fputc} trimite un singur caracter spre portul serial, pe când \texttt{\_write} scrie un întreg buffer. Totuși ambele funcții au în comun apelul la funcția \texttt{UartSendChar}. Aceasta fiind de fapt cea care face trimiterea pe serial a unui octet de date. Implementarea ei poate fi găsită în fișierul \texttt{Retarget.c} la un loc cu cele două funcții descrise anterior.
+
+\subsubsection{Modulul Timer}
+Modulul \texttt{Timer} este cel care implementează funcționalitatea de timeout folosită în cadrul comunicației.
+Acesta, prin interfața sa publică, permite pornirea unui cronometru și verificarea acestuia:
+
+\begin{itemize}
+\item \texttt{void TimerInit()}: Pornește modulul de cronometrare, dar nu pornește și cronometrul.
+\item \texttt{void TimerDeinit()}: Oprește modulul de cronometrare și eliberează resursele acestuia.
+\item \texttt{void TimerStart(const uint32\_t u32Timeout)}: Pornește cronometrul, acesta cronometrând până ajunge la numărul de milisecunde specificate ca parametru după care oprindu-se singur.
+\item \texttt{uint32\_t TimerStop()}: Oprește cronometrul dacă acesta nu s-a oprit singur.
+\item \texttt{bool TimerIsExpired()}: Verifică dacă cronometrul a fost oprit sau a expirat.
+\end{itemize}
+
+Deoarece cronometrul trebuie să ruleze și dacă procesorul este ocupat cu executarea de cod util, acest modul folosește și el, ca și modulul de comunicație, întreruperile. În funcția \texttt{TimerStart} întreruperea este pornită și timeout-ul setat, iar în \texttt{TimerStop} întreruperea este dezactivată și timpul care a mai rămas până când întreruperea ar fi rulat, este returnat. Codul rutinei de tratare a întreruperii este cât se poate de simplu, el poate fi văzut în listing-ul \ref{timerIrq}.
+
+\begin{listing}[h]
+\begin{minted}{c}
+void PIT0_IRQHandler()
+{
+    _bTimeout = true;
+    TimerStop();
+}
+\end{minted}
+
+\caption{Rutina de tratare a întreruperii de cronometru}
+\label{timerIrq}
+\end{listing}
+
+Această rutină face doar să marcheze faptul că perioada de cronometrare setată la apelul \texttt{TimerStart} a fost atinsă și apoi să oprească cronometrul. \texttt{PIT} vine de la "Periodic Interrupt Timer", componenta hardware pe care se bazează acest modul și care oferă de fapt funcționalitatea și oscilatorul pentru măsurarea timpului \cite{kv5x}.
+
+\subsubsection{Modulul RingBuffer}
+
+Pentru a evita alocarea memoriei dinamice (pe heap), modulul \texttt{RingBuffer} vine cu o implementare de buffer circular de care modulul \texttt{Communication} se folosește pentru a stoca datele care vin de pe portul serial.
+
+Interfața publică a acestui modul este:
+\begin{itemize}
+\item \texttt{bool RbInit(volatile uint8\_t *pu8RingBuffer, const uint32\_t u32RingBufferSize)}: Inițializează un buffer circular de o anumită lungime în zona de memorie specificată prin cei doi parametrii.
+\item \texttt{void RbDeinit()}: Resetează buffer-ul circular.
+\item \texttt{uint32\_t RbRead(uint8\_t *pu8Data, const uint32\_t u32Len)}: Citește din buffer-ul circular un șir de date de lungimea indicată de al doilea parametru și îl scrie în buffer-ul indicat de primul argument.
+\item \texttt{void RbWrite(const uint8\_t u8Data)}: Adaugă date în buffer, cu riscul de a suprascrie date vechi dacă lungimea celor noi ar trece de finalul curent al bootloader-ului
+\item \texttt{bool RbIsFull()}: Verifică daca buffer-ul circular este plin.
+\item \texttt{uint32\_t RbCount()}: Returnează lungimea datelor care sunt stocate în mod curent în buffer.
+\item \texttt{void RbEmpty()}: Golește buffer-ul circular.
+\end{itemize}
+
+Un buffer circular este foarte util în mediul embedded deoarece nu necesită foarte multe resurse pentru a fi implementat. O zonă de memorie care să țină datele și doi pointer-i, unul la capătul de scriere și unul la capătul de citire al buffer-ului ajung pentru a avea o implementare eficientă. De asemenea aceasta structură de date este preferată deoarece golirea sa se face în timp constant (implică doar resetarea a celor doi pointeri la începutul zonei de memorie) și deci modulul de comunicație poate să golească rapid buffer-ul între două trimiteri sau primiri de pachete.
+
+Nu în ultimul rând, în afară de modulele cu o structură și un rol bine definite, bootloader-ul mai este format din două fișiere, \texttt{Config.h} și \texttt{Log}. Cele două fișiere sunt incluse la discreție de modulele bootloader-ului pentru a avea acces la adresele de start ale zonelor de memorie, definite drept constante în fișierul \texttt{Config.h}. De asemenea fișierul \texttt{Log.h} este folosit ca un strat subțire de abstractizare peste funcțiile de afișare (care la rândul lor au fost suprascrise de modulul \texttt{Retarget}) oferind informații în plus, cum ar fi linia și fișierul de unde este apelată funcția curentă care face output. Aceste informații au fost vitale în depanarea bootloader-ului și în timpul dezvoltării sale acesta fiind singurul mod de a ști care a fost ultimul loc vizitat de microprocesor înainte să apară o problemă.
 
 \section{Architectura și codul utilitarelor Flasher și Bundler}
 TODO: arhitectura flasher si bundler si cum share-uiesc ele codul (e reutilizabil!) UML + cod
 
 \section{Concluzii și dezvoltări ulterioare}
+TODO: mod de numire si codare consistenta, hungarian notation, cod simplu, modular, am atins scopurile
+
 TODO: alegerea unei aplicatii dintre mai multe
 TODO: evitarea folosirii unui script de linker pentru aplicatiile utilizator
 TODO: mesaje mai bune din bundler/flasher
 TODO: indicatie pe microcontroller ca bootloader-ul ruleaza!
 TODO: management al cheilor via bundler
 TODO: mesaje sugestive cu privite la erori in pachetele de status
+TODO: modulele, cum ar fi rb-ul, sunt singleton
 
 \newpage
 \bibliographystyle{plain}
