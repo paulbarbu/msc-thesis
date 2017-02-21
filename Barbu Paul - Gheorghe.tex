@@ -959,7 +959,7 @@ Toate aceste concepte se vor materializa în module independente ale bootloader-
 \end{itemize}
 
 \subsubsection{Modulul Flash}
-În modulul "Flash" al bootloader-ului se gestionează, conform numelui, memoria flash a microcontroller-ului. Acest modul are codul în fișierele \texttt{Flash.h} și respectiv \texttt{Flash.c}.
+În modulul \texttt{Flash} al bootloader-ului se gestionează, conform numelui, memoria flash a microcontroller-ului. Acest modul are codul în fișierele \texttt{Flash.h} și respectiv \texttt{Flash.c}.
 
 Conform interfeței publice acestui modul el pune la dispoziție următoarele funcții:
 \begin{itemize}
@@ -973,7 +973,7 @@ Conform interfeței publice acestui modul el pune la dispoziție următoarele fu
 \end{itemize}
 
 \subsubsection{Modulul Crypto}
-Modulul "Crypto" este layer-ul de abstractizare al bibliotecii de criptare mbedTLS, aleasă anterior pentru a cripta și respectiv decripta aplicațiile utilizator.
+Modulul \texttt{Crypto} este layer-ul de abstractizare al bibliotecii de criptare mbedTLS, aleasă anterior pentru a cripta și respectiv decripta aplicațiile utilizator.
 
 Interfața publică a acestuia pune la dispoziție următoarele funcții:
 \begin{itemize}
@@ -1052,7 +1052,7 @@ void COMM_IRQHandler()
 Această rutină verifică dacă întreruperea a fost generată din cauza primirii a noi date pe port, iar dacă acest lucru este adevărat, citește octetul sosit și îl pune într-un buffer circular. Buffer-ul circular este necesar pentru a gestiona caracterele primite până la un moment dat și pentru a evita alocarea de memorie pentru fiecare citire. Buffer-ul acesta va fi prezentat într-o secțiune următoare, drept un modul auxiliar al bootloader-ului.
 
 \subsubsection{Modulul Protocol}
-Mai sus am arătat pe scurt cum se folosește modulul de comunicație, acesta permițând trimiterea de date și primirea lor pe portul serial. Datele trimise și primite de bootloader vor avea un anumit format, acest format este stabilit de modulul "Protocol". În urma împachetării datelor, conform protocolului prezentat într-o secțiune anterioară, se vor folosi funcțiile modulului \texttt{Communication} pentru a trimite pachetul pe portul serial.
+Mai sus am arătat pe scurt cum se folosește modulul de comunicație, acesta permițând trimiterea de date și primirea lor pe portul serial. Datele trimise și primite de bootloader vor avea un anumit format, acest format este stabilit de modulul \texttt{Protocol}. În urma împachetării datelor, conform protocolului prezentat într-o secțiune anterioară, se vor folosi funcțiile modulului \texttt{Communication} pentru a trimite pachetul pe portul serial.
 
 Interfața publică a acestui modul este:
 \begin{itemize}
@@ -1134,7 +1134,7 @@ Datorită modularizării codului, dacă pe viitor se dorește comunicația și �
 
 \subsubsection{Modulul KeyManager}
 
-Modulul "KeyManager" este important datorită faptului că acesta se ocupă cu citirea cheilor din memoria flash a  microcontroller-ului. Acest modul are următoarea interfață publică:
+Modulul \texttt{KeyManager} este important datorită faptului că acesta se ocupă cu citirea cheilor din memoria flash a  microcontroller-ului. Acest modul are următoarea interfață publică:
 
 \begin{itemize}
 \item \texttt{bool KeyGet(uint8\_t *pu8Key, uint8\_t *pu8Freshness)}: Citește o cheie de criptare din memorie și o scrie în primul argument pasat funcției, acest argument trebuie să fie deja alocat și destul de încăpător pentru o cheie de criptare (16 octeți).
@@ -1172,12 +1172,43 @@ struct TKey_
 În plus față de ceea ce am descris deja, listing-ul acesta ne mai arată și faptul că am folosit și aici un cod polinomial de detecție a erorilor, acesta fiind util în cazul în care memoria flash devine coruptă. Bootloader-ul va alege tot timpul cheia cea mai proaspătă (un indicator de prospețime mare) și care are și CRC-ul valid. Ultimul membru al structurii are rolul de a adăuga atât padding cât este necesar pentru ca toată structura să ajungă la mărimea minimă care poate fi ștearsă din memoria flash. Aplicația utilizator folosind această funcționalitate pentru a schimba cheile. Fiind vorba de o memorie flash, cheia trebuie întâi ștearsă și abia apoi scrisă valoarea noii chei.
 
 \subsubsection{Modulul Loader}
-TODO: detalii despre transfer user app si despre chestiile interne aici, state machine (ilustrat)
-TODO: spune care este entry point-ul -> main + loaduserapp sau main + startuserapp
-TODO: despre dependentele dintre module
 
+Acesta este modulul principal al bootloader-ului, după cum se vede și în diagrama UML el folosește funcționalitatea tuturor celorlalte module, fie în mod direct, cum este cazul modulelor \texttt{KeyManager}, \texttt{Protocol} \texttt{Crypto} și \texttt{Flash}, fie indirect cum este cazul modulului \texttt{Communication} sau a bibliotecii mbedTLS.
+
+Unica funcție publică a acestui modul este \texttt{bool LoadUserApp()}, ea este responsabilă pentru a încărca aplicația utilizator. Dacă la transfer apare o eroare sau se constata că aplicația nu este autentică, tot această funcție va determina invalidarea zonei de memorie a aplicației, pentru a evita executarea unei aplicații malițioase sau invalide data viitoare când microcontroller-ul pornește. Așadar doar în acest scurt scenariu observăm că modulul \texttt{Loader} folosește funcția \texttt{FlashEraseAddr} a modulului \texttt{Flash} pentru a invalida o porțiune a memoriei flash și funcția \texttt{CryptoCheckEquals} a modulului \texttt{Crypto} pentru a valida tag-ul de autentificare al aplicației tocmai transferate.
+
+Funcționarea acestui modul poate fi privită ca un automat cu stări finite, așa cum este ilustrat în figura \ref{loaderStates}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{loader_states}
+    \caption{Fluxul de date în modulul \texttt{Loader}}
+    \label{loaderStates}
+\end{figure}
+
+Datorită faptului ca întreg fluxul de date este determinat de transmisia pe portul serial, această figură este extrem de asemănătoare cu ceea ce am prezentat în secțiunea dedicată protocolului de comunicație. Tranzițiile între stările automatului făcându-se în mare parte datorită sosirii anumitor tipuri de pachete. Aceste stări au fost reprezentate cu culoarea mov. Pe când stările gri reprezintă stări necondiționate de o tranziție, ele putând fi la fel de bine încorporate în starea anterioară sau următoare a grafului, dar au fost păstrate separate pentru a înfățișa cât mai bine comportamentul bootloader-ului.
+
+În cazul în care codul va ajunge în starea de "SUCCESS", deci bootloader-ul a primit cu succes o aplicație validă, atunci, acesta va continua cu execuția aplicației.
+În caz contrar, când apare o eroare sau aplicația este invalidă, bootloader-ul va încerca să reia procesul de la început.
+Toate stările prezentate pe acest graf reprezintă nume de funcții din modulele \texttt{Loader} și \texttt{Crypto}, dar și funcții din fișierul \texttt{main.c}: \texttt{void StartBootloader()} și \texttt{void StartUserApp()}.
+Starea "Start User App" fiind chiar starea pe care ne-o dorim.
+
+Cele două funcții din \texttt{main.c} reprezintă punctele principale de intrare la pornirea microcontroller-ului, dacă pe microcontroller există deja o aplicație validă și utilizatorul nu apasă butonul hardware, aplicația va fi pornită prin apelarea funcției \texttt{StartUserApp}, dacă în schimb utilizatorul apasă pe butonul dispozitivului sau nu există o aplicație validă la pornirea sistemului embedded, bootloader-ul va fi pornit prin apelul funcției \texttt{StartBootloader}, moment în care acesta va iniția modulele de criptografie, cel de lucru cu memoria (\texttt{Flash}), modulul de comunicație și va aștepta transmisia unei aplicații pe portul serial.
 
 \subsection{Modulele auxiliare}
+
+Ca toate lucrurile prezentate mai sus să fie posibile s-au folosit și câteva module auxiliare, acestea nu contribuie efectiv la funcționalitatea de încărcare a aplicației, dar fără ele încărcarea nu ar fi totuși posibilă.
+
+Prezentăm în figura \ref{arhitectura-aux} diagrama UML a acestor module.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{arhitectura-aux}
+    \caption{Arhitectura modulelor auxiliare ale bootloader-ului}
+    \label{arhitectura-aux}
+\end{figure}
+
+
 TODO: UML + cod
 TODO: module auxiliare: RingBuffer (Communication), Retarget, Hardware, Timer(Communication), Config, Crc, Log
 TODO: abc(xyz) sageata de la XYZ (fara membrii) spre ABC
