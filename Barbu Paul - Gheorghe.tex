@@ -1133,12 +1133,43 @@ O instanță a structurii de tipul \texttt{TPacketHeader} este populată cu date
 Datorită modularizării codului, dacă pe viitor se dorește comunicația și în alte medii, de exemplu folosind TCP/IP, tot ce trebuie să facă programatorul este să reimplementeze codul modulului de comunicație, iar dacă interfața rămâne neschimbată, atunci și modulul \texttt{Protocol} poate fi reutilizat.
 
 \subsubsection{Modulul KeyManager}
-TODO:
 
-TODO: la Crypto și KeyManger spune ca ele ajuta la schimbarea cheilor și cum se poate face (vezi doc. SVN + keychanger)
+Modulul "KeyManager" este important datorită faptului că acesta se ocupă (în principal) cu citirea cheilor din memoria flash a  microcontroller-ului. Acest modul are următoarea interfață publică:
 
-TODO: Datorită faptului că nu este un atac probabil, limităm numărul de chei la două și nu lăsăm bootloader-ul să se ocupe de acest lucru.
-%TODO: Bootloader & Bundler UG -> detalii tehnice despre schimbarea cheilor
+\begin{itemize}
+\item \texttt{bool KeyGet(uint8\_t *pu8Key, uint8\_t *pu8Freshness)}: Citește o cheie de criptare din memorie și o scrie în primul argument pasat funcției, acest argument trebuie să fie deja alocat și destul de încăpător pentru o cheie de criptare (16 octeți).
+\item \texttt{bool KeyWrite(const uint8\_t u8Freshness, const uint8\_t *pu8Key, const uint8\_t u8Index)}: Implementează codul de scriere al unei chei de criptare, aceasta va fi scrisă la poziția indicată de ultimul argument, cu un indice de prospețime atât cât spune primul parametru.
+\end{itemize}
+
+Deși interfața sa publică pune la dispoziție și o funcție de scriere a unei chei de criptare, bootloader-ul nu o folosește. Această funcție a fost scrisă din considerente de reutilizare a codului, acest modul putând fi reutilizat de o aplicație utilizator care face scrierea cheilor.
+
+Cele două funcții, de citire și respectiv scriere, ambele cer un argument numit "freshness". Funcția de citire scrie acest argument, folosind-ul ca argument de ieșire, iar cea de scriere a unei chei, citește acest argument pentru a-l scrie în memoria flash, fără să îl modifice. Freshness-ul, reprezintă prospețimea unei chei de criptare, cu cât el are o valoare mai mare, cu atât bootloader-ul, respectiv funcția \texttt{KeyGet}, consideră că o cheie este mai nouă. Acest parametru a fost introdus pentru a putea face distincția intre diferitele chei stocate pe microcontroller.
+Planul inițial fiind simplu și considerând o singură cheie de criptare nu ar fi necesitat un asemenea indicator. Totuși pentru că am mărit spațiul rezervat unei chei de criptare la un întreg sector (din considerente hardware), am decis să introduc acest indice de prospețime pentru a putea alege o cheie de criptare dintre toate cele existente în zona dedicată lor.
+
+În mod artificial am limitat numărul de chei de criptare la două, deoarece avem nevoie doar de o singură cheie de criptare și eventual de una de rezervă, nefiind nevoie de mai multe chei pentru că acestea se pot schimba. Bootloader-ul va prefera tot timpul o cheie de criptare cu un freshness mai mare, aceasta fiind considerată mai nouă.
+
+O aplicație utilizator care schimbă aceste chei poate folosi freshness-ul în avantajul său. Dacă pe microcontroller există două chei, un pe poziția 0 (\texttt{u8Index = 0}) cu freshness-ul 1 și una pe poziția 2 cu freshness-ul 0, inițial bootloader-ul va prefera cheia de pe poziția 0, având un indicator de prospețime mai mare. Când o aplicație dorește să schimbe a doua cheie și să îi seteze un freshness de 2 spre exemplu ar trebui să suprascrie datele din zona de memorie rezervată cheilor. În caz că scrierea noii chei nu se încheie cu succes, se poate întrerupe alimentarea microcontroller-ului de exemplu, indicatorul de freshness al primei chei este neschimbat, așadar, chiar dacă scrierea noii chei a eșuat bootloader-ul poate funcționa în continuare folosind tot prima cheie.
+
+Structura unei chei care este stocată în memorie arată ca în listing-ul \ref{keyStruct}.
+
+\begin{listing}[h]
+\begin{minted}{c}
+#pragma pack(push, 1)
+struct TKey_
+{
+    uint8_t m_u8Freshness;
+    uint8_t m_au8Key[KEY_LEN];
+    uint8_t m_u8Chksum;
+    uint8_t _au8Padding[(18/FLASH_ERASE_SIZE + 1) * FLASH_ERASE_SIZE - 18];
+};
+#pragma pack(pop)
+\end{minted}
+
+\caption{Structura din memorie a unei chei de criptare}
+\label{keyStruct}
+\end{listing}
+
+În plus față de ceea ce am descris deja, listing-ul acesta ne mai arată și faptul că am folosit și aici un cod polinomial de detecție a erorilor, acesta fiind util în cazul în care memoria flash devine coruptă. Bootloader-ul va alege tot timpul cheia cea mai proaspătă (un indicator de prospețime mare) și care are și CRC-ul valid. Ultimul membru al structurii are rolul de a adăuga atât padding cât este necesar pentru ca toată structura să ajungă la mărimea minimă care poate fi ștearsă din memoria flash. Aplicația utilizator folosind această funcționalitate pentru a schimba cheile. Fiind vorba de o memorie flash, cheia trebuie întâi ștearsă apoi scrisă valoarea nouă.
 
 \subsubsection{Modulul Loader}
 TODO: detalii despre transfer user app si despre chestiile interne aici, state machine (ilustrat)
