@@ -559,7 +559,6 @@ bool equal = (aux == 0);
 Listing-ul \ref{timingOK} împrumută concepte din hardware, în ideea în care comparația este făcută asemeni unei implementări hardware a unui comparator. Fiecărei perechi de elemente din cele două șiruri îi este aplicat operatorul XOR, iar rezultatul este acumulat într-o variabilă auxiliară, dacă la finalul șirurilor această variabilă auxiliară are valoarea zero atunci șirurile sunt egale, altfel sunt diferite. Algoritmul se bazează în primul rând pe faptul că ambele șiruri sunt parcurse în întregimea lor, indiferent de rezultatul până în momentul curent, iar în al doilea rând se bazează pe faptul că operatorul XOR va fi transformat de către compilator (făcând abstracție de eventualele optimizări) într-o instrucțiune de asamblare XOR și apoi procesorul va folosi într-adevăr o poartă logică XOR, lucru pe care nu îl putem garanta pentru operatorul \texttt{==} (de egalitate).
 
 Atacurile de acest gen, pe lângă faptul că sunt greu de realizat din cauza măsurătorilor care trebuie efectuate cât mai exact, sunt influențate și de alți factori, cum ar fi latențele liniilor pe care se comunică anumite date și conținutul cache-urilor, diminuându-le astfel importanța. Totuși un sistem este la fel de puternic ca cea mai slabă verigă din componența sa, iar soluția prevenirii acestor atacuri este extrem de simplă, ne-introducând niciun fel de neajunsuri. De aceea ea a fost implementată în bootloader.
-%TODO: la modulul de crypto spune despre asta facand referire aici (chiar la listing-ul timingOK)!
 
 \section{Încărcarea unei aplicații pe microcontroller}
 Procesul rulării unei aplicații pe microcontroller este în mare parte diferit față de rularea unei aplicații pe un desktop, unde rulează deja un sistem de operare. Lucrul acesta se datorează faptului că aplicația trebuie cumva încărcată pe microcontroller. Așa cum am prezentat în capitolul anterior, procesul de flashing pe microcontroller este dependent de un adaptor hardware.
@@ -1313,8 +1312,67 @@ Un buffer circular este foarte util în mediul embedded deoarece nu necesită fo
 
 Nu în ultimul rând, în afară de modulele cu o structură și un rol bine definite, bootloader-ul mai este format din două fișiere, \texttt{Config.h} și \texttt{Log.h}. Cele două fișiere sunt incluse la discreție de modulele bootloader-ului pentru a avea acces la adresele de start ale zonelor de memorie, definite drept constante în fișierul \texttt{Config.h}. De asemenea fișierul \texttt{Log.h} este folosit ca un strat subțire de abstractizare peste funcțiile de afișare (care la rândul lor au fost suprascrise de modulul \texttt{Retarget}) oferind informații în plus, cum ar fi linia și fișierul de unde este apelată funcția curentă care face output. Aceste informații au fost vitale în depanarea bootloader-ului și în timpul dezvoltării sale acesta fiind singurul mod de a ști care a fost ultimul loc vizitat de microprocesor înainte să apară o problemă.
 
-\section{Architectura și codul utilitarelor Flasher și Bundler}
-TODO: arhitectura flasher si bundler si cum share-uiesc ele codul (e reutilizabil!) UML + cod
+\section{Structura utilitarelor Flasher și Bundler}
+În cele ce urmează voi prezenta succint structura utilitarelor dezvoltate pentru PC, cele care vin în completarea bootloader-ului. Datorită modularizării codului de la bootloader, aceste două utilitare vor refolosi o parte din codul scris pentru bootloader. Utilitarele, datorită faptului că rulează pe arhitecturi x86 și x64 și nu sunt constrânse de spațiu, au fost scrise în limbajul C++, limbaj ales datorită ușurinței cu care putem să apelăm cod C, pentru a putea refolosi codul bootloader-ului.
+
+Bundler-ul va trebui să refolosească codul din modulul \texttt{Crypto} deoarece el se ocupă cu crearea fișierului firmware. Crearea acestui fișier presupune criptarea aplicației utilizator. Bundler-ul nu face altceva decât să citească fișierul \texttt{.bin}, să genereze un vector de inițializare pentru algoritmul de criptare și după scrierea antetului în fișierul \texttt{.fw}, să cripteze și să scrie aplicația utilizator.
+
+În listing-ul \ref{genIV} se poate vedea codul de generare al unui vector de inițializare.
+
+\begin{listing}[h]
+\begin{minted}{c}
+void CBundler::GenerateIV(uint8_t *pu8Iv)
+{
+  time_t currentTime = time(NULL);
+  memcpy(pu8Iv, (void *)&currentTime, sizeof(currentTime));
+
+  srand(currentTime);
+  for(int i=sizeof(currentTime); i < CRYPTO_IV_LEN; ++i)
+  {
+      pu8Iv[i] = rand() % 256;
+  }
+}
+\end{minted}
+
+\caption{Generarea vectorului de inițializare pentru algoritmul AES}
+\label{genIV}
+\end{listing}
+
+Se poate vedea că generez acest vector folosind numere pseudo-random și timpul curent, deoarece specificația AES recomandă ca acest vector să fie de fiecare dată diferit. Folosind timpul curent acest lucru este deja asigurat.
+
+Deoarece algoritmul AES generează tag-ul de autentificare doar la finalul procesului de criptare, iar antetul fișierului \texttt{.fw} trebuie scris la început, suntem nevoiți să scriem antetul, rezervând spațiu pentru tag-ul de autentificare, iar la finalul procesului să revenim, folosind funcția \texttt{fseek} din biblioteca standard de C și să completăm tag-ul de autentificare în antetul fișierului firmware. Codul descris aici se poate vedea în listing-ul \ref{writeHeader} și \ref{updateHeader}, pentru scrierea și respectiv completarea antetului.
+
+\begin{listing}[h]
+\begin{minted}{c}
+TFirmwareHeader fwHeader;
+memset(&fwHeader, 0xFF, sizeof(fwHeader));
+
+fwHeader.m_u32ApplicationSize = u32ApplicationSize;
+memcpy(fwHeader.m_au8Iv, pu8Iv, CRYPTO_IV_LEN);
+
+bRetval = Write((uint8_t *) &fwHeader, sizeof(fwHeader));
+\end{minted}
+
+\caption{Scrierea antetului fișierului firmware}
+\label{writeHeader}
+\end{listing}
+
+\begin{listing}[h]
+\begin{minted}{c}
+if(fseek(m_pFile, CRYPTO_IV_LEN, SEEK_SET) == 0)
+{
+    bRetval = Write(pu8Tag, CRYPTO_TAG_LEN);
+}
+\end{minted}
+
+\caption{Actualizarea tag-ului de autentificare în antetul fișierului firmware}
+\label{updateHeader}
+\end{listing}
+
+Constanta \texttt{CRYPTO\_IV\_LEN} provine din modulul de criptografie, prezentat anterior, ea reprezintă lungimea vectorului de inițializare. Funcția \texttt{Write} se ocupă cu scrierea în fișierul firmware a datelor pasate ca parametru.
+
+În ceea ce privește structura utilitarului Flasher acesta folosește în principal modulul \texttt{Protocol} al bootloader-ului pentru a crea și interpreta pachetele, care urmează a fi trimise sau primite de pe portul serial. Acest modul este dependent de modulul de comunicare. Lucru care ar putea reprezenta o problemă datorită faptului că Flasher-ul este o aplicație care rulează pe sisteme x86, cu sisteme de operare Windows, modulul \texttt{Communication} nu se poate folosi așa cum este el implementat pentru bootloader. El fiind scris cu mecanisme specifice hardware-ului embedded. În schimb, datorită faptului că am definit clar interfața modulelor, putem să păstram semnăturile funcțiilor și să schimbăm doar implementarea modulului. Ceea ce va duce la păstrarea neschimbată a modulului \texttt{Protocol}.
+Flasher-ul folosește de asemenea modulul \texttt{Crc} al bootloader-ului pentru a calcula codul polinomial atașat la finalul oricărui pachet.
 
 \section{Concluzii și dezvoltări ulterioare}
 TODO: mod de numire si codare consistenta, hungarian notation, cod simplu, modular, am atins scopurile
@@ -1326,6 +1384,7 @@ TODO: indicatie pe microcontroller ca bootloader-ul ruleaza!
 TODO: management al cheilor via bundler
 TODO: mesaje sugestive cu privite la erori in pachetele de status
 TODO: modulele, cum ar fi rb-ul, sunt singleton
+TODO: interfata pentru bundler/flasher - inca un motiv pt. scriere in C++
 
 \newpage
 \bibliographystyle{plain}
