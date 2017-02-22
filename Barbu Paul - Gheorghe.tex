@@ -1173,9 +1173,9 @@ struct TKey_
 
 \subsubsection{Modulul Loader}
 
-Acesta este modulul principal al bootloader-ului, după cum se vede și în diagrama UML el folosește funcționalitatea tuturor celorlalte module, fie în mod direct, cum este cazul modulelor \texttt{KeyManager}, \texttt{Protocol} \texttt{Crypto} și \texttt{Flash}, fie indirect cum este cazul modulului \texttt{Communication} sau a bibliotecii mbedTLS.
+Acesta este modulul principal al bootloader-ului, după cum se vede și în diagrama UML el folosește funcționalitatea tuturor celorlalte module, fie în mod direct, cum este cazul modulelor \texttt{KeyManager}, \texttt{Protocol}, \texttt{Crypto} și \texttt{Flash}, fie indirect cum este cazul modulului \texttt{Communication} sau a bibliotecii mbedTLS.
 
-Unica funcție publică a acestui modul este \texttt{bool LoadUserApp()}, ea este responsabilă pentru a încărca aplicația utilizator. Dacă la transfer apare o eroare sau se constata că aplicația nu este autentică, tot această funcție va determina invalidarea zonei de memorie a aplicației, pentru a evita executarea unei aplicații malițioase sau invalide data viitoare când microcontroller-ul pornește. Așadar doar în acest scurt scenariu observăm că modulul \texttt{Loader} folosește funcția \texttt{FlashEraseAddr} a modulului \texttt{Flash} pentru a invalida o porțiune a memoriei flash și funcția \texttt{CryptoCheckEquals} a modulului \texttt{Crypto} pentru a valida tag-ul de autentificare al aplicației tocmai transferate.
+Unica funcție publică a acestui modul este \texttt{bool LoadUserApp()}, ea este responsabilă pentru a încărca aplicația utilizator. Dacă la transfer apare o eroare sau se constată că aplicația nu este autentică, tot această funcție va determina invalidarea zonei de memorie a aplicației, pentru a evita executarea unei aplicații malițioase sau invalide data viitoare când microcontroller-ul pornește. Așadar doar în acest scurt scenariu observăm că modulul \texttt{Loader} folosește funcția \texttt{FlashEraseAddr} a modulului \texttt{Flash} pentru a invalida o porțiune a memoriei flash și funcția \texttt{CryptoCheckEquals} a modulului \texttt{Crypto} pentru a valida tag-ul de autentificare al aplicației tocmai transferate.
 
 Funcționarea acestui modul poate fi privită ca un automat cu stări finite, așa cum este ilustrat în figura \ref{loaderStates}.
 
@@ -1188,12 +1188,27 @@ Funcționarea acestui modul poate fi privită ca un automat cu stări finite, a�
 
 Datorită faptului ca întreg fluxul de date este determinat de transmisia pe portul serial, această figură este extrem de asemănătoare cu ceea ce am prezentat în secțiunea dedicată protocolului de comunicație. Tranzițiile între stările automatului făcându-se în mare parte datorită sosirii anumitor tipuri de pachete. Aceste stări au fost reprezentate cu culoarea mov. Pe când stările gri reprezintă stări necondiționate de o tranziție, ele putând fi la fel de bine încorporate în starea anterioară sau următoare a grafului, dar au fost păstrate separate pentru a înfățișa cât mai bine comportamentul bootloader-ului.
 
-În cazul în care codul va ajunge în starea de "SUCCESS", deci bootloader-ul a primit cu succes o aplicație validă, atunci, acesta va continua cu execuția aplicației.
+În cazul în care codul va ajunge în starea de "Start User App", bootloader-ul a primit cu succes o aplicație validă, și va continua cu execuția aplicației.
 În caz contrar, când apare o eroare sau aplicația este invalidă, bootloader-ul va încerca să reia procesul de la început.
 Toate stările prezentate pe acest graf reprezintă nume de funcții din modulele \texttt{Loader} și \texttt{Crypto}, dar și funcții din fișierul \texttt{main.c}: \texttt{void StartBootloader()} și \texttt{void StartUserApp()}.
 Starea "Start User App" fiind chiar starea pe care ne-o dorim.
 
 Cele două funcții din \texttt{main.c} reprezintă punctele principale de intrare la pornirea microcontroller-ului, dacă pe microcontroller există deja o aplicație validă și utilizatorul nu apasă butonul hardware, aplicația va fi pornită prin apelarea funcției \texttt{StartUserApp}, dacă în schimb utilizatorul apasă pe butonul dispozitivului sau nu există o aplicație validă la pornirea sistemului embedded, bootloader-ul va fi pornit prin apelul funcției \texttt{StartBootloader}, moment în care acesta va iniția modulele de criptografie, cel de lucru cu memoria (\texttt{Flash}), modulul de comunicație și va aștepta transmisia unei aplicații pe portul serial.
+
+Rutina \texttt{StartUserApp} nu face decât să apeleze punctul de intrare al aplicației utilizator. Adresa rutinei de intrare este citită din memorie, de la un offset fix față de începutul aplicației, conform memory map-ului. În urma setării pointer-ului se apelează funcția de la adresa respectivă. Această secvență de cod este prezentată în listing-ul \ref{startUserApp}.
+
+\begin{listing}[h]
+\begin{minted}{c}
+uint32_t u32UserAppStartRoutineAddr = 
+  *((uint32_t *)(USER_APP_START_ADDR + PC_OFFSET));
+((void(*)())u32UserAppStartRoutineAddr)();
+\end{minted}
+
+\caption{Codul de pornire al aplicației utilizator}
+\label{startUserApp}
+\end{listing}
+
+Se observă din acest listing faptul că adresa rutinei principale a aplicației se află la \texttt{PC\_OFFSET}, în acest caz, la 4 octeți distanță față de începutul zonei de memorie a aplicației. Această adresă este citită prin convertirea la un pointer, pointer care apoi este dereferențiat ca să ne dea adresa propriu-zisă a funcției de start. În urma aflării adresei funcției de start, apelăm această funcție ca și cum am apela o funcție pasată prin pointer, cele două cazuri fiind echivalente.
 
 \subsection{Modulele auxiliare}
 
@@ -1262,7 +1277,7 @@ Acesta, prin interfața sa publică, permite pornirea unui cronometru și verifi
 \item \texttt{bool TimerIsExpired()}: Verifică dacă cronometrul a fost oprit sau a expirat.
 \end{itemize}
 
-Deoarece cronometrul trebuie să ruleze și dacă procesorul este ocupat cu executarea de cod util, acest modul folosește și el, ca și modulul de comunicație, întreruperile. În funcția \texttt{TimerStart} întreruperea este pornită și timeout-ul setat, iar în \texttt{TimerStop} întreruperea este dezactivată și timpul care a mai rămas până când întreruperea ar fi rulat, este returnat. Codul rutinei de tratare a întreruperii este cât se poate de simplu, el poate fi văzut în listing-ul \ref{timerIrq}.
+Deoarece cronometrul trebuie să ruleze și dacă procesorul este ocupat cu executarea de cod util, acest modul folosește și el, ca și modulul de comunicație, întreruperile. În funcția \texttt{TimerStart} întreruperea este pornită și timeout-ul este setat, iar în \texttt{TimerStop} întreruperea este dezactivată și timpul care a mai rămas până când întreruperea ar fi fost declanșată, este returnat. Codul rutinei de tratare a întreruperii este cât se poate de simplu, el poate fi văzut în listing-ul \ref{timerIrq}.
 
 \begin{listing}[h]
 \begin{minted}{c}
@@ -1281,7 +1296,7 @@ Această rutină face doar să marcheze faptul că perioada de cronometrare seta
 
 \subsubsection{Modulul RingBuffer}
 
-Pentru a evita alocarea memoriei dinamice (pe heap), modulul \texttt{RingBuffer} vine cu o implementare de buffer circular de care modulul \texttt{Communication} se folosește pentru a stoca datele care vin de pe portul serial.
+Pentru a evita alocarea memoriei dinamice (pe heap), modulul \texttt{RingBuffer} vine cu o implementare de buffer circular pe care modulul \texttt{Communication} o folosește pentru a stoca datele care vin de pe portul serial.
 
 Interfața publică a acestui modul este:
 \begin{itemize}
@@ -1294,9 +1309,9 @@ Interfața publică a acestui modul este:
 \item \texttt{void RbEmpty()}: Golește buffer-ul circular.
 \end{itemize}
 
-Un buffer circular este foarte util în mediul embedded deoarece nu necesită foarte multe resurse pentru a fi implementat. O zonă de memorie care să țină datele și doi pointer-i, unul la capătul de scriere și unul la capătul de citire al buffer-ului ajung pentru a avea o implementare eficientă. De asemenea aceasta structură de date este preferată deoarece golirea sa se face în timp constant (implică doar resetarea a celor doi pointeri la începutul zonei de memorie) și deci modulul de comunicație poate să golească rapid buffer-ul între două trimiteri sau primiri de pachete.
+Un buffer circular este foarte util în mediul embedded deoarece nu necesită foarte multe resurse pentru a fi implementat. O zonă de memorie care să țină datele și doi pointer-i, unul la capătul de scriere și unul la capătul de citire al buffer-ului ajung pentru a avea o implementare eficientă. De asemenea această structură de date este preferată deoarece golirea sa se face în timp constant (implică doar resetarea a celor doi pointeri la începutul zonei de memorie) și deci modulul de comunicație poate să golească rapid buffer-ul între două trimiteri sau primiri de pachete.
 
-Nu în ultimul rând, în afară de modulele cu o structură și un rol bine definite, bootloader-ul mai este format din două fișiere, \texttt{Config.h} și \texttt{Log}. Cele două fișiere sunt incluse la discreție de modulele bootloader-ului pentru a avea acces la adresele de start ale zonelor de memorie, definite drept constante în fișierul \texttt{Config.h}. De asemenea fișierul \texttt{Log.h} este folosit ca un strat subțire de abstractizare peste funcțiile de afișare (care la rândul lor au fost suprascrise de modulul \texttt{Retarget}) oferind informații în plus, cum ar fi linia și fișierul de unde este apelată funcția curentă care face output. Aceste informații au fost vitale în depanarea bootloader-ului și în timpul dezvoltării sale acesta fiind singurul mod de a ști care a fost ultimul loc vizitat de microprocesor înainte să apară o problemă.
+Nu în ultimul rând, în afară de modulele cu o structură și un rol bine definite, bootloader-ul mai este format din două fișiere, \texttt{Config.h} și \texttt{Log.h}. Cele două fișiere sunt incluse la discreție de modulele bootloader-ului pentru a avea acces la adresele de start ale zonelor de memorie, definite drept constante în fișierul \texttt{Config.h}. De asemenea fișierul \texttt{Log.h} este folosit ca un strat subțire de abstractizare peste funcțiile de afișare (care la rândul lor au fost suprascrise de modulul \texttt{Retarget}) oferind informații în plus, cum ar fi linia și fișierul de unde este apelată funcția curentă care face output. Aceste informații au fost vitale în depanarea bootloader-ului și în timpul dezvoltării sale acesta fiind singurul mod de a ști care a fost ultimul loc vizitat de microprocesor înainte să apară o problemă.
 
 \section{Architectura și codul utilitarelor Flasher și Bundler}
 TODO: arhitectura flasher si bundler si cum share-uiesc ele codul (e reutilizabil!) UML + cod
