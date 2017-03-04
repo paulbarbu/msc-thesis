@@ -698,6 +698,21 @@ Acest lucru are efect atât pe partea software, cât și pe cea hardware. Partea
 Înainte ca un client să poată folosi Flasher-ul pentru a trimite o aplicație spre microcontroller, trebuie să avem în vedere că aplicația trebuie criptată și că pe lângă aplicație Flasher-ul trebuie să cunoască și vectorul de inițializare și tag-ul de autentificare. Două elemente necesare algoritmului AES de decriptare aplicat de bootloader în timp ce primește aplicația de la Flasher. Așadar clientul trebuie să ajungă și în posesia celor două elemente suplimentare, iar pentru a simplifica procedura de criptare și generare a acestor elemente, vom crea încă o aplicație auxiliară, pentru PC, care va fi responsabilă cu crearea unui singur fișier care conține cele trei elemente: vectorul de inițializare, tag-ul de autentificare și aplicația criptată.
 Utilitarul se va numi "Bundler", nume care vine de la verbul "to bundle", sugerând faptul că va crea un pachet unic din cele 3 componente distincte. Pachetul creat va purta numele de fișier firmware, iar acest fișier va fi folosit de către Flasher. Clientul nu va avea acces la Bundler, deoarece doar developer-ul trebuie să poată crea firmware-uri valide pentru un microcontroller. În schimb clientul va folosi Flasher-ul și firmware-ul pentru a re-programa sistemul embedded dotat cu bootloader-ul dezvoltat aici de ori de câte ori este nevoie. Formatul fișierului firmware va fi descris într-o secțiune viitoare.
 
+În figura \ref{overview} se poate observa o prezentare generală a întregului sistem, format din bootloader, Bundler și Flasher.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{high-level}
+    \caption{Prezentare generală a sistemului}
+    \label{overview}
+\end{figure}
+
+În această figură se pot vedea ușor toate părțile importante ale sistemului și modul cum sunt ele distribuite.  Este important să notăm că aceste părți se vor materializa în mod direct în modulele pe care o să le prezentăm într-o secțiune următoare a lucrării, de asemenea trebuie precizat că nu va exista cod duplicat între cele trei părți componente ale sistemului, ci acesta va fi refolosit de câte ori este necesar. De exemplu partea de fișier firmware, care va conține definiția structurii acestui fișier, va fi refolosită de fiecare aplicație în parte, astfel încât dacă formatul acestui fișier trebuie modificat, modificarea să se poată face într-un singur loc și să se propage în toate modulele dependente de acesta.
+
+De asemenea, din figura precizată se poate vedea ușor că bootloader-ul este cea mai complexă componentă a sistemului, acesta având cele mai multe module în componența sa.
+
+La fel, se poate vedea că doar bootloader-ul și Bundler-ul folosesc modulul de criptografie, acestea fiind părțile sistemului care sunt sub controlul dezvoltatorului, clientul neavând acces la ele. Pe de altă parte Flasher-ul și bootloader-ul folosesc părtile de protocol și comunicație (UART), deoarce ele trebuie să comunice între ele, Bundler-ul nefiind nevoit să acopere această funcționalitate.
+
 În concluzie, vor exista trei aplicații, Bundler-ul, Flasher-ul și bootloader-ul, toate trei având în comun fișierul firmware, care reprezintă de fapt aplicația care trebuie scrisă de către bootloader pe sistemul embedded. În cele ce urmează voi prezenta modul de lucru al acestor aplicații și al sistemului embedded.
 
 \subsection{Utilizarea practică a bootloader-ului}
