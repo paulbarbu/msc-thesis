@@ -1,0 +1,88 @@
+\documentclass[12pt,a4paper,titlepage]{report}
+
+\usepackage{times}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[romanian]{babel}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage[hidelinks]{hyperref}
+
+\usepackage{graphicx}
+
+\usepackage{minted}
+%TODO: remove red box on parser error
+
+\setminted{baselinestretch=1,fontsize=\footnotesize}
+
+\usepackage{caption}
+
+\usepackage{algorithm} %[plain] ?
+\usepackage{algpseudocode}
+\makeatletter
+\renewcommand*{\ALG@name}{Pseudocod}
+\makeatother
+
+\usepackage{multirow}
+
+% avoid floats moving outside the sections
+\usepackage[section]{placeins}
+
+% margini de 1 inch peste tot
+\usepackage[margin=1in]{geometry}
+
+%\usepackage{draftwatermark}
+%\SetWatermarkText{Draft}
+%\SetWatermarkScale{1}
+
+\author{Barbu Paul - Gheorghe}
+
+\begin{document}
+
+\begin{titlepage}
+{
+\centering
+UNIVERSITATEA "LUCIAN BLAGA" DIN SIBIU\\
+FACULTATEA DE INGINERIE \\
+DEPARTAMENTUL DE CALCULATOARE ŞI INGINERIE ELECTRICĂ\\
+}
+
+\vfill
+\vspace{150px}
+{
+\centering
+\begin{center}
+\Huge
+\textbf{PROIECT DE DIPLOMĂ}
+\end{center}
+
+}
+
+\vfill
+{
+\raggedright
+Conducător ştiinţific: Conf. dr. ing. Morariu Daniel \\
+Îndrumător: Răzvan Mărcuș
+}
+\vfill
+
+{
+\raggedright
+\hspace*{270pt}Absolvent: Barbu Paul - Gheorghe\\
+\hspace*{270pt}Specializarea: Calculatoare
+}
+\vfill
+
+{
+%\begin{center}
+
+\raggedright
+\hspace*{270pt}- Sibiu, 2017 -
+%\end{center}
+}
+\end{titlepage}
+
+\end{document}

@@ -64,7 +64,7 @@
 %--------------------------------------
 
 \begin{abstract}
-This paper aims to create a bootloader for embedded devices. The purpose of the bootloader is to be the first to run when the microcontroller starts and to provide a way of controlling what application runs next, similarly to how bootloaders work on the desktop systems.
+This paper aims to describe a bootloader for embedded devices. The purpose of the bootloader is to be the first to run when the microcontroller starts and to provide a way of controlling what application runs next, similarly to how bootloaders work on the desktop systems.
 The difference here being that the bootloader's purpose is to allow the embedded device to be much more flexible, since the application running on the microcontroller can be changed without using specialized hardware. This flexibility and the fact that no specialized hardware programmers are needed also leads to a reduction of costs for deploying and maintaining the embedded systems. These two goals, flexibility and cost reduction must be accompanied by a third one: security. The recent growth of embedded systems in the IoT (Internet of Things) domain demands that the device deployed be more secure than in the past.
 \end{abstract}
 
@@ -78,6 +78,8 @@ The bootloader’s role is to allow the developer to flash a new application on 
 The classical use case for the bootloader is when a client has devices all over the world and a firmware upgrade is necessary, then the client’s technicians can perform the upgrade by themselves, using the bootloader and the new firmware file received from the developer. This is done in order to avoid bringing in all the devices and flashing them at headquarters, then shipping them back to their client's locations.
 In order for the bootloader to work properly it should receive via RS232 a valid firmware file (.fw extension).
 This has to be created by an application, which should also be responsible for encrypting it, we'll call this application "Bundler", since it creates an encrypted file that will contain the application that the bootloader will load on a microcontroller. In order for the client to be able to program the microcontroller and to use the bootloader he will need an application that will send the firmware file to the MCU, via the serial port, we will call this tool the "Flasher", since it does the flashing of the application, similar to the classical process of programming a microcontroller using a JTAG connector.
+
+The following chapter of the paper will describe the general way a bootloader works, then in the third section the implementation details will be presented, touching the most important parts of the designed system with its characteristic architecture, while the last section provides the conclusions of the paper and the pitfalls of the application that can be improved in future versions.
 
 \section{How does a bootloader work?}
 A bootloader can be found on any system that needs to load an operating system or, in our case, a third party application. The etimology of this word stems from the word "to bootstrap", which means "to pull oneself up by one's bootstraps" \cite{bootstrapping}.
