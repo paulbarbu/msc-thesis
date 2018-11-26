@@ -4,7 +4,7 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage[romanian]{babel}
+\usepackage[english]{babel}
 
 \usepackage{setspace}
 \onehalfspacing
@@ -23,7 +23,7 @@
 \usepackage{algorithm} %[plain] ?
 \usepackage{algpseudocode}
 \makeatletter
-\renewcommand*{\ALG@name}{Pseudocod}
+\renewcommand*{\ALG@name}{Pseudocode}
 \makeatother
 
 \usepackage{multirow}
@@ -47,42 +47,55 @@
 
 \begin{titlepage}
 {
-\centering
-UNIVERSITATEA "LUCIAN BLAGA" DIN SIBIU\\
-FACULTATEA DE INGINERIE \\
-DEPARTAMENTUL DE CALCULATOARE ŞI INGINERIE ELECTRICĂ\\
+	\centering
+	\textbf{"Lucian Blaga" University of Sibiu – Romania} \\
+}
+
+{
+	\centering
+		\textbf{Faculty of Engineering} \\
+}
+
+{
+	\centering
+		\textbf{Master program:} Advanced Computing Systems \\
+}
+
+
+\vfill
+
+{
+	\centering
+	\Large
+	\textbf{DISSERTATION} \\
+}
+
+{
+	\centering
+	\Large
+	Forecasting electricity consumption and production using ARIMA time series models \\
 }
 
 \vfill
 
 {
-\centering
-\Large
-Secured Bootloader: program pentru controlul secvenței de
-inițializare și al actualizării aplicației în microcontrollere
-programabile
+	\centering
+		\textbf{Graduate:} Barbu Paul - Gheorghe\\
+		\textbf{Scientific coordinator:} Conf. dr. ing. Árpád GELLÉRT \\
 }
 
 \vfill
-{
-\raggedright
-Conducător ştiinţific: Conf. dr. ing. Morariu Daniel \\
-Îndrumător: Răzvan Mărcuș
-}
-\vfill
 
 {
-\raggedright
-\hspace*{270pt}Absolvent: Barbu Paul - Gheorghe\\
-\hspace*{270pt}Specializarea: Calculatoare
+	\centering
+	2019 \\
 }
-
 \end{titlepage}
 
 \tableofcontents
 \newpage
 
-\subsection*{Prezentarea temei}
+\subsection*{Abstract}
 
 Lucrarea de față își propune dezvoltarea unui bootloader securizat pentru dispozitive embedded, aceste dispozitive conțin un microcontroller și în general utilizatorul respectivelor dispozitive nu vede și nu interacționează direct cu microcontroller-ul. Exemple de dispozitive embedded sau de aparate care conțin asemenea dispozitive: frigider, mașină de spălat, autoturism, termostat, contor electric, sistem de alarmă, sistem de supraveghere, ceasuri, etc.
 
@@ -108,7 +121,7 @@ Succint cerințele pe care trebuie să le satisfacă bootloader-ul sunt:
 Prin rezolvarea acestor puncte, bootloader-ul va fi de ajuns de generic pentru aplicabilitate în diverse domenii și pe diverse platforme hardware. Fiind vorba de mediul embedded, bootloader-ul a fost proiectat și dezvoltat cu constrângerile de mărime în minte, cu atât mai mult cu cât pe un microcontroller se vor stoca două aplicații simultan, bootloader-ul și aplicația utilizator, dar doar una va rula la un moment dat.
 
 \newpage
-\chapter{Considerații teoretice}
+\chapter{Theoretical considerations}
 \section{Introducere și etimologie}
 Un bootloader se află pe orice sistem de calcul care trebuie să încarce un sistem de operare sau o aplicație terță.
 Acest lucru este valabil fie că utilizatorul interacționează cu sistemul în timpul procesului de "boot" fie că procesul se petrece automat, fără interacțiune umană.
@@ -1412,8 +1425,10 @@ Constanta \texttt{CRYPTO\_IV\_LEN} provine din modulul de criptografie, prezenta
 În ceea ce privește structura utilitarului Flasher acesta folosește în principal modulul \texttt{Protocol} al bootloader-ului pentru a crea și interpreta pachetele, care urmează a fi trimise sau primite de pe portul serial. Acest modul este dependent de modulul de comunicare. Lucru care ar putea reprezenta o problemă datorită faptului că Flasher-ul este o aplicație care rulează pe sisteme x86, cu sisteme de operare Windows, modulul \texttt{Communication} nu se poate folosi așa cum este el implementat pentru bootloader. El fiind scris cu mecanisme specifice hardware-ului embedded. În schimb, datorită faptului că am definit clar interfața modulelor, putem să păstram semnăturile funcțiilor și să schimbăm doar implementarea modulului. Ceea ce va duce la păstrarea neschimbată a modulului \texttt{Protocol}.
 Flasher-ul folosește de asemenea modulul \texttt{Crc} al bootloader-ului pentru a calcula codul polinomial atașat la finalul oricărui pachet.
 
-\section{Concluzii și dezvoltări ulterioare}
+\section{Further developments}
+TODO
 
+\section{Conclusions}
 Așadar în cele prezentate anterior am plecat de la ideea de a reduce costurile de dezvoltare a aplicațiilor embedded și de a mări flexibilitatea modului în care aceste aplicații sunt încărcate pe dispozitivele utilizatorilor și am ajuns la o colecție de trei aplicații, bootloader-ul, Flasher-ul și Bundler-ul. Prima fiind destinată dispozitivului embedded, iar cele două din urmă arhitecturilor x86 sau x64.
 
 Bootloaderul este o aplicație încărcată de către dezvoltator pe microcontroller și care nu poate fi înlocuită ușor de către utilizatorii acestuia.
