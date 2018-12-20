@@ -97,32 +97,45 @@
 
 \subsection*{Abstract}
 
-Lucrarea de față își propune dezvoltarea unui bootloader securizat pentru dispozitive embedded, aceste dispozitive conțin un microcontroller și în general utilizatorul respectivelor dispozitive nu vede și nu interacționează direct cu microcontroller-ul. Exemple de dispozitive embedded sau de aparate care conțin asemenea dispozitive: frigider, mașină de spălat, autoturism, termostat, contor electric, sistem de alarmă, sistem de supraveghere, ceasuri, etc.
+The current dissertation thesis aims to develop an understanding of time series forecasting principles, with an emphasis on the Auto Regressive Integrated Moving Average algorithm (or ARIMA for short), in the energy consumption field. The aim is also to develop a software implementation that uses the ARIMA model in order to easily forecast a given time series and to be able to analyze the results and decide if the chosen model is properly predicting the data or not.
 
-Un bootloader este o aplicație care este în general încărcată pe microcontroller de către firma care vinde microcontroller-ul și care nu poate fi înlocuită ușor de către utilizatorii acestuia.
-Rolul acestei aplicații este de a fi gazda ("host"-ul) și de a face verificările necesare încărcării unei alte aplicații pe microcontroller. În urma verificărilor se poate afirma că aplicația "guest" sau utilizator este una validă și că poate fi rulată de microcontroller cu încredere.
-În urma procesului de bootloading ambele aplicații, atât bootloader-ul cât și aplicația utilizator, vor coexista în
-memoria non-volatilă a dispozitivului embedded\footnote{în general pe flash-ul microcontroller-ului, conform unui memory map predefinit de producător}.
- 
-Motivele pentru care bootloader-ul este securizat și pentru care înlocuirea lui sau a aplicației utilizator
-nu ar trebui să poată fi făcută de oricine țin în mică parte de protejarea proprietății intelectuale a celor ce creează aplicații guest pentru respectivul dispozitiv și într-o mai mare măsură țin de asigurarea integrității și a evitării modificării neautorizate a acestei aplicații pentru a asigura utilizatorului experiența pe care producătorul dispozitivelor embedded și-a imaginat-o. Acest lucru este crucial în ziua de astăzi, când criminalitatea în mediul cibernetic este în creștere\cite{interpol}\cite{morgan2016}. Consumatorii trebuie să poată fi protejați proactiv de acțiunile ilegale ale crackerilor, în antiteză cu metoda tradițională, reactivă care constă în schimbarea și îmbunătățirea unui sistem după ce acesta a fost compromis. Cele două metode se complementează reciproc, dar metoda proactivă are avantajul prevenirii unei acțiuni malițioase asupra sistemului informatic.
+Electric energy consumption is something that we take for granted. Even if actively consuming electricity while using a desktop computer, by lightning our rooms or by passively consuming electric energy while our smart-phones are in standby mode it is safe to say that we use electric energy all the time. That is, without even considering industrial use-cases, where up times of 24 hours 7 days a week are expected from most factories. As such, I consider that electricity is a much needed depletable resource and, as is the case with any such resource that we have to generate, we also have to know how we use it in order to better manage it.
 
-În afară de îmbunătățirea securității unui sistem embedded precum a fost descris mai sus, rolul bootloader-ului ar trebui să fie și de a mări flexibilitatea unui astfel de sistem. Acest rol este îndeplinit prin faptul că aplicația utilizator de pe microcontroller poate fi schimbată fără modificări hardware asupra sistemului. Schimbarea aplicației utilizator poate surveni din diverse motive, printre care: dezvoltatorul sistemului embedded hotărăște că este timpul să introducă funcționalități noi în aplicație sau că aplicația veche are unele defecte (bug-uri) care trebuie reparate sau chiar că sistemul embedded care înainte îndeplinea un rol trebuie să îndeplinească un rol complet nou, diferit față de cel vechi. Toate aceste scenarii implică folosirea bootloader-ului pre-instalat pe un dispozitiv pentru a încărca o altă aplicație (fie că e una complet nouă sau doar puțin modificată datorită remedierii defectelor din versiunea anterioară).
+Considering the fact that electricity domestic consumption has been steadily increasing (with the exception of 2009, maybe because of the financial crisis and other hard to explain factors) \cite{enerdata} for the world as a whole, it is past time to take note of our consumption patterns and start adapting them in order to reduce the footprint we leave on the medium and to minimize the waste of electrical energy, which cannot be reliably stored in high amounts.
 
-Bootloader-ul dezvoltat ar trebui să ne permită de asemenea reducerea costurilor. Prin costuri putem să considerăm de exemplu costurile survenite în urma livrării unui sistem embedded. Prin definiție mecanismele interne ale unui astfel de sistem nu sunt accesibile consumatorilor, deci orice modificare, fie ea chiar și software trebuie să fie făcută de producător. Așadar dispozitivul trebuie să fie livrat la producător, acesta aplică modificările și livrează înapoi dispozitivul clientului. Prin intermediul bootloader-ului ne propunem să putem face aceste modificări software la distanță. În esență aceste modificări se vor putea face independent, de către fiecare utilizator al sistemului.
+Hence this work focuses on finding the patterns in the electrical energy consumption and predicting them using ARIMA models, with the hopes that being able to tell how consumers will use the energy in the near future home owners, companies and governments may optimize their behavior and the import and export of electricity.
 
-Succint cerințele pe care trebuie să le satisfacă bootloader-ul sunt:
-\begin{itemize}
-\item asigurarea flexibilității dispozitivului embedded prin faptul ca aplicațiile de utilizator se pot schimba la nevoie
-\item asigurarea securității și integrității unui sistem embedded în momentul în care aplicația este încărcată\footnote{securitatea sistemului depinde 100\% de aplicație în momentul în care aceasta rulează}
-\item minimizarea costurilor de întreținere a dispozitivelor embedded dintr-un mediu industrial prin posibilitatea de a acționa bootloader-ul din exteriorul sistemului embedded
-\end{itemize}
+This work will focus on a single set of data for making the forecasts about energy consumption, although the principles, models and the way of thinking presented herein should be general enough to be applicable for other time-series data sets that are out there. What will change is, of course, the parameters given to the used ARIMA models and the interpretation of the results.
 
-Prin rezolvarea acestor puncte, bootloader-ul va fi de ajuns de generic pentru aplicabilitate în diverse domenii și pe diverse platforme hardware. Fiind vorba de mediul embedded, bootloader-ul a fost proiectat și dezvoltat cu constrângerile de mărime în minte, cu atât mai mult cu cât pe un microcontroller se vor stoca două aplicații simultan, bootloader-ul și aplicația utilizator, dar doar una va rula la un moment dat.
+The Auto Regressive Integrated Moving Average algorithm was chosen to make the predictions since it is a combination of several other models and can generalize them, covering a wide range of possibilities through its parameters. Being a very general algorithm for time-series predictions it is also widely used, not only for electric energy consumption \cite{bouzerdoum}, but also for finance and socio-political data \cite{fpp2}.
+
+This work will present how the ARIMA models work and the statistical machinery around them from my experience while forecasting one data set, comprised of five different time-series.
+
+The current state of the time-series algorithms and available statistical tools in the programming communities have pushed me to use the R programming language in order to carry out the task of this dissertation paper, because R seems to be the best and among the most used \cite{Rdesign} choice for interactive analysis of data and statistical studies, having over 13000 (thirteen thousand) packages available online\footnote{According to:\url{https://cran.r-project.org/web/packages/}}, packages that can be used to carry out different tasks, from string manipulation and XML parsing, to forecasting time-series data.
+
+So this paper aims at creating a functional software implementation using the R programming language and its rich ecosystem in statistical tools (of which I use ARIMA models) for forecasting the electrical energy consumption for a household over a predetermined period of time.
 
 \newpage
 \chapter{Theoretical considerations}
-\section{Introducere și etimologie}
+\section{Introduction and etimology}
+FOrecasting - etimology
+resent the structure of the paper
+
+Structure:
+1. theory
+Which is the actual state of the problem ?
+-What is done at international level ?
+-Which is the main idea of the paper ?
+-Which methodology have you used in developing the subject ?
+-Which are the main results of your paper and application areas ?
+-Which are the main steps to develop your research in the future ?
+R, why R, code, alternatives to R: python, SAS, SPSS, see the R wiki page
+ARIMA, introdduce each concept individually
+about the data
+2. practice
+reiterate some R stuff and show some code
+start using my data as the example workflow and reiterating the theory
+
 Un bootloader se află pe orice sistem de calcul care trebuie să încarce un sistem de operare sau o aplicație terță.
 Acest lucru este valabil fie că utilizatorul interacționează cu sistemul în timpul procesului de "boot" fie că procesul se petrece automat, fără interacțiune umană.
 
