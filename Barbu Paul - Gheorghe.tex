@@ -103,35 +103,93 @@ Electric energy consumption is something that we take for granted. Even if activ
 
 Considering the fact that electricity domestic consumption has been steadily increasing (with the exception of 2009, maybe because of the financial crisis and other hard to explain factors) \cite{enerdata} for the world as a whole, it is past time to take note of our consumption patterns and start adapting them in order to reduce the footprint we leave on the medium and to minimize the waste of electrical energy, which cannot be reliably stored in high amounts.
 
-Hence this work focuses on finding the patterns in the electrical energy consumption and predicting them using ARIMA models, with the hopes that being able to tell how consumers will use the energy in the near future home owners, companies and governments may optimize their behavior and the import and export of electricity.
+Hence this work focuses on finding the patterns in the electrical energy consumption and predicting them using ARIMA models, with the hopes that being able to tell how consumers will use the energy in the near future, home owners, companies and governments may optimize their behavior and the import and export of electricity.
 
 This work will focus on a single set of data for making the forecasts about energy consumption, although the principles, models and the way of thinking presented herein should be general enough to be applicable for other time-series data sets that are out there. What will change is, of course, the parameters given to the used ARIMA models and the interpretation of the results.
 
 The Auto Regressive Integrated Moving Average algorithm was chosen to make the predictions since it is a combination of several other models and can generalize them, covering a wide range of possibilities through its parameters. Being a very general algorithm for time-series predictions it is also widely used, not only for electric energy consumption \cite{bouzerdoum}, but also for finance and socio-political data \cite{fpp2}.
 
-This work will present how the ARIMA models work and the statistical machinery around them from my experience while forecasting one data set, comprised of five different time-series.
+This work will present how the ARIMA models work and the statistical machinery around them from my experience while forecasting one data set, comprised of five different time-series. The data set has been used in other works as well, one of which was done here at "Lucian Blaga" University of Sibiu, in the same department. The paper, called "Loads management based on Photovoltaic and Energy Storage System" \cite{feilmeier}, studies the very same idea that I set out to study in this work, the difference being that the author uses artificial neural networks to model and predict the given data. So given the fact that this data has already been analyzed, we have the opportunity for comparing the performance of Artificial Neural Networks, computed by Stefan Feilmeier, with the performance of ARIMA, computed in this paper by myself.
 
-The current state of the time-series algorithms and available statistical tools in the programming communities have pushed me to use the R programming language in order to carry out the task of this dissertation paper, because R seems to be the best and among the most used \cite{Rdesign} choice for interactive analysis of data and statistical studies, having over 13000 (thirteen thousand) packages available online\footnote{According to:\url{https://cran.r-project.org/web/packages/}}, packages that can be used to carry out different tasks, from string manipulation and XML parsing, to forecasting time-series data.
+The five time-series in the dataset are all gathered at the same time, starting with the beginning of year 2015 on 1st of January. Each data point represents the current Watt usage of a home, gathered every five minutes during a period of five months, so until the month of May 2015 (inclusive), tallying up to around 150 days of data, each consisting of 288 individual sampling points. Although there is plenty of data to work with, only three of the time-series represent actual consumption, on each of the three phases of three phase current (Ph1, Ph2 and Ph3). The other two time-series (namely: PV1 and PV2) are actually the number of Watts produced by two photo-voltaic panels mounted on the same house.
+Because of the nature of the data, there should be no difference in forecasting the two groups of time-series, it doesn't matter if the energy is gathered or consumed, the prediction work-flow and mechanisms used in this paper should remain generally applicable, only the semantics of the conclusions will change, instead of saying "I predict there will be consumed X Watts over the next period of time", one would instead say: "I predict there will be generated X Watts of energy over the next period of time".
 
-So this paper aims at creating a functional software implementation using the R programming language and its rich ecosystem in statistical tools (of which I use ARIMA models) for forecasting the electrical energy consumption for a household over a predetermined period of time.
+The current state of the time-series algorithms and available statistical tools in the programming communities have pushed me to use the R programming language \footnote{\url{https://www.r-project.org/}} in order to carry out the task of this dissertation paper, because R seems to be the best and among the most used \cite{Rdesign} choice for interactive analysis of data and statistical studies, having over 13000 (thirteen thousand) packages available online\footnote{At the beginning of 2019, according to: \url{https://cran.r-project.org/web/packages/}}, packages that can be used to carry out different tasks, from string manipulation and XML parsing, to forecasting time-series data.
+
+So this paper aims at creating a functional software implementation using the R programming language and its rich ecosystem in statistical tools (of which I use ARIMA models) for forecasting the electrical energy consumption for a household over a predetermined period of time. By the end of the paper the reader will conclude that the goal has been successfully achieved and a variation on the ARIMA algorithm is indeed suited for forecasting electrical energy demand time-series such as the ones used here. The results are favorable compared to those produced by the ANN method, but not by much compared to some benchmark algorithms which are much simpler in terms of mathematical complexity and shorter in term of both implementation and running time.
 
 \newpage
 \chapter{Theoretical considerations}
-\section{Introduction and etimology}
-FOrecasting - etimology
-resent the structure of the paper
+\section{Introduction and etymology}
 
-Structure:
-1. theory
+The verb "to forecast" means "to predict" or "to estimate" a future event or trend \cite{oxfordForecast}, when used as a noun it refers to the results of the verb, the data that has been estimated or predicted.
+
+This paper has set as its goal to predict the electrical energy consumption and production of a modern house using the Auto Regressive Integrated Moving Average model, while at the same time understanding and presenting the algorithm and its constituent parts.
+
+The underlaying problem that pushed me to choose this kind of a project is the fact that electrical energy cannot be stored in high amounts and, as a consequence, countries and governments need to understand the patterns of consumption and production of their residents in order to optimize the import and export of electrical energy. Through such optimizations the price of electricity could be reduced, which is a benefit to the domestic consumer.
+
+We also have to keep in mind that there is an increase in electrical energy consumption worldwide, according to Enerdata \cite{enerdata} and their plot of electricity demand which can be seen in figure \ref{energytrend}. All the while there is an increasing interest for green energy, while forecasting in itself doesn't help on this front of the problem, it can help to predict which households might be suited for photo voltaic panels installation in order to further reduce the carbon dioxide footprint. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{denergytrend}
+    \caption{Electrical Energy Consumption Trend}
+    \label{energytrend}
+\end{figure}
+
+In what follows, apart from the word "forecasting" I will also use the words "model" and "algorithm". Most of the time I will use the two words interchangeably, for example "ARIMA model" or "ARIMA algorithm", but, if being pedantic is desired, their meaning is different since "model" refers to the mathematical or statistical model that is the basis for the later-developed algorithm. We can look at it this way: the model is the building block of the algorithm. The algorithm on the other hand being the series of steps taken to solve a particular problem.
+
+In the end I'd like to be able to state that for a given time frame in the future a household will consume or generate a certain amount of energy with 80\% or even 95\% confidence.
+
+\section{Structure of the dissertation}
+
+The paper is arranged in two chapters, the present one, which aims to explain the theoretical concepts behind time-series forecasting using ARIMA and to give insights to the statistical concepts underlaying the decisions taken throughout the research phase.
+This chapter should present the current state of the domain and the advances in forecasting time-series data, each concept occupying its own section. A cursory look at the R programming language and its ecosystem of statistical tools and Integrated Development Environments (or in short: IDEs) will be provided. Then an in depth explanation will be provided to each and every one of the main concepts involved in the process of forecasting electrical energy demand using the ARIMA model.
+
+The second chapter shall disseminate the actual research work flow that I applied in solving the problem of electricity demand forecasting with ARIMA. The concepts explained in this second chapter are using the theoretical basis introduced in the first chapter.
+Here I will present the results of my work and compare the ARIMA algorithm to previous work done on the same data but by using Artificial Neural Networks (or in short ANNs) by Stefan Feilmeier.
+
+The second chapter will also shine some light on why R is one of the best tools to use in such a context, where easily accessible statistical instruments are of utmost importance. This will be accomplished by showing and explaining the key code snippets of the research, while to full source code will be available on the accompanying CD.
+
+\section{State of the art in forecasting}
+
+Considering the fact that energy production and consumption is so widespread it is very hard to quantify the exact state of the forecasting methods and tools used by the big electricity providers, mainly because of their variety, but also because of the trade secret nature with which such methods are treated. Basically being able to predict the future in any given domain, not only electricity production and consumption, also means that you can use that information to your advantage, hence the secret nature of the business. Still, saying that the methods presented herein are able to predict the future is not very accurate, what we can do is: we can analyze the past and from that data make inferences about the future, hypothesize about it with some degree of confidence.
+
+Taking a bird's eye view of the problem, it is no different than what we are used to in weather forecasts. We can say for example with 60\% confidence that in the next several hours it will rain. This statement is bases on previous data that is at the meteorologists' disposal, data such as past rainfall quantities for the current season or even day and hour, the direction of the wind, the amount of clouds and the difference in air pressure in the area that they will forecast rain for.
+
+Similarly, for electrical energy demand prediction we can have models that take into account several predictor variables, such as the time of day, the temperature, the season and maybe other social elements.
+\begin{itemize}
+    \item time of day - is important in prediction because in the case of electrical energy consumption we could imagine a scenario where the consumption would be highest in the morning when everyone gets ready for work or school and then decrease a bit, only to increase back again during the evenings when everybody returns home. The same logic applies to electricity production by photo-voltaic panels, their peak would be at noon, when the sun shies brightest and the light's angle of incidence is the widest.
+    \item the outside temperature is also important in countries that mostly use electrical based heating and cooling. In the summer months, when it's hot outside, electrical energy will be used to power air conditioning units, while in the winter months when it's cold outside, energy will be used for heating our homes.
+    \item the season is the common element that influences both of the above. We don't expect photo-voltaic panels to be of much use even during noon hours in an winter month (because there is a high chance they will be covered with snow) or on rainy days when the sky is overcast.
+\end{itemize}
+
+In this paper we will also inspect this multiple regression route, where we will use several external regressors as predictors of future energy consumption or production, but also several basic forecasting methods, such as the naive method, seasonal naive, and the mean method as baselines for measuring the prediction accuracy when using more complex models such as ARIMA, Seasonal ARIMA (short: SARIMA) or (S)ARIMAX (ARIMA with external regressors and possibly seasonality).
+
+
+%TODO: Say something about smart meters
+
+\subsection{ARIMA}
+Box and jenkins
+\subsection{SARIMA}
+seasonal
+\subsection{(S)ARIMAX}
+seasonal + external regressors, fourier, dummies, etc
+
+\subsection{Other models}
+ANNS see feilmeier and bouzedoum.
+
 Which is the actual state of the problem ?
 -What is done at international level ?
+
+
 -Which is the main idea of the paper ?
 -Which methodology have you used in developing the subject ?
 -Which are the main results of your paper and application areas ?
 -Which are the main steps to develop your research in the future ?
-R, why R, code, alternatives to R: python, SAS, SPSS, see the R wiki page
+R, why R (RStudio), code, alternatives to R: python, SAS, SPSS, see the R wiki page
 ARIMA, introdduce each concept individually
-about the data
+about the data, present a snippet of it
 2. practice
 reiterate some R stuff and show some code
 start using my data as the example workflow and reiterating the theory
