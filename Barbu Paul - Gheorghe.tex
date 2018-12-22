@@ -310,21 +310,21 @@ Ca pentru orice procesor și pentru acest model există o tabela a vectorilor de
 Combinația celor două registre ne permite să putem începe execuția codului, deoarece Program Counter-ul ne indică adresa următoarei instrucțiuni care trebuie executată de către procesor. Stack Pointer-ul ne indică locația în memorie unde se află vârful stivei, zona de memorie folosită pentru a stoca parametrii unei funcții și date despre locația unde trebuie să revenim din funcția apelată.
 
 În listing-ul \ref{ivt-m7} putem vedea, în cod asamblare, modul în care rutinele de tratare a întreruperilor sunt declarate.
-\begin{listing}[h]
-\begin{minted}{asm}
-__isr_vector:
-  .long __StackTop
-  .long Reset_Handler
-  .long NMI_Handler
-  .long HardFault_Handler
-  .long MemManage_Handler
-  .long BusFault_Handler
-  .long UsageFault_Handler
-\end{minted}
-
-\caption{Începutul tabelei vectorilor de întrerupere}
-\label{ivt-m7}
-\end{listing}
+%\begin{listing}[h]
+%\begin{minted}{asm}
+%__isr_vector:
+%  .long __StackTop
+%  .long Reset_Handler
+%  .long NMI_Handler
+%  .long HardFault_Handler
+%  .long MemManage_Handler
+%  .long BusFault_Handler
+%  .long UsageFault_Handler
+%\end{minted}
+%
+%\caption{Începutul tabelei vectorilor de întrerupere}
+%\label{ivt-m7}
+%\end{listing}
 
 Prima intrare din acest vector este valoarea inițială a stack pointer-ului, numit aici \texttt{\_\_StackTop}, acesta nu este un pointer spre o rutină de tratare a unei intreruperi, ci are doar rolul de a indica unde începe zona de memorie rezervată stivei. În schimb cea de a doua intrare în interrupt vector table este într-adevăr un pointer spre o astfel de procedură.
 Aceasta este apelată de fiecare dată când procesorul primește semnalul de reset. Din acest motiv putem spune ca PC-ul inițial se află pe poziția a doua în tabelă, deoarece el corespunde acestei rutine.
@@ -949,14 +949,14 @@ O precondiție a pornirii procesului de încărcare pe microcontroller este fapt
 
 Flasher-ul, asemeni Bundler-ului este o aplicație de consolă, care rulează pe sistemele de operare Windows și poate fi ușor portată pe sistemul de operare GNU/Linux. Modul de lucru cu această aplicație este înfățișat în listing-ul \ref{flasherInvoke}.
 
-\begin{listing}[h]
-\begin{minted}{batch}
-flasher.exe -p COM4 app.fw
-\end{minted}
-
-\caption{Exemplu de folosire al utilitarului Flasher}
-\label{flasherInvoke}
-\end{listing}
+%\begin{listing}[h]
+%\begin{minted}{batch}
+%flasher.exe -p COM4 app.fw
+%\end{minted}
+%
+%\caption{Exemplu de folosire al utilitarului Flasher}
+%\label{flasherInvoke}
+%\end{listing}
 
 Din listing vedem că această aplicație acceptă un argument cu nume (\texttt{-p}) și un argument pozițional. Ordinea lor este irelevantă atât timp cât argumentul pozițional are extensia \texttt{.fw} și reprezintă calea spre fișierul firmware primit de la dezvoltatorul aplicației. Argumentul \texttt{-p} arată că după el urmează portul serial pe care se va face comunicația cu bootloader-ul, în acest exemplu portul este \texttt{COM4}.
 
@@ -1318,16 +1318,16 @@ Cele două funcții din \texttt{main.c} reprezintă punctele principale de intra
 
 Rutina \texttt{StartUserApp} nu face decât să apeleze punctul de intrare al aplicației utilizator. Adresa rutinei de intrare este citită din memorie, de la un offset fix față de începutul aplicației, conform memory map-ului. În urma setării pointer-ului se apelează funcția de la adresa respectivă. Această secvență de cod este prezentată în listing-ul \ref{startUserApp}.
 
-\begin{listing}[h]
-\begin{minted}{c}
-uint32_t u32UserAppStartRoutineAddr = 
-  *((uint32_t *)(USER_APP_START_ADDR + PC_OFFSET));
-((void(*)())u32UserAppStartRoutineAddr)();
-\end{minted}
-
-\caption{Codul de pornire al aplicației utilizator}
-\label{startUserApp}
-\end{listing}
+%\begin{listing}[h]
+%\begin{minted}{c}
+%uint32_t u32UserAppStartRoutineAddr = 
+%  *((uint32_t *)(USER_APP_START_ADDR + PC_OFFSET));
+%((void(*)())u32UserAppStartRoutineAddr)();
+%\end{minted}
+%
+%\caption{Codul de pornire al aplicației utilizator}
+%\label{startUserApp}
+%\end{listing}
 
 Se observă din acest listing faptul că adresa rutinei principale a aplicației se află la \texttt{PC\_OFFSET}, în acest caz, la 4 octeți distanță față de începutul zonei de memorie a aplicației. Această adresă este citită prin convertirea la un pointer, pointer care apoi este dereferențiat ca să ne dea adresa propriu-zisă a funcției de start. În urma aflării adresei funcției de start, apelăm această funcție ca și cum am apela o funcție pasată prin pointer, cele două cazuri fiind echivalente.
 
@@ -1360,29 +1360,29 @@ Deoarece restul modulelor au o implementare trivială sau au fost deja prezentat
 
 În cadrul bootloader-ului modulul \texttt{Retarget} este modulul care se ocupă doar cu redirectarea funcției \texttt{printf}. Acest lucru se face prin redefinirea a două funcții din biblioteca standard a C-ului \cite{retarget}: \texttt{int \_write(int fd, const void *buf, size\_t count)} și \texttt{int fputc(int ch, FILE *f)}. Noile implementări sunt vizibile în listing-ul \ref{retargetCode}.
 
-\begin{listing}[h]
-\begin{minted}{c}
-int fputc(int ch, FILE *f)
-{
-    UartSendChar(ch);
-    return ch;
-}
-
-int __attribute__((used)) _write(int fd,
-    const void *buf, size_t count)
-{
-    for(size_t i=0; i< count; ++i)
-    {
-        UartSendChar(((char *)buf)[i]);
-    }
-
-    return count;
-}
-\end{minted}
-
-\caption{Codul de retarget al bootloader-ului}
-\label{retargetCode}
-\end{listing}
+%\begin{listing}[h]
+%\begin{minted}{c}
+%int fputc(int ch, FILE *f)
+%{
+%    UartSendChar(ch);
+%    return ch;
+%}
+%
+%int __attribute__((used)) _write(int fd,
+%    const void *buf, size_t count)
+%{
+%    for(size_t i=0; i< count; ++i)
+%    {
+%        UartSendChar(((char *)buf)[i]);
+%    }
+%
+%    return count;
+%}
+%\end{minted}
+%
+%\caption{Codul de retarget al bootloader-ului}
+%\label{retargetCode}
+%\end{listing}
 
 Cele două funcții își păstrează comportamentul conform interfeței lor, \texttt{fputc} trimite un singur caracter spre portul serial, pe când \texttt{\_write} scrie un întreg buffer. Totuși ambele funcții au în comun apelul la funcția \texttt{UartSendChar}. Aceasta fiind de fapt cea care face trimiterea pe serial a unui octet de date. Implementarea ei poate fi găsită în fișierul \texttt{Retarget.c} la un loc cu cele două funcții descrise anterior.
 
@@ -1400,18 +1400,18 @@ Acesta, prin interfața sa publică, permite pornirea unui cronometru și verifi
 
 Deoarece cronometrul trebuie să ruleze și dacă procesorul este ocupat cu executarea de cod util, acest modul folosește și el, ca și modulul de comunicație, întreruperile. În funcția \texttt{TimerStart} întreruperea este pornită și timeout-ul este setat, iar în \texttt{TimerStop} întreruperea este dezactivată și timpul care a mai rămas până când întreruperea ar fi fost declanșată, este returnat. Codul rutinei de tratare a întreruperii este cât se poate de simplu, el poate fi văzut în listing-ul \ref{timerIrq}.
 
-\begin{listing}[h]
-\begin{minted}{c}
-void PIT0_IRQHandler()
-{
-    _bTimeout = true;
-    TimerStop();
-}
-\end{minted}
-
-\caption{Rutina de tratare a întreruperii de cronometru}
-\label{timerIrq}
-\end{listing}
+%\begin{listing}[h]
+%\begin{minted}{c}
+%void PIT0_IRQHandler()
+%{
+%    _bTimeout = true;
+%    TimerStop();
+%}
+%\end{minted}
+%
+%\caption{Rutina de tratare a întreruperii de cronometru}
+%\label{timerIrq}
+%\end{listing}
 
 Această rutină face doar să marcheze faptul că perioada de cronometrare setată la apelul \texttt{TimerStart} a fost atinsă și apoi să oprească cronometrul. \texttt{PIT} vine de la "Periodic Interrupt Timer", componenta hardware pe care se bazează acest modul și care oferă de fapt funcționalitatea și oscilatorul pentru măsurarea timpului \cite{kv5x}.
 
@@ -1441,55 +1441,55 @@ Bundler-ul va trebui să refolosească codul din modulul \texttt{Crypto} deoarec
 
 În listing-ul \ref{genIV} se poate vedea codul de generare al unui vector de inițializare.
 
-\begin{listing}[h]
-\begin{minted}{c}
-void CBundler::GenerateIV(uint8_t *pu8Iv)
-{
-  time_t currentTime = time(NULL);
-  memcpy(pu8Iv, (void *)&currentTime, sizeof(currentTime));
-
-  srand(currentTime);
-  for(int i=sizeof(currentTime); i < CRYPTO_IV_LEN; ++i)
-  {
-      pu8Iv[i] = rand() % 256;
-  }
-}
-\end{minted}
-
-\caption{Generarea vectorului de inițializare pentru algoritmul AES}
-\label{genIV}
-\end{listing}
+%\begin{listing}[h]
+%\begin{minted}{c}
+%void CBundler::GenerateIV(uint8_t *pu8Iv)
+%{
+%  time_t currentTime = time(NULL);
+%  memcpy(pu8Iv, (void *)&currentTime, sizeof(currentTime));
+%
+%  srand(currentTime);
+%  for(int i=sizeof(currentTime); i < CRYPTO_IV_LEN; ++i)
+%  {
+%      pu8Iv[i] = rand() % 256;
+%  }
+%}
+%\end{minted}
+%
+%\caption{Generarea vectorului de inițializare pentru algoritmul AES}
+%\label{genIV}
+%\end{listing}
 
 Se poate vedea că generez acest vector folosind numere pseudo-random și timpul curent, deoarece specificația AES recomandă ca acest vector să fie de fiecare dată diferit. Folosind timpul curent acest lucru este deja asigurat.
 
 Deoarece algoritmul AES generează tag-ul de autentificare doar la finalul procesului de criptare, iar antetul fișierului \texttt{.fw} trebuie scris la început, suntem nevoiți să scriem antetul, rezervând spațiu pentru tag-ul de autentificare, iar la finalul procesului să revenim, folosind funcția \texttt{fseek} din biblioteca standard de C și să completăm tag-ul de autentificare în antetul fișierului firmware. Codul descris aici se poate vedea în listing-ul \ref{writeHeader} și \ref{updateHeader}, pentru scrierea și respectiv completarea antetului.
 
-\begin{listing}[h]
-\begin{minted}{c}
-TFirmwareHeader fwHeader;
-memset(&fwHeader, 0xFF, sizeof(fwHeader));
-
-fwHeader.m_u32ApplicationSize = u32ApplicationSize;
-memcpy(fwHeader.m_au8Iv, pu8Iv, CRYPTO_IV_LEN);
-
-bRetval = Write((uint8_t *) &fwHeader, sizeof(fwHeader));
-\end{minted}
-
-\caption{Scrierea antetului fișierului firmware}
-\label{writeHeader}
-\end{listing}
-
-\begin{listing}[h]
-\begin{minted}{c}
-if(fseek(m_pFile, CRYPTO_IV_LEN, SEEK_SET) == 0)
-{
-    bRetval = Write(pu8Tag, CRYPTO_TAG_LEN);
-}
-\end{minted}
-
-\caption{Actualizarea tag-ului de autentificare în antetul fișierului firmware}
-\label{updateHeader}
-\end{listing}
+%\begin{listing}[h]
+%\begin{minted}{c}
+%TFirmwareHeader fwHeader;
+%memset(&fwHeader, 0xFF, sizeof(fwHeader));
+%
+%fwHeader.m_u32ApplicationSize = u32ApplicationSize;
+%memcpy(fwHeader.m_au8Iv, pu8Iv, CRYPTO_IV_LEN);
+%
+%bRetval = Write((uint8_t *) &fwHeader, sizeof(fwHeader));
+%\end{minted}
+%
+%\caption{Scrierea antetului fișierului firmware}
+%\label{writeHeader}
+%\end{listing}
+%
+%\begin{listing}[h]
+%\begin{minted}{c}
+%if(fseek(m_pFile, CRYPTO_IV_LEN, SEEK_SET) == 0)
+%{
+%    bRetval = Write(pu8Tag, CRYPTO_TAG_LEN);
+%}
+%\end{minted}
+%
+%\caption{Actualizarea tag-ului de autentificare în antetul fișierului firmware}
+%\label{updateHeader}
+%\end{listing}
 
 Constanta \texttt{CRYPTO\_IV\_LEN} provine din modulul de criptografie, prezentat anterior, ea reprezintă lungimea vectorului de inițializare. Funcția \texttt{Write} se ocupă cu scrierea în fișierul firmware a datelor pasate ca parametru.
 
