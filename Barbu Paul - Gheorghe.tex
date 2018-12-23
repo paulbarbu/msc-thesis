@@ -34,6 +34,8 @@
 % margini de 1 inch peste tot
 \usepackage[margin=1in]{geometry}
 
+\usepackage{amsmath}
+
 %\usepackage{draftwatermark}
 %\SetWatermarkText{Draft}
 %\SetWatermarkScale{1}
@@ -166,33 +168,210 @@ Similarly, for electrical energy demand prediction we can have models that take 
 
 In this paper we will also inspect this multiple regression route, where we will use several external regressors as predictors of future energy consumption or production, but also several basic forecasting methods, such as the naive method, seasonal naive, and the mean method as baselines for measuring the prediction accuracy when using more complex models such as ARIMA, Seasonal ARIMA (short: SARIMA) or (S)ARIMAX (ARIMA with external regressors and possibly seasonality).
 
-
-%TODO: Say something about smart meters
-
 \subsection{ARIMA}
-Box and jenkins
+The main model that this dissertation work started around is called ARIMA, short for Auto Regressive Integrated Moving Average.
+But, as we will later see, diverged towards more complicated variations of it.
+
+The original ARIMA model was introduced in 1970, but it is still widely used even today, half a century in the future.
+
+The book, which describes this model was written by George E. P. Box and Gwilym M. Jenkins, considered the founding fathers of modern time-series analysis. The book is now revised and at its fifth revision \cite{boxjenkins}, revised by Gregory C. Reinsel and Box's doctoral student Greta M. Ljung.
+
+These names might sound familiar from such concepts as "Box-Cox transformation" or "Ljung-Box test", which we will explore later on as well since they are related to the field I'm interested in the thesis.
+
+What Box and Jenkins have proposed in their 1970 book is that they could model any time-series pattern by the equation \ref{boxjenkinsequation}.
+\begin{equation}
+\label{boxjenkinsequation}
+y'_{t} = c + \phi_{1}y'_{t-1} + \cdots + \phi_{p}y'_{t-p} + \theta_{1}\varepsilon_{t-1} + \cdots + \theta_{q}\varepsilon_{t-q} + \varepsilon_{t}
+\end{equation}
+
+The left hand side of the equation represents the predicted (and differenced) value of $ y $ and the right hand side represents the "predictor" variables, where the predictors are made up of:
+
+\begin{itemize}
+    \item $ c $: a constant, which may or may not be included, depending on the shape of the data
+    \item $ \phi_{p}y'_{t-p} $: one or more Auto Regressive terms (AR), their number is defined by the $ p $ parameter of the ARIMA model and are weighted by the $ \phi_{p} $ coefficients which are computed during the fitting phase of the ARIMA model
+    \item $ \theta_{q}\varepsilon_{t-q} $: one or more Moving Average terms (MA), again, their number is defined by the $ q $ parameter of the ARIMA model and are weighted by the $ \theta_{q} $ coefficients which are computed during the fitting phase of the ARIMA model, similarly to the AR coefficients $ \phi_{p} $
+    \item $ y'_{t} $: is the differenced series (once or several times), the number of differences is given by the $ d $ parameter of the model.
+    \item $ \varepsilon $: represent error terms which are independent, identically distributed with zero mean, which basically means they are random errors.
+\end{itemize}
+
+This is the basic idea of the ARIMA model, and together with its parameters is written as: $ ARIMA(p, d, q) $ \cite{fpp2nonseasonalarima}, where:
+\begin{itemize}
+    \item $ p $: the order of the autoregressive part
+    \item $ d $: the number of non-seasonal differences applied
+    \item $ q $: the order of the moving average part
+\end{itemize}
+
+So to sum the model up in a phrase, I can say that ARIMA represents future values in terms of several past values and errors, all adjusted by coefficients to match the past data as best as possible.
+
 \subsection{SARIMA}
-seasonal
+
+The model previously presented does not take into consideration seasonal data. One may observe seasonal data when one is analyzing a longer time series, such as several months or maybe several years, where the phenomenon has time to repeat itself.
+
+Seasonal data in statistics is the equivalent of periodic functions in mathematics. Basically in mathematics we think about the function's values repeating themselves after one period. In statistics and time series analysis we think about events that repeat themselves constantly each season, hence the term "seasonality". Birthdays, Christmas and weekends are well known seasonal events.
+
+In order to model such time-series accurately, one has to be able to capture the influence of the seasonal events contained in the seasonal data, this is accomplished by adding four more parameters to the original ARIMA model, leading to: $ ARIMA(p, d, q)(P, D, Q)[m] $ \cite{fpp2seasonalarima}. The equation \ref{sarimaequation} represents such a model \cite{automatictimeseriesforecasting}.
+
+\begin{equation}
+\label{sarimaequation}
+\begin{split}
+y'_{t} = c + & \phi_{1}y'_{t-1} + \cdots + \phi_{p}y'_{t-p} \\
+           + & \Phi_{1}y'_{t-m-1} + \cdots + \Phi_{P}y'_{t-m-P} \\
+           + & \theta_{1}\varepsilon_{t-1} + \cdots + \theta_{q}\varepsilon_{t-q} + \varepsilon_{t} \\
+           + & \Theta_{1}\varepsilon_{t-m-1} + \cdots + \Theta_{Q}\varepsilon_{t-m-Q} + \varepsilon_{t-m}
+\end{split}
+\end{equation}
+
+Where:
+
+\begin{itemize}
+    \item $ p $, $ d $, $ q $: keep their original, non-seasonal, meaning
+    \item $ P $, $ D $, $ Q $: are the equivalent of their lower-case version, but they define the orders of the autoregressive, differencing and moving average for the seasonal part of the data.
+    \item $ \Phi_{P}y'_{t-m-P} $: one or more Seasonal Auto Regressive terms (SAR), their number is defined by the $ P $ parameter of the SARIMA model and are weighted by the $ \Phi_{P} $ coefficients which are computed during the fitting phase of the SARIMA model
+    \item $ \Theta_{Q}\varepsilon_{t-m-Q} $: one or more Seasonal Moving Average terms (SMA), again, their number is defined by the $ Q $ parameter of the ARIMA model and are weighted by the $ \Theta_{Q} $ coefficients which are computed during the fitting phase of the SARIMA model, similarly to the SAR coefficients $ \Phi_{P} $
+    \item $ m $: this parameter is in fact a pseudo one, usually it cannot vary, being fixed to the seasonal period of the data. For example a birthday occurs yearly, weekends occur weekly, and the examples may continue for monthly events and even quarterly for business and data belonging to the economics domain.
+\end{itemize}
+
+The $ ARIMA(p, d, q)(P, D, Q)[m] $ model is also known as SARIMA \cite{berkleysarimamodels}.
+
 \subsection{(S)ARIMAX}
-seasonal + external regressors, fourier, dummies, etc
+The ARIMA and Seasonal ARIMA models include information only about the time-series itself in the model. No other external information can be used.
 
-\subsection{Other models}
-ANNS see feilmeier and bouzedoum.
+When forecasting electrical energy consumption it is important to be able to adjust the predictions according to the time of day for example. Since the sun is shining the brightest at noon, it is safe to say that the most electrical energy will be generated around that time by the photo voltaic panels installed on one's house. For consumption estimation it would be ideal to have also temperature data, in the hot days we would use energy to cool our houses and in the cold days energy is used to heat them. If the temperature data is not available (we should also note that it should be available in the future, when we need to make our electrical energy consumption predictions) then it might be sufficient to use the calendar month for which we should forecast the electricity demand and from there we can infer if it is a summer month or a winter month, hence having a general sense of the temperature.
 
-Which is the actual state of the problem ?
--What is done at international level ?
+The (S)ARIMAX algorithm allows us to incorporate such data into the analysis. The short form comes from the longer one: Seasonal ARIMA with eXternal regressors, the "X", coming from "external regressors".
 
+This model is in fact a multiple regression model with time series error terms \cite{boxjenkins}, which are being fit with ARIMA.
 
--Which is the main idea of the paper ?
--Which methodology have you used in developing the subject ?
--Which are the main results of your paper and application areas ?
--Which are the main steps to develop your research in the future ?
+The general mathematical form for such a model (without seasonal parts, for ease of reading and in order to avoid listing a cluttered equation) is given in equation \ref{arimaxequation} \cite{nauarimax}.
+
+\begin{equation}
+y'_{t} = c + \beta x'_{t} + \phi_{1}y'_{t-1} + \cdots + \phi_{p}y'_{t-p} + \theta_{1}\varepsilon_{t-1} + \cdots + \theta_{q}\varepsilon_{t-q} + \varepsilon_{t} 
+\label{arimaxequation}
+\end{equation}
+
+Or it may be written as in equation \ref{arimaxequationfpp2} \cite{hyndmanarimax} \cite{fpp2arimax}.
+
+\begin{equation}
+\begin{split}
+y'_{t} &= \beta x'_{t} + n'_{t} \\
+n'_{t} &= \phi_{1} n'_{t-1} + \cdots + \phi_{p} n'_{t-p} + \theta_{1} \varepsilon_{t-1} + \cdots + \theta_{q} \varepsilon_{t-q} + \varepsilon_{t}
+\end{split}
+\label{arimaxequationfpp2}
+\end{equation}
+
+Equation \ref{arimaxequationfpp2} is easier to interpret as a regression with ARIMA errors, since we rewrite the right hand side part of equation \ref{arimaxequation} as a different term:
+\begin{itemize}
+    \item $ y'_{t} $: is the forecast time series, optionally differenced
+    \item $ x'_{t} $: is the external regressors time series, such as temperatures, hours of day, days of week, months, etc.
+    \item $ \beta $: is the coefficient applied to the external regressors time series
+    \item $ n'_{t} $: is an $ ARIMA(p, d, q) $ error time series
+    \item $ \phi $, $ \theta $, $ \varepsilon $, $ p $, $ d $, and $ q $: keep their original meanings
+\end{itemize}
+
+Rob J. Hyndman and George Athanasopoulos list several useful predictors \cite{fpp2usefulpredictors} to be used for the $ x_{t} $ term in the regression equation in their book Forecasting: Principles and Practice \cite{fpp2}. Among them, they list:
+
+\begin{itemize}
+    \item trend, or time: some time-series are highly correlated with time, for example the increasing value of good wine or musical instruments are highly correlated with the passing of time
+    \item dummy variables: electrical energy consumption might be influenced by public events. These events may attract other people in an area and I expect them to be accommodated overnight, one might predict an increase in electricity demand during the period of the event. These events may be modeled as dummy variables, only influencing the analyzed data around the time they take place. 
+    \item seasonal dummy variables: household electrical energy consumption might be influenced by public holidays as well, since most people do not have to work on public holidays we might expect an increase in electricity demand during those holidays Easter, Christmas, National Day, etc. when people are more prone to staying at home. These events may be modeled as seasonal dummy variables, as well. They only influence the analyzed data around the time they take place, but they do it periodically, in the case of may enumeration, yearly. We could just as well imagine scenarios where the seasonality is weekly, or quarterly.
+\end{itemize}
+
+The authors of the aforementioned book, also note that one need not use seasonal dummies when the seasonal period is very long. Instead one can use terms of the Fourier series \cite{fpp2dhr} to model longer and more complex seasonality. The intuitive explanation given to this fact is the the Fourier terms can smooth a little bit the predicted time series and at the same time, take the shape of it, akin to using the Fourier series in signal processing or data compression.
+
+All of the presented variation on the ARIMA algorithm will be used in my research for the best model that fits the data and predicts it most accurately.
+
+\subsection{Other state of the art models}
+
+Up to this point I have exposed only ARIMA models that can be applied to time-series. There are other models out there, not specific to time-series, but very general and can be applied to such data as well.
+
+One widely used method for prediction purposes are the Markov Models, as shown in \cite{markovpersonmovement}, they can be leveraged to successfully predict the movement of one person in several rooms.
+
+Then there are Artificial Neural Networks as researched by Stefan Feilmeier in \cite{feilmeier}, where he tackles the same subject area that I am interested in in this paper, namely predicting the electrical energy consumption and production of a household over a period of time.
+
+There are other authors such as M. Bouzerdoum et al that investigated a hybrid model (SARIMA–SVM) for short-term power forecasting
+of a small-scale grid-connected photo voltaic plant \cite{bouzerdoum}. Their research uses the SARIMA algorithm, whose results are further refined by by a Support Vector Machine model.
+
+Pedro and Coimbra, in 2012, have analyzed five different models: Persistent, ARIMA, k Nearest Neighbors (or shorter: kNN), ANNs and Genetic Algorithm optimized ANNs. They reported the best results with ANNs and Genetic Algorithm (or in short form: GA) optimized ANNs \cite{pedrocoimbra}.
+
+Ding and others have proposed in 2001 an ANN system with forecasts a full day into the future the power output of a photo voltaic plant. They report that improvements can be made if the day of the forecast is selected to match weather data \cite{ding2011ann}. This approach of selecting the day based on weather data is similar to using dummies in ARIMAX models, we would have one set of dummies for sunny days and another one for cloudy days.
+
+The scientific literature presents itself with quite a few options that one can use to efficiently and accurately predict electrical energy consumption and production, ranging from Artificial Neural Networks and k-Nearest Neighbors to Auto Regressive Integrated Moving Average (including its variations with seasonality and exogenous variables).
+
+\subsection{Benchmarks methods}
+Up to this point in the paper I have only presented complicated and advanced methods (both from a mathematical standpoint and from an implementation point of view). What will follow in this subsection is the brief description of some benchmark models that I will use to quantify the improvements of my own research with ARIMA models.
+Complex models such as ARIMA and ANNs might be necessary to capture all the fine details and intricacies of real life data and, at the same time, be able to properly and accurately forecast several data points into the future.
+
+Still, I also need to establish some baseline and start my analysis from there. After running the benchmark methods and establishing the baseline errors in prediction, I will be able to tell by how much the ARIMA models have improved.
+
+Although not state of the art, these methods are the basic building blocks of other, more complex, methods and I prefer to include them here, since they are, too, related to methods of making predictions. The biggest argument for including them here is that we, as humans, use these methods intuitively by the so called "System 1" when taking decisions, as noted by the Nobel prize winner, Daniel Kahneman \cite{kahneman2011thinking}.
+
+The three benchmark methods \cite{fpp2simplemethods} that I used to create baseline predictions are:
+\begin{enumerate}
+    \item naive: use the last available data point as a forecast for the next data point. The equivalent equation would be: \[ y_{t+1} = y_{t} \]
+    This method is also known as the "random walk model" and can be compared to answering the question "What will tomorrow be like?" with: "Tomorrow will be a lot like today" since we only have information about the past and present and because we infer that the near future cannot change that drastically, we infer that it will be the same as the present.
+    \item seasonally naive: similarly to the naive method, this method will forecast the next value to be exactly the same value from the previous season. Mathematically this is: \[ y_{t+1} = y_{t+1-m} \] 
+    Intuitively, if $ m $ (the seasonal period) is one week, is like answering the question "What will tomorrow (Wednesday) be like?" with: "Tomorrow (Wednesday) will be exactly like the previous week's Wednesday", there being no reason to believe that things will change dramatically from one week to the other.
+    \item average: finally, the average method takes all known past values, averages them together and predicts the future values using that result. Mathematically: \[ y_{t+1} = \frac{y_{1} + \cdots + y_{t}}{T} \]
+    Where $ T $ is the number of previous observations.
+\end{enumerate}
+
+\section{R}
 R, why R (RStudio), code, alternatives to R: python, SAS, SPSS, see the R wiki page
-ARIMA, introdduce each concept individually
+
+
+%TODO: time-series analysis on wiki
+
+%TODO: https://en.wikipedia.org/wiki/Box%E2%80%93Jenkins_method
+
+%TODO: look in the FPP2 book for ARIMA concepts
+
+%TODO -Which methodology have you used in developing the subject ?
+%TODO -Which are the main results of your paper and application areas ?
+%TODO -Which are the main steps to develop your research in the future ?
+
+
+\section{Seasonal data}
+\cite{hyndmanseasonalperiods}
+
+\section{Stationarity and non-stationarity}
+differencing
+
+\section{Box-Cox transformation}
+
+\section{Ljung-Box test}
+ARIMA, introduce each concept individually
+
+\section{Forecasting with dummies}
++1 error in choosing dummies
+
+\section{Accuracy measures}
+
+\section{Backshift operator}
+
+\section{The dataset}
+
 about the data, present a snippet of it
-2. practice
+talk about the 80/20 rule and how we cannot "take random samples out of the data" since we're talking about time series
+
+
+
+
+\chapter{Practical considerations}
+Say something about smart meters
+
+\section{Applied R}
 reiterate some R stuff and show some code
-start using my data as the example workflow and reiterating the theory
+\subsection{The forecast package}
+\subsection{Benchmark methods in code}
+Show meanf, average, naive code.
+
+\subsection{ARIMA in code}
+Show some example arima code.
+
+\section{Methodology}
+Say about the parallelization.
+Say about the "for"-s that I used to search through multiple possibilities.
+start using my data as the example workflow and reiterating the theory.
 
 Un bootloader se află pe orice sistem de calcul care trebuie să încarce un sistem de operare sau o aplicație terță.
 Acest lucru este valabil fie că utilizatorul interacționează cu sistemul în timpul procesului de "boot" fie că procesul se petrece automat, fără interacțiune umană.
