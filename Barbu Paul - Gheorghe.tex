@@ -810,21 +810,21 @@ Deși mai costisitoare din punct de vedere al timpului, soluția este să execut
 Timpul constant se referă aici la timpul de comparație a două șiruri de aceeași lungime, dar cu conținut posibil diferit. Faptul că șirurile conțin elemente diferite sau egale nu ar trebui să aibă niciun impact asupra timpului de rulare al algoritmului.
 Algoritmul care implementează comparația a două șiruri în timp constant este prezentat în listing-ul \ref{timingOK}.
 
-\begin{listing}[h]
-\begin{minted}{c}
-int aux = 0;
-
-for(int i=0; i<n; i++)
-{
-    aux |= a[i] ^ b[i];
-}
-
-bool equal = (aux == 0);
-\end{minted}
-
-\caption{O bucată de cod rezistentă la atacuri de "timing"}
-\label{timingOK}
-\end{listing}
+%\begin{listing}[h]
+%\begin{minted}{c}
+%int aux = 0;
+%
+%for(int i=0; i<n; i++)
+%{
+%    aux |= a[i] ^ b[i];
+%}
+%
+%bool equal = (aux == 0);
+%\end{minted}
+%
+%\caption{O bucată de cod rezistentă la atacuri de "timing"}
+%\label{timingOK}
+%\end{listing}
 
 Listing-ul \ref{timingOK} împrumută concepte din hardware, în ideea în care comparația este făcută asemeni unei implementări hardware a unui comparator. Fiecărei perechi de elemente din cele două șiruri îi este aplicat operatorul XOR, iar rezultatul este acumulat într-o variabilă auxiliară, dacă la finalul șirurilor această variabilă auxiliară are valoarea zero atunci șirurile sunt egale, altfel sunt diferite. Algoritmul se bazează în primul rând pe faptul că ambele șiruri sunt parcurse în întregimea lor, indiferent de rezultatul până în momentul curent, iar în al doilea rând se bazează pe faptul că operatorul XOR va fi transformat de către compilator (făcând abstracție de eventualele optimizări) într-o instrucțiune de asamblare XOR și apoi procesorul va folosi într-adevăr o poartă logică XOR, lucru pe care nu îl putem garanta pentru operatorul \texttt{==} (de egalitate).
 
@@ -1286,26 +1286,26 @@ Interfața publică a acestuia pune la dispoziție următoarele funcții:
 
 În cadrul acestui modul este interesant de prezentat modul flux al algoritmului AES, lucrul cu acest mod fiind prezentat în listing-ul \ref{aesStream}.
 
-\begin{listing}[h]
-\begin{minted}{c}
-/* ... */
-
-bRetval = (0 == mbedtls_gcm_update(&_ctx, u32Len,
-                                   pu8Data, pu8Output));
-
-if(bRetval)
-{
-    bRetval = (0 == mbedtls_gcm_finish(&_ctx, pu8Tag, u32TagLen));
-    
-    /* ... */
-}
-
-/* ... */
-\end{minted}
-
-\caption{O fracțiune a funcției \texttt{CryptoFinish}}
-\label{aesStream}
-\end{listing}
+%\begin{listing}[h]
+%\begin{minted}{c}
+%/* ... */
+%
+%bRetval = (0 == mbedtls_gcm_update(&_ctx, u32Len,
+%                                   pu8Data, pu8Output));
+%
+%if(bRetval)
+%{
+%    bRetval = (0 == mbedtls_gcm_finish(&_ctx, pu8Tag, u32TagLen));
+%    
+%    /* ... */
+%}
+%
+%/* ... */
+%\end{minted}
+%
+%\caption{O fracțiune a funcției \texttt{CryptoFinish}}
+%\label{aesStream}
+%\end{listing}
 
 Dinn listing-ul \ref{aesStream} se observă cum modulul de criptografie este într-adevăr un strat de abstractizare mai înalt pentru biblioteca din spate. Modul flux al algoritmului de criptare constă doar în pasarea segmentată a datelor funcției de update (\texttt{mbedtls\_gcm\_update}), iar la final generarea tag-ului de autentificare (\texttt{mbedtls\_gcm\_finish}), operații care în modul bloc s-ar fi făcut într-un singur apel al funcției \texttt{mbedtls\_gcm\_crypt\_and\_tag} sau \texttt{mbedtls\_gcm\_auth\_decrypt}, așa cum a fost prezentat la începutul acestei lucrări.
 
@@ -1321,33 +1321,33 @@ Acest modul este cel care permite comunicația bootloader-ului pe portul serial,
 
 Un aspect interesant al acestui modul este faptul că primirea datelor se face folosind sistemul de întreruperi al microcontroller-ului. Portul serial fiind capabil să genereze o întrerupere atunci când are loc un eveniment. Codul de tratare al întreruperii este prezentat în listing-ul \ref{uartIRQ}.
 
-\begin{listing}[h]
-\begin{minted}{c}
-void COMM_IRQHandler()
-{
-  // check if new data arrived
-  if ((kUART_RxDataRegFullFlag | kUART_RxOverrunFlag) &
-      UART_GetStatusFlags(COMM_UART))
-  {
-      uint8_t u8Data = UART_ReadByte(COMM_UART);
-
-      // if the ring buffer is not full, add data to it
-      if (!RbIsFull())
-      {
-          RbWrite(u8Data);
-      }
-      else
-      {
-          LOG_ERR("Ring buffer full!");
-      }
-  }
-}
-
-\end{minted}
-
-\caption{Codul rutinei de tratare a întreruperii aferentă portului serial}
-\label{uartIRQ}
-\end{listing}
+%\begin{listing}[h]
+%\begin{minted}{c}
+%void COMM_IRQHandler()
+%{
+%  // check if new data arrived
+%  if ((kUART_RxDataRegFullFlag | kUART_RxOverrunFlag) &
+%      UART_GetStatusFlags(COMM_UART))
+%  {
+%      uint8_t u8Data = UART_ReadByte(COMM_UART);
+%
+%      // if the ring buffer is not full, add data to it
+%      if (!RbIsFull())
+%      {
+%          RbWrite(u8Data);
+%      }
+%      else
+%      {
+%          LOG_ERR("Ring buffer full!");
+%      }
+%  }
+%}
+%
+%\end{minted}
+%
+%\caption{Codul rutinei de tratare a întreruperii aferentă portului serial}
+%\label{uartIRQ}
+%\end{listing}
 
 Această rutină verifică dacă întreruperea a fost generată din cauza primirii a noi date pe port, iar dacă acest lucru este adevărat, citește octetul sosit și îl pune într-un buffer circular. Buffer-ul circular este necesar pentru a gestiona caracterele primite până la un moment dat și pentru a evita alocarea de memorie pentru fiecare citire. Buffer-ul acesta va fi prezentat într-o secțiune următoare, drept un modul auxiliar al bootloader-ului.
 
@@ -1362,41 +1362,41 @@ Interfața publică a acestui modul este:
 \end{itemize}
 
 Conform semnăturilor funcțiilor acest modul definește și tipurile înfățișate în listing-ul \ref{protocolTypes};
-\begin{listing}[h]
-\begin{minted}{c}
-enum EPacketType_
-{
-    FIRST_PACKET = 0x00,
-    NEXT_PACKET,
-    LAST_PACKET,
-    STATUS_PACKET,
-};
-typedef enum EPacketType_ EPacketType;
-
-enum EStatusType_
-{
-    STATUS_ACK = 0x00,
-    STATUS_ERROR,
-    STATUS_RETRY,
-    STATUS_SUCCESS,
-};
-typedef enum EStatusType_ EStatusType;
-
-#pragma pack(push, 1)
-struct TPacketHeader_
-{
-    uint16_t m_u16Id;
-    uint8_t m_u8Type;
-    uint8_t m_u8Length;
-};
-
-typedef struct TPacketHeader_ TPacketHeader;
-#pragma pack(pop)
-\end{minted}
-
-\caption{Tipurile definite de modulul \texttt{Protocol}}
-\label{protocolTypes}
-\end{listing}
+%\begin{listing}[h]
+%\begin{minted}{c}
+%enum EPacketType_
+%{
+%    FIRST_PACKET = 0x00,
+%    NEXT_PACKET,
+%    LAST_PACKET,
+%    STATUS_PACKET,
+%};
+%typedef enum EPacketType_ EPacketType;
+%
+%enum EStatusType_
+%{
+%    STATUS_ACK = 0x00,
+%    STATUS_ERROR,
+%    STATUS_RETRY,
+%    STATUS_SUCCESS,
+%};
+%typedef enum EStatusType_ EStatusType;
+%
+%#pragma pack(push, 1)
+%struct TPacketHeader_
+%{
+%    uint16_t m_u16Id;
+%    uint8_t m_u8Type;
+%    uint8_t m_u8Length;
+%};
+%
+%typedef struct TPacketHeader_ TPacketHeader;
+%#pragma pack(pop)
+%\end{minted}
+%
+%\caption{Tipurile definite de modulul \texttt{Protocol}}
+%\label{protocolTypes}
+%\end{listing}
 
 Listing-ul \ref{protocolTypes} poate fi considerat oglinda celor prezentate în secțiunea care descrie pe larg comportamentul protocolului. Se poate vedea în primul rând care sunt tipurile de pachet pe care bootloader-ul le poate trimite sau accepta: \texttt{FIRST\_PACKET}, \texttt{NEXT\_PACKET}, \texttt{LAST\_PACKET}, \texttt{STATUS\_PACKET}, acestea fiind stocate în câmpul \texttt{m\_u8Type} al antetului pachetului.
 Avem de asemenea definite și codurile de stare, de la \texttt{STATUS\_ACK}, până la \texttt{STATUS\_SUCCESS}.
