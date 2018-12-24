@@ -379,7 +379,7 @@ As mentioned before, there are other alternatives to R, such as Python. While re
 
 Both Python and R have the advantage of being fully open-source, that means that they are free for individual and commercial use. This fact also stands true for their big ecosystems of packages and libraries. There are also paid alternatives such as SAS \footnote{\url{https://www.sas.com/en_us/software/stat.html}} and SPSS \footnote{\url{https://www.ibm.com/analytics/spss-statistics-software}}. SAS, from the Graphical User Interface (or GUI, for short) point of view is very similar to RStudio (from which RStudio might have drawn some inspiration). SPSS is developed by IBM, so both of these seem like sound solutions for time-series forecasting, but have the disadvantage of being paid.
 
-%TODO: expand on R and the ARIMA packges?
+%TODO:space: expand on R and the ARIMA packges?
 
 \section{Seasonal data}
 In what is left of this chapter, I am going to explain each concept, that I have used in understanding the ARIMA model and its variations, both in isolation and in relation to the model and its role in choosing the best ARIMA model.
@@ -396,19 +396,31 @@ I'm going to start with ...
 %TODO: look in the FPP2 book for ARIMA concepts
 
 \section{Stationarity and non-stationarity}
-differencing
+
+\section{Differencing}
 
 \section{Box-Cox transformation}
+
+\section{Seasonal time series}
+\subsection{Seasonal differencing}
+
+\section{Autocorrelation function}
+
+\section{Partial Autocorrelation function}
 
 \section{Ljung-Box test}
 ARIMA, introduce each concept individually
 
-\section{Forecasting with dummies}
-+1 error in choosing dummies
+\section{Information criteria}
 
 \section{Accuracy measures}
 
 \section{The backshift operator}
+
+\section{Forecasting with dummies}
++1 error in choosing dummies
+
+\section{Dynamic harmonic regression}
 
 \section{The dataset}
 The final part of this chapter will give an insight on what the data is and what it looks like.
@@ -432,16 +444,17 @@ Show meanf, average, naive code.
 
 \subsection{ARIMA in code}
 Show some example arima code.
+Say about the parallelization.
+Say about the "for"-s that I used to search through multiple possibilities.
+
 
 \section{Methodology}
 % TODO: https://en.wikipedia.org/wiki/Box%E2%80%93Jenkins_method
-Say about the parallelization.
-Say about the "for"-s that I used to search through multiple possibilities.
-start using my data as the example workflow and reiterating the theory.
+start using my data as the example workflow and reiterating the theory to achieve the complete work-flow
 
-\section{Difficulties in implementation}
+\section{Difficulties in implementation of the methodology}
 No difficulty in the theoretical part since it is well established and widely used by now.
-But the technical part...
+But the technical part, parallelization, errors, etc
 
 \section{Results}
 %TODO -Which are the main results of your paper and application areas ?
@@ -452,6 +465,7 @@ But the technical part...
 \section{Future work}
 %TODO -Which are the main steps to develop your research in the future ?
 %TODO: avergage, naive, snaive on embedded
+%TODO: errors cause
 
 \section{Conclusions}
 %TODO: abstract, introduction, R, data, methodology, ARIMA, results, future work
