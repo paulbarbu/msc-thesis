@@ -315,8 +315,69 @@ The three benchmark methods \cite{fpp2simplemethods} that I used to create basel
     Where $ T $ is the number of previous observations.
 \end{enumerate}
 
-\section{R}
-R, why R (RStudio), code, alternatives to R: python, SAS, SPSS, see the R wiki page
+\section{The choice of programming technologies}
+
+In this section I will talk more about the technology I chose to pursue this research and the rationale behind this decision.
+While the choice now may seem very obvious, I shall not fall victim to hindsight bias \cite{hindsightbias} and believe that I should have chosen it sooner and faster.
+
+This research was preceded by a semester project \footnote{Which I made publicly available under the MIT license at: \url{https://github.com/paulbarbu/arima-energy-prediction}} during the first year of the master's degree (fall of 2017) and for that project, the tool of choice, unfortunately, was Java. The reason for that is the fact that everybody at the university understands Java, since it is taught and used in some of the bachelor courses. The project's goal was to use ARIMA to predict energy consumption on the same data that I will use for this research. The results of that project were, at best, modest. Much of the outcome is due to the fact that Java, as far as I know, lacks proper statistical analysis tools, so the ecosystem for the needed instruments is rather poor. Java has a very rich ecosystem, but apparently it lacks in the area of statistical tools. Of course the ARIMA libraries found and used by myself were also of low quality, at least from the point of view of the documentation. They were laking the instructions on how to use them, regardless of their internal quality, if there is no user manual, the internal quality has no value since it cannot be taken advantage of.
+
+Another reason for the poor outcome of the project is based on Java's compilable nature. In a development session with Java one has to write code, compile it, run the application and only then see the results. Notice how the writing of the code and running of the code phases are separated by another "compilation" step. The problem with this intermediary step is the fact that it is a mental hurdle. The work flow with Java is not continuous at all, making small adjustments, regardless of their impact, means that there will be empty time slots taken by the compilation step until the results of the adjustments will be observable.
+
+This behavior is in contrast with the Read-Eval-Print-Loop (or REPL for short) that LISP-like languages have adopted and is specific of newer scripting programming languages such as Python and R \cite{hey2014computing}. In a REPL environment, the programmer can write single lines of code, without ever having to write the full program, the main function and other boilerplate code. Individual lines of code may be evaluated and their results inspected at once, without having to interrupt the programmer's work flow. This kind of programming enables quick exploration of ideas and rapid development of proof-of-concept applications.
+
+This is the main reason for which, during the semester project I explored programming tools such as the Jupyter Notebook \footnote{\url{https://jupyter.org/}} for Python\footnote{\url{https://www.python.org/}} and RStudio\footnote{\url{https://www.rstudio.com/}} for R. While the former tool is not a complete Integrated Development Environment (or IDE for short), it has all the necessary features to allow for decent work to be carried through, the latter tool is indeed a complete IDE. Both tools center around the idea that the programming languages they are designed for are scripting programming languages and allow the programmer access to an interactive medium, where the results of running even individual lines of code are immediately available. A huge advantage of this is that the tools even produce instant plots of the data, allowing quick, graphical, visualization of results. This is the biggest advantage of such programming environments. This superiority is nicely exposed by Bret Victor in his 2012 talk "Inventing on Principle" \footnote{\url{https://vimeo.com/36579366}}, where small changes and even big ones have an immediate outcome and are visible right away.
+
+\subsection{R}
+
+After having some experience with both R and Python on the tooling side, I chose to use R as a programming language for the current research because it was specifically designed for statisticians and their needs. Having higher chances to include the needed algorithms and methods used for making time-series predictions. The biggest advantage of R was the "forecast" package \cite{rforecastpackage} \cite{automatictimeseriesforecasting} which provides an implementation for fitting of ARIMA models and their seasonal and external regressors variations.
+
+Another favorable argument for choosing R, is the RStudio IDE, which is easily installable and once can start working right away.
+A screen shot of RStudio's main window can be seen in figure \ref{rstudiomainwindow}. The upper left corner is reserved for writing full programs, of which, one or several instructions can be run separately into the console in the lower left corner. The results of such individual executions will also be displayed right away into the console. If graphical representation such as plots are created, they will show up on the lower right corner of the window, without having to open the files from the file system or to interrupt one's work flow. The documentation of the used functions can also be accessed in the lower right corner, with the same philosophy in mind, continuous work flow and less task and context switching for the programmer. Finally, the upper right corner of the window is the place where the programmer may access the history of his executions and the variables in the current environment, all in real time.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{drstudio-windows}
+    \caption{RStudio's main window, courtesy of \url{https://www.rstudio.com}}
+    \label{rstudiomainwindow}
+\end{figure}
+
+Clearly these are all advantages. Another advantage is that the code is not that different from what a Java or C programmer is used to writing, despite the language being very different in philosophy. A short snippet of R code that defines the product function can be seen in listing \ref{exampleRcode} and an example of filtering and substitution can be seen in listing \ref{exampleRsubstitution}, this example is particularly meaningful for R's capability to manipulate data sets (in the form of vectors, lists and data frames) in very concise ways.
+
+\begin{listing}[h]
+\begin{minted}{R}
+f <- function(x, y) {
+  r <- x * y
+  return(r)
+}
+\end{minted}
+
+\caption{Simple function definition in R}
+\label{exampleRcode}
+\end{listing}
+
+\begin{listing}[h]
+    \begin{minted}{R}
+    # substitute negative values with 0
+    values[values < 0] <- 0
+    \end{minted}
+    
+    \caption{Example of value substitution and filtering in R}
+    \label{exampleRsubstitution}
+\end{listing}
+
+The two down sides that I have found while working with R are the following:
+\begin{enumerate}
+    \item R's lists and vectors start at index 1, most other programming languages start the indexing at 0. While this is no technical shortcoming, it is a different mindset that one has to adapt to.
+    \item the preferred assignment operator in R is "<-". Most of the time, while valid and totally interchangeable for simple assignments, the usage of "=" is discouraged. The usage of "=" for assigning default values for function parameters is preferable however \cite{RassignOps}.
+\end{enumerate}
+
+The multitude of tutorials and learning resources available on R online are making the programmer's life easier and make for a sweeter learning curve as the language is really popular in scientific internet circles it is easy to find answers to problems that arise while working with it.
+
+\subsection{R alternatives}
+As mentioned before, there are other alternatives to R, such as Python. While recently Python has seen an increase in usage \cite{pythongrowth}, its usefulness in scientific and statistical computing is still in development, and according to the cited article some developers switch from Python to R for data intensive tasks.
+
+Both Python and R have the advantage of being fully open-source, that means that they are free for individual and commercial use. This fact also stands true for their big ecosystems of packages and libraries. There are also paid alternatives such as SAS \footnote{\url{https://www.sas.com/en_us/software/stat.html}} and SPSS \footnote{\url{https://www.ibm.com/analytics/spss-statistics-software}}. SAS, from the Graphical User Interface (or GUI, for short) point of view is very similar to RStudio (from which RStudio might have drawn some inspiration). SPSS is developed by IBM, so both of these seem like sound solutions for time-series forecasting, but have the disadvantage of being paid.
 
 
 %TODO: time-series analysis on wiki
