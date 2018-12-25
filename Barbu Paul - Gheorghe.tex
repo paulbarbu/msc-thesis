@@ -382,18 +382,109 @@ Both Python and R have the advantage of being fully open-source, that means that
 %TODO:space: expand on R and the ARIMA packges?
 
 \section{Seasonal data}
-In what is left of this chapter, I am going to explain each concept, that I have used in understanding the ARIMA model and its variations, both in isolation and in relation to the model and its role in choosing the best ARIMA model.
+In what is left of this chapter, I am going to explain each concept that I have used in understanding the ARIMA model and its variations, both in isolation and in relation to the model and its role in choosing the fittest ARIMA model.
 
-I'm going to start with ...
+I'm going to start with the concept of seasonality, which is an important one for longer time series, like I have here. As a reminder the time-series I'm going to inspect are 150 days long, with 288 observations every day.
 
-\cite{hyndmanseasonalperiods}
+Seasonality represents a concept similar to periodicity in mathematics, it's just named differently. In a nutshell it means that the values of a time series will repeat themselves season after season. The mathematical equivalent of this is exhibited in:
+\[y_{t+m} \approx y_{t}\]
+Where $ t $ is the time when the current observation is acquired and $ m $ is the period. For example if $ m $ is 24 hours, that means that the time series will repeat itself daily, meaning that every hour will be almost the same in regards to the same hour of the last day. For electricity consumption, one could say that the consumption for 12:00 PM will be similar to the demand of the 12th hour of the previous day, and the demand for the evening hour 20:00, will be the same or very similar to the consumption of the last day at 20:00.
 
+Because seasonal patterns tend to be selected from a fixed set, one might try to create a classification of them \cite{hyndmanseasonalperiods}, which can be seen in table \ref{frequentSeasonalPeriods}.
+
+\begin{table}[h]
+\begin{tabular}{|c|c|}
+    \hline 
+    \textbf{Data seasonality} & \textbf{Seasonal period} \\ \hline 
+    Annual & 1 \\ \hline 
+    Quarterly & 4 \\ \hline 
+    Monthly & 12 \\ \hline 
+    Weekly & 52 \\ \hline 
+\end{tabular} 
+\centering
+\caption{Frequently used seasonal periods}
+\label{frequentSeasonalPeriods}
+\end{table}
+
+Data with a smaller seasonal period, such as weekly, daily, hourly, etc., may have multiple periods of interest. One might extract useful prediction patterns from daily data both at a weekly interval and a yearly one. For example in electricity demand prediction one can have daily periodicity in a week as well as monthly periodicity in a year, all for the same data. The patterns of consumption will repeat themselves for each morning, afternoon and evening, but also each month, compared to the previous years' same month, since some patterns occur in winter months and some other patterns occur in summer months. These monthly patterns are inclusive for the daily patterns, both coexist. Examples of such inclusive seasonal patterns are given in table \ref{multipleSeasonalPeriods}, also taken from \cite{hyndmanseasonalperiods}.
+
+\begin{table}[h]
+    \begin{tabular}{|c|c|c|c|c|c|}
+        \hline 
+        \textbf{Data seasonality} & \textbf{Minute} & \textbf{Hour} & \textbf{Day} & \textbf{Week} & \textbf{Year} \\ \hline 
+        Daily & & & & 7 & 365.25 \\ \hline 
+        Hourly & & & 24 & 168 & 8766 \\ \hline 
+        Half-Hourly & & & 48 & 336 & 17532 \\ \hline 
+        Minutes & & 60 & 1440 & 10080 & 525960 \\ \hline 
+        Seconds & 60 & 3600 & 86400 & 604800 & 31557600 \\ \hline 
+    \end{tabular} 
+    \centering
+    \caption{Higher seasonal periods that may include smaller periods}
+    \label{multipleSeasonalPeriods}
+\end{table}
+
+For my data, which has been captured every 5 minutes, the seasonal periods are given in table \ref{5minSeasonalPeriods}.
+
+\begin{table}[h]
+    \begin{tabular}{|c|c|c|c|c|c|}
+        \hline 
+        \textbf{Data seasonality} & \textbf{Minute} & \textbf{Hour} & \textbf{Day} & \textbf{Week} & \textbf{Year} \\ \hline 
+        5 minute & & 12 & 288 & 2016 & 105192 \\ \hline 
+    \end{tabular} 
+    \centering
+    \caption{Seasonal periods for 5 minute data}
+    \label{5minSeasonalPeriods}
+\end{table}
+
+Of course this might not always hold true because the value might not be exactly the same, this is one of the reasons I have used the $ \approx $ sign instead of a plain $ = $ in the previous equation. Another reason for using an approximation sign is that the seasonal period may not be exactly $ m $, or 24 hours in my example, since patterns may change with time, for example the lunch break from 12:00 may be shifted forward to 13:00 if the workplace demands it. The same with the evening example, if one has to run errands after work, one may arrive later than 20:00, hence the electrical energy consumption may see the pattern getting shifted. Some of the approximations are also given by the fact that years do not have the same number of days, hence the use of the 365.25 number of days in a year.
+
+In order to capture different seasonal periods of a time series, multiple runs of the ARIMA algorithm are needed, in which the needed seasonality is used. In order to capture multiple seasonal periods at a time one might use Fourier terms. Depending on the number of Fourier terms included in the regression, the seasonal pattern may be smoother (for less terms) or more precise (for many terms). This concept will be further explained in the dedicated section \ref{dynamicharmonicregression}.
+
+The usual way to find a time series' seasonality is to inspect two plots, namely:
+\begin{enumerate}
+    \item seasonal plot: each data point is plotted against its respective season. An example plot may be seen in figure \ref{exampleseasonalplot}
+    \item subseries plot: each season is plotted separately, with data points collected in several mini time series plots. An example of such a plot may be seen in figure \ref{examplesubseriesplot}
+\end{enumerate}
+
+As discussed in \cite{fpp2seasonalplot} and \cite{fpp2subseriesplot}, both of the above plots helps the statistician analyze a time series from the point of view of seasonality.
+One has to start with inspecting a time plot of the data, in my case electricity consumption on the Y axis against time on the X axis. A time plot of the sub sampled at one hour intervals ph1 time series can be seen in figure \ref{exampletimeplot}. We can see that the plot starts at day 141 in our time series and ends at the beginning of day 148, hence I plotted 7 days worth of data.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{d1hrsph1timeplot.png}
+    \caption{Example time plot}
+    \label{exampletimeplot}
+\end{figure}
+
+The seasonal plot, then takes this data and arranges it in hourly seasons, which is reflected on the X axis, which now has 24 points. This is in accordance with the fact that the data has been down sampled to 1 hour, the reason behind the down sampling being so we can better inspect the plot, by avoiding cluttering it. Because the original time plot contained seven days worth of data, in figure \ref{exampleseasonalplot} there are now seven time series each representing one day, with its respective seasons. The seasonality here becomes obvious in that each day observes an increase in electricity consumption after sunrise, starting with 05:00 in the AM, and ending around 20:00 in the evening.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{d1hrsph1seasonalplot}
+    \caption{Example seasonal plot}
+    \label{exampleseasonalplot}
+\end{figure}
+
+The second type of plot that I'm concerned with is a seasonal sub series plot. Here, again, the original data in split into seasons, so the X axis also shows 24 points, because figure \ref{examplesubseriesplot} is a sub series plot of the same data presented in figure \ref{exampletimeplot}.
+This time, though, each season is represented as a mini time series. The first observation of each day is arranged one after the other in the first mini series, then the second hour of each day is arranged in a mini series, and so on, completing all the 24 mini series representing each of the 24 seasons in a day. Because the original time plot had seven days worth of data, each mini time series now consists of seven points. The blue line for each series represents the mean of that series. From this plot, too, one can observe that the energy consumption values are increasing around midday. Hence concluding that we might have a daily seasonality, where electrical energy demand will repeat every 24 hours.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{d1hrsph1subseriesplot}
+    \caption{Example subseries plot}
+    \label{examplesubseriesplot}
+\end{figure}
+
+\subsection{Cyclic data}
+The difference between seasonal data and cyclic data is that seasonality manifests itself at fixed intervals, annually, quarterly, monthly, weekly, etc. While cyclic patterns do not exhibit such predictable features, as they are not related to calendar events, but to economic and business conditions. Cyclic patterns exhibit much more volatile properties, the variations between cycles being wider and not as predictable as seasonal variations, which are more stable \cite{fpp2tspatterns}.
 
 %TODO: time-series analysis on wiki
 
 %TODO: https://en.wikipedia.org/wiki/Box%E2%80%93Jenkins_method
 
 %TODO: look in the FPP2 book for ARIMA concepts
+
+%TODO: look at the arima models that I have generated and explain everythign in there, plots and tests
 
 \section{Stationarity and non-stationarity}
 
@@ -405,10 +496,17 @@ I'm going to start with ...
 \subsection{Seasonal differencing}
 
 \section{Autocorrelation function}
+The autocorrelation spectrum, image from R. Nau
+
+\subsection{Critical values}
 
 \section{Partial Autocorrelation function}
+%TODO: Reiterate the critical vales idea from the previous section
 
-\section{Ljung-Box test}
+\section{Residuals analysis}
+\subsection{QQ plots}
+%TODO: more subsections as needed from the Rmd
+\subsection{Ljung-Box test}
 ARIMA, introduce each concept individually
 
 \section{Information criteria}
@@ -417,16 +515,22 @@ ARIMA, introduce each concept individually
 
 \section{The backshift operator}
 
-\section{Forecasting with dummies}
-+1 error in choosing dummies
+\section{Dynamic harmonic regression} \label{dynamicharmonicregression}
+Fourier
 
-\section{Dynamic harmonic regression}
+\section{Forecasting with dummies}
+Hourly, weekly, "weekend-ly"
++1 error in choosing dummies
 
 \section{The dataset}
 The final part of this chapter will give an insight on what the data is and what it looks like.
 
 about the data, present a snippet of it
 talk about the 80/20 rule and how we cannot "take random samples out of the data" since we're talking about time series
+
+Say that I have replaced the negative values with zeros.
+
+Say about "down sampling" of data and why is it necessary.
 
 
 
@@ -439,12 +543,14 @@ reiterate some R stuff and show some code
 R extension
 R program structure
 \subsection{The forecast package}
+
+particularity: seasonality = frequency \cite{hyndmanseasonalperiods}
 \subsection{Benchmark methods in code}
 Show meanf, average, naive code.
 
 \subsection{ARIMA in code}
 Show some example arima code.
-Say about the parallelization.
+Say about the parallelization and data down sampling.
 Say about the "for"-s that I used to search through multiple possibilities.
 
 
