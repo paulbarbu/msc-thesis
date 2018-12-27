@@ -43,7 +43,6 @@
 \author{Barbu Paul - Gheorghe}
 
 %TODO: coperta
-%TODO: plan tematic?
 
 \begin{document}
 
@@ -168,7 +167,7 @@ Similarly, for electrical energy demand prediction we can have models that take 
 
 In this paper we will also inspect this multiple regression route, where we will use several external regressors as predictors of future energy consumption or production, but also several basic forecasting methods, such as the naive method, seasonal naive, and the mean method as baselines for measuring the prediction accuracy when using more complex models such as ARIMA, Seasonal ARIMA (short: SARIMA) or (S)ARIMAX (ARIMA with external regressors and possibly seasonality).
 
-\subsection{ARIMA}
+\subsection{ARIMA} \label{arimasubsection}
 The main model that this dissertation work started around is called ARIMA, short for Auto Regressive Integrated Moving Average.
 But, as we will later see, diverged towards more complicated variations of it.
 
@@ -478,19 +477,21 @@ This time, though, each season is represented as a mini time series. The first o
 \subsection{Cyclic data}
 The difference between seasonal data and cyclic data is that seasonality manifests itself at fixed intervals, annually, quarterly, monthly, weekly, etc. While cyclic patterns do not exhibit such predictable features, as they are not related to calendar events, but to economic and business conditions. Cyclic patterns exhibit much more volatile properties, the variations between cycles being wider and not as predictable as seasonal variations, which are more stable \cite{fpp2tspatterns}.
 
-%TODO: time-series analysis on wiki
+An example of cyclic data can be seen in figure \ref{dlynx}. Which shows the annual total of lynx trapped in the McKenzie River district of north-west Canada \cite{fpp2stationarity}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{dlynx}
+    \caption{Example cyclic data}
+    \label{dlynx}
+\end{figure}
 
-%TODO: https://en.wikipedia.org/wiki/Box%E2%80%93Jenkins_method
-
-%TODO: look in the FPP2 book for ARIMA concepts
-
-%TODO: look at the arima models that I have generated and explain everythign in there, plots and tests
+The cycles in the data are aperiodic and are caused when the population of lynxes increases and is too large to be able to feed, at that point they stop breeding and the population starts to decrease, after the regeneration of food sources, the population will, again, grow. After this point the cycle starts repeating, but with uncertainty with regards to each phase's length, making the time series cyclic, not seasonal \cite{fpp2stationarity}.
 
 \section{Stationarity and non-stationarity}
 
 Data stationarity is an assumption that is the basis of many time-series algorithms, including ARIMA. The ARIMA model need to be fed only stationary data in order to yield good results.
 
-Data is said to be stationary when its statistical properties do not change regardless of the time window used to look at the data. This also means that statistical parameters of a time series such as mean and variance will be stable over time. \cite{fpp2stationarity}
+Data is said to be stationary when its statistical properties do not change regardless of the time window used to look at the data. This also means that statistical parameters of a time series, such as mean and variance, will be stable over time. \cite{fpp2stationarity}
 
 What these statements lead to is that seasonal time-series are not stationary, their properties changing depending on which time they are observed at, if the season is different, so is, for example, the average electricity production from photo voltaic panels. If we look at summer data for electricity generation we might see that it is, on average, higher than in winter months. All because electricity production is favored by the sunny and non-cloudy days of summer, while in the winter electricity is not produced as much by photo voltaic panels since the sky is more often than not, overcast. Hence the winter electricity production should, on average, drop.
 
@@ -517,10 +518,13 @@ One example of a stationary time series is a white noise series. Regardless of t
     \label{whitenoiseplot}
 \end{figure}
 
-Of course not all time-series are random ones, so in order to be able to use them with ARIMA there has to be applied a kind of transformation. This is the topic of sections \ref{differencing} and \ref{boxcoxtransformation}, making non-stationary data, stationary.
+Of course not all time-series are random ones, so in order to be able to use them with ARIMA a kind of transformation has to be applied . This is the topic of sections \ref{differencing} and \ref{boxcoxtransformation}, making non-stationary data, stationary.
 
 For the purpose of illustration I am going to present a few examples of non-stationary data sets from the \texttt{fpp2} R package \cite{fpp2stationarity} in figure \ref{nonstationarityexamples}.
 
+% library("fpp2")
+%grid.arrange(autoplot(goog200), autoplot(strikes), autoplot(elec), autoplot(beer), autoplot(eggs), autoplot(hsales), autoplot(pigs), nrow=4)
+%
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{dnonstationarityexamples}
@@ -530,21 +534,117 @@ For the purpose of illustration I am going to present a few examples of non-stat
 
 Series \texttt{elec}, \texttt{hsales} and \texttt{beer} are seasonal series, the same pattern is repeated over and over again across the plot. Then there are series \texttt{goog200}, \texttt{strikes}, \texttt{elec}, \texttt{eggs} and \texttt{pigs}, which also show trends or changing levels throughout the time they are observed. Increasing variance makes \texttt{elec} again non-stationary.
 
+Apart from the graphical method presented here by inspecting the time series plots, there are also statistical tests that can determine whether a data set is stationary or not. One such test is the augmented Dickey–Fuller test (for short: ADF), which tests the null hypothesis that a given time-series is non-stationary. The result of the test is a negative number, the lower this number, that is toward $ - \infty $, the higher the chances that the null hypothesis should be rejected (ie. that the time-series under test is non-stationary with a given percentage of confidence). This test was developed by statisticians David Dickey and Wayne Fuller in 1979 \cite{adftest}. There are also alternative tests developed by other researchers on the same topic. Phillips–Perron test developed in 1986 \cite{unitroottestsPhillips} and the ADF-GLS test developed by Elliott, Rothenberg and Stock in 1996 are two such examples \cite{unitroottestselliott}.
+
 \section{Differencing} \label{differencing}
 
+In dealing with non-stationary data that must be made stationary one can use the concept of differencing, which is no different from the mathematical concept of differentiation, just applied to two observations of a time-series. \cite{boxjenkins}
 
+The mathematical concept of differencing can be seen in equation \ref{differencingequation}.
+
+\begin{equation}
+y'_{t} = y_{t} - y_{t-1}
+\label{differencingequation}
+\end{equation}
+
+Where $ y' $ represents the first difference of the $ y $ time-series. The first difference of a series is just the latest observation (that is, at time $ t $) minus the former observation (i.e.: at time $ t-1 $). For this reason, the differenced time series will only have $ n - 1 $ terms, given the fact that the original time-series had $ n $ terms, the explanation being that $ y'_{1} $ cannot be computed, since there is no observation before the beginning of time (when we started to observe the time series at $ t = 1 $). 
+
+Intuitively the first difference of a variable models the change in that variable, think of the mathematical concept for the difference in positions, the result is the speed, or how fast the position of an object changes. The same way of thinking can be applied to electrical demand data, or any other time series, the first difference showing how the values of a measurement change, in our case, the change in electrical consumption from one data point to the other.
+
+One can also represent second order differences if needed, or third order differences if the data requires such high order of differencing in order to become stationary. From a mathematical viewpoint second order differences look like equation \ref{2nddifferencingequation}.
+
+\begin{equation}
+\begin{split}
+y"_{t} &= y'_{t} - y'_{t-1} \\
+       &= (y_{t} - y_{t-1}) - (y_{t-1} - y_{t-2}) \\
+       &= y_{t} - 2 y_{t-1} + y_{t-2} \\
+\end{split}
+\label{2nddifferencingequation}
+\end{equation}
+
+In the case of second order differences, the resulting time series will be $ n - 2 $ terms long. Intuitively, these second order differences model how the change in a variable changes \cite{fpp2stationarity}. Just as the mathematical counterpart does, if we differentiate the speed of an object, we get its acceleration.
+
+Here lies the key for the "Integrated" part of Auto Regressive Integrated Moving Average algorithm. Above I specified that ARIMA should work only on stationary data, in fact this is true only or the ARMA algorithm, which cannot perform the differences that I presented in equations \ref{differencingequation} and \ref{2nddifferencingequation}. ARIMA on the other hand, through the $ I $ term, takes an integrated data series and differences it, making it stationary. Since differences are the exact opposite of integrations, this makes sense, ARIMA takes the integrated data, differences it, and theoretically speaking, feeds it later to the ARMA algorithm.
+
+Because the standard way of looking at ARIMA is not in stages, ARIMA applies differences and then ARMA takes over and continues the computations, but as a whole, I'm going forward with the spoken and written convention
+that ARIMA is applied to stationary data, although the data can be made stationary by ARIMA itself.
+
+As explained in the section \ref{arimasubsection}, the $ d $ parameter of ARIMA controls how many differences are applied to the data. This is done under the notation $ I(d) $ and is performed by the statistician or researcher directly on the data.
+
+Remember, the differencing operation's goal is to have data that looks as much as possible like white noise, by that I mean that it doesn't have features on the time plot that can be related to a specific time window.
+I'm going to take the aforementioned data \texttt{goog200} and apply a single difference so that we can see the effect of such operation, the results can be seen in figure \ref{ddiffgoog200}.
+
+% library("fpp2")
+% grid.arrange(autoplot(goog200) + ggtitle("Original data"), autoplot(diff(goog200)) + ggtitle("First difference of the data") + ylab("goog200'"), nrow=2)
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{ddiffgoog200}
+    \caption{goog200: Google stock price for 200 consecutive days; goog200': first difference of goog200 data }
+    \label{ddiffgoog200}
+\end{figure}
+
+The differenced data looks stationary, the first difference made obvious by the spike around day 165-166, where wee see a sudden increase in the level in the first plot, of the original data, and a spike in the differenced data, suggesting a big change from one data point to the next.
+
+As noted in \cite{churvichunitroot} and \cite{nielsenunitroot} the notation $ I(d) $ comes from the fact that the process' characteristic equation that generated the given data has at least one unit root in the complex plane. Hence the tests mentioned earlier (for example: augmented Dickey-Fuller test) are in fact unit root tests and they check if such unit roots solve the process's characteristic equation.
 
 \subsection{Seasonal differencing}
 
+In dealing with seasonal data we employ seasonal differencing, which is very similar to non-seasonal differencing.
+As noted in the section about SARIMA, the number of these seasonal differences will be denoted by the $ D $ parameter for the model.
+Of course the seasonal differences will be applied only to seasonal data in order to make it stationary.
+
+Mathematically speaking the equation for seasonal differences is given in equation \ref{seasonaldiffsequation}. Where $ m $ is the seasonal period.
+
+\begin{equation}
+y'_{t} = y_{t} - y_{t-m}
+\label{seasonaldiffsequation}
+\end{equation}
+
+Again, using data from the \texttt{fpp2} R package, I'm going to illustrate the concept of seasonal differencing using the time series \texttt{euretail}, the European quarterly retail trade \cite{fpp2seasonalarima}. Being a quarterly measure, I expect that there is a need to apply at least a difference where $ D = 1 $ and $ m = 4 $ in order for the data to become stationary. As can be seen in figure \ref{euretaildiffs}, the first panel shows the unaltered, original, data. The second panel shows the seasonal difference, where $ D = 1 $ and $ m = 4 $, since there are four quarters in a year. Because the second panel is not clearly stationary, since there are trends in the data and a level shift towards the end, I have used another first difference, non-seasonal this time to make the data stationary. The non-seasonal difference was applied on the seasonally differenced data. The order in which the two differences are applied does not matter. Had I started with the first non-seasonal difference on the basis that the data has a trend, then applied the seasonal difference, the end result would have been the same. So if we were to apply the seasonal ARIMA model at this point, one would say it has the form: $ ARIMA(0, 1, 0)(0, 1, 0)[4] $, where $ d = 1 $, $ D = 1 $ and $ m = 4 $, I left the AR, MA, SAR and SMA terms empty by using $ 0 $ for placeholders.
+
+%grid.arrange(autoplot(euretail) + ggtitle("Original data"), autoplot(diff(euretail, lag=4)) + ggtitle("Seasonal first difference of the data") + ylab("euretail, D=4"), autoplot(diff(diff(euretail, lag=4))) + ggtitle("First difference of the seasonally differenced data")+ ylab("euretail', D=4"), nrow=3)
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{deuretaildiffs}
+    \caption{Quarterly retail trade index in the Euro area (17 countries), 1996–2011, covering wholesale and retail trade, and the repair of motor vehicles and motorcycles. With its seasonal and first non-seasonal differences applied.}
+    \label{euretaildiffs}
+\end{figure}
+
+Please note that other seasonal period than $ m = 4 $ does not make sense here, considering the nature of the data. The interpretation of such differences being that they represent the change from one season to the next, that is from one year's first semester to the next year's first semester, from one year's second semester to the next year's second semester, and so on.
+
+In R one can use the \texttt{ndiffs} and \texttt{nsdiffs} functions from the \texttt{forecast} package in order to automatically determine the order of non-seasonal and seasonal differences needed to make a time series stationary. Both functions having support for multiple unit root tests, including the ones mentioned previously, ADF \cite{adftest} and PP \cite{unitroottestsPhillips}. I considered these functions when I investigated the electrical consumption and production data set used in this work, but I settled on the interpretation of the plots for choosing the order of differences.
+
 \section{Box-Cox transformation} \label{boxcoxtransformation}
+%TODO: usmelec example from \cite{fpp2stationarity}
+
+
+
+%TODO: time-series analysis on wiki
+
+%TODO: https://en.wikipedia.org/wiki/Box%E2%80%93Jenkins_method
+
+%TODO: look in the FPP2 book for ARIMA concepts
+
+%TODO: look at the arima models that I have generated and explain everythign in there, plots and tests
+
+
+
 
 \section{Autocorrelation function}
+%TODO: ACF used to see non-stationarity since all values are highly correlated between them, this is how the ADF test works at an intuitive level as well.
+One of the ways for identifying stationary or non-stationary time series is by using the Autocorrelation function plot. This plot will drop to zero pretty quickly for a stationary time series, while on the other hand the ACF of non-stationary time series will decrease very slowly \cite{fpp2stationarity}.
+%TODO: acf(goog200) and acf(diff(goog200)) \cite{fpp2stationarity} examples. as well as euretail from \cite{fpp2seasonalarima}
+
+Say that AR is a bit of differencing (R. Nau citation)
+
 The autocorrelation spectrum, image from R. Nau
 
 \subsection{Critical values}
 
 \section{Partial Autocorrelation function}
 %TODO: Reiterate the critical vales idea from the previous section
+
+Say that MA is a bit of removing differencing (R. Nau citation)
 
 \section{Residuals analysis}
 \subsection{QQ plots}
