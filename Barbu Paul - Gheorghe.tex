@@ -725,7 +725,7 @@ This time I have used $ t $ instead of $ i $ to index the data, in order to make
 
 One of the ways for identifying stationary or non-stationary time series is by using the autocorrelation function plot. This plot will drop to zero pretty quickly for a stationary time series, while on the other hand the ACF of non-stationary time series will decrease very slowly \cite{fpp2stationarity}. This is also how the augmented Dickey-Fuller test works at an intuitive level. Because the data are autocorrelated, future values may be created from past values, hence the data is non-stationary. An example of this behavior is also given in figure \ref{goog200acf}, where on the top plot we see the original \texttt{goog200} autocorrelation function and on the bottom plot of the figure we see the ACF of the differentiated series. The former is slowly decreasing towards zero since the data is non-stationary, while the other displays no such behavior since the differenced series is stationary.
 
-\subsection{Critical values}
+\subsection{Critical values} \label{cirticalvaluesection}
 
 The dotted blue lines in figure \ref{goog200acf} represent the critical values for the autocorrelation function (and later partial autocorrelation function). If the value of the ACF is between these lines, with a value close to zero, then the correlation is considered not significant, otherwise it is significant.
 
@@ -746,16 +746,58 @@ Where:
 So one could say that the critical values are approximately two standard deviations (or precisely 1.96) away from the mean. The final formula for computing the confidence values is: $ \pm \frac{1.96}{\sqrt{n}} $ \cite{nauregression}.  
 
 \section{Partial Autocorrelation function}
-%TODO: Reiterate the critical vales idea from the previous section
+
+The partial autocorrelation function (or PACF for short), is very similar to the autocorrelation function in a lot of ways \cite{boxjenkins}. The difference being that partial autocorrelation removes the influence of the middle lags and keeps the correlation of only the head and tail lags. That means that computing the partial autocorrelation of $ y_{t} $ and $ y_{t-k} $ will first remove the effects of lags $1, 2, 3, \dots, k-1 $. As a consequence of this is the fact that the first partial autocorrelation is the same as the first autocorrelation, since there is no other observation between the latest two \cite{fpp2nonseasonalarima}. What PACF accomplishes at an intuitive level is eliminating the possibility of $ y_{t} $ and $ y_{t-2} $ being correlated only because of the connection of the two with $ y_{t-1} $, which was clearly the case in ACF. Thus the PACF may uncover information related to both $ y_{t-2} $ and $ y_{t} $ that might be used for forecasting.
+
+The critical values idea here is the same as for ACF, as explained in section \ref{cirticalvaluesection}.
 
 \section{Choosing AR(p) and MA(q) terms}
 
-reference the $ I(d) $ part.
-Say something about SAR(P) and SMA(Q).
+For now I have only focused on the basic concepts that underlie the ARIMA model and that will help choose the right parameters for it.  I have only given indications on choosing the $ d $ parameter (the number of differences required to make the time series stationary) for the $ I(d) $ part of ARIMA.
+
+I will now combine the two previous sections about autocorrelation function and partial autocorrelation function into what will be the guideline on how to choose the $ p $ and $ q $ parameters of ARIMA (and, of course, their seasonal counterparts $ P $ and $ Q $).
+
+The ARIMA equation is given in \ref{boxjenkinsequation} and repeated here for clarity:
+\begin{equation}
+\tag{\ref{boxjenkinsequation}}
+y'_{t} = c + \phi_{1}y'_{t-1} + \cdots + \phi_{p}y'_{t-p} + \theta_{1}\varepsilon_{t-1} + \cdots + \theta_{q}\varepsilon_{t-q} + \varepsilon_{t}
+\end{equation}
+
+As one can see, the auto regressive part of the equation, as the name implies, uses lagged values of the time series (possibly differenced, but for simplicity I will not consider that case in the explanation) scaled by some coefficients $ \phi_{1}, \phi_{2}, \dots, \phi_{p} $, the number of which will be chosen by the researcher, under the parameter $ p $. So the rule by which we should choose the number of AR terms in ARIMA is by inspecting both the ACF and PACF. 
+
+It is clear that the ACF should display some kind of correlation between several terms since otherwise we couldn't exploit the relationship between lagged values in order to produce forecasts. But the question still remains, how many lagged values should we take into account for forecasting purposes? The answer to the question comes from the intuitive understanding of the PACF, namely: where do the lagged values stop being correlated with the current value of the time series? This is exactly the question that PACF answers, the lagged PACF value that is the last above the critical domain gives the number of observations that definitely influence (read: are correlated) with the current observation. In summary: if the ACF shows some correlation between lags, and the PACF at some point drops below the critical values we have a, so called, AR signature for which we choose $ p $ to be equal to the number of significant spikes in the PACF plot up to the point where they dip below the critical threshold of $ \pm \frac{1.96}{\sqrt{n}} $. In practice data will show either exponentially decreasing or sinusoidal ACF plots \cite{fpp2nonseasonalarima}.
+
+%grid.arrange(autoplot(uschange[,"Consumption"]) + ylab("%") + ggtitle('Growth rates of personal consumption in the USA'), ggAcf(uschange[,"Consumption"]) + ggtitle(''), ggPacf(uschange[,"Consumption"]) + ggtitle(''), layout_matrix = rbind(c(1,1), c(2,3)))
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{duschangeacfpacf}
+    \caption{Top, \texttt{uschange}: Percentage changes in quarterly personal consumption expenditure; Bottom left: ACF of \texttt{uschange}; Bottom right: PACF of the \texttt{uschange} data.}
+    \label{uschangeacfpacf}
+\end{figure}
+
+Figure \ref{uschangeacfpacf} shows the \texttt{uschange} data from the \texttt{fpp2} R package \cite{fpp2} and its corresponding ACF and PACF plots. From this figure, using the rules listed above we may conclude that we have to set $ p = 3 $ since the ACF is an exponentially decaying function and the PACF shows three significant lags before becoming lower than the threshold. I have purposefully ignored the significant lag at the end of the PACF plot since we are working with 95\% confidence intervals. This means that we have 5\% chance of missing a significant spike in the plots. In concrete numbers that means 5 spikes in 100, or 1 in 20. Our plots show 22 lags, that means we can easily ignore one (or maybe miss one as an error) and still meet the requirement of 95\% confidence intervals.
+
+Robert Nau also suggests, adding to the above rules, that positive ACF is also an indication of AR terms in the ARIMA model, that is of a need for using $ p > 0 $. \cite{nauarimaarmarules}
+
+%grid.arrange(autoplot(usgdp) + xlab("Year") + ylab("US Dollars") + ggtitle('Quarterly US GDP'), ggAcf(usgdp %>% diff() %>% diff(lag=4)) + ggtitle('ACF after non-seasonal and seasonal differences'), ggPacf(usgdp %>% diff() %>% diff(lag=4)) + ggtitle('PACF after non-seasonal and seasonal differences'), layout_matrix = rbind(c(1,1), c(2,3)))
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{dusgdpacfpacf}
+    \caption{Top, \texttt{usgdp}: Quarterly US GDP; Bottom left: ACF of first non-seasonal and seasonally differenced \texttt{usgdp} data; Bottom right: PACF of first non-seasonal and seasonally differenced \texttt{usgdp} data.}
+    \label{usgdpacfpacf}
+\end{figure}
+
+An example time series which yields a sinusoidal ACF after applying first seasonal and non-seasonal differences is presented in figure \ref{usgdpacfpacf}. For this data one might choose to set $ p = 1 $ since there is only a single lag significant in the PACF plot, while the other significant spikes are at seasonal lags, a topic which I will reiterate later on. \cite{hyndman2008forecasting}
+
+Since ARIMA is invertible (look for citation) ACF swaps places with PACF for determining MA(q).
+
+Say something about SAR(P) and SMA(Q). Use \ref{usgdpacfpacf} as an example.
 Say that AR is a bit of differencing (R. Nau citation)
 Say that MA is a bit of removing differencing (R. Nau citation)
 
 The autocorrelation spectrum, image from R. Nau
+
+After the parameters have been chosen, the estimation of $ \phi $, $ \theta $, in case of ARIMA, and $ \Phi $, $ \Theta $ in case of SARIMA, is left to the algorithm. Usually the $ c $ constant in the ARIMA equation will be chosen as the mean of the data, remember though that this constant may not be included, depending on the software implementation of the ARIMA model.
 
 \section{Residuals analysis}
 
