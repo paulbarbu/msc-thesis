@@ -160,9 +160,9 @@ Taking a bird's eye view of the problem, it is no different than what we are use
 
 Similarly, for electrical energy demand prediction we can have models that take into account several predictor variables, such as the time of day, the temperature, the season and maybe other social elements.
 \begin{itemize}
-    \item time of day - is important in prediction because in the case of electrical energy consumption we could imagine a scenario where the consumption would be highest in the morning when everyone gets ready for work or school and then decrease a bit, only to increase back again during the evenings when everybody returns home. The same logic applies to electricity production by photo-voltaic panels, their peak would be at noon, when the sun shies brightest and the light's angle of incidence is the widest.
-    \item the outside temperature is also important in countries that mostly use electrical based heating and cooling. In the summer months, when it's hot outside, electrical energy will be used to power air conditioning units, while in the winter months when it's cold outside, energy will be used for heating our homes.
-    \item the season is the common element that influences both of the above. We don't expect photo-voltaic panels to be of much use even during noon hours in an winter month (because there is a high chance they will be covered with snow) or on rainy days when the sky is overcast.
+    \item Time of day is important in prediction because in the case of electrical energy consumption we could imagine a scenario where the consumption would be highest in the morning when everyone gets ready for work or school and then decrease a bit, only to increase back again during the evenings when everybody returns home. The same logic applies to electricity production by photo-voltaic panels, their peak would be at noon, when the sun shies brightest and the light's angle of incidence is the widest;
+    \item The outside temperature is also important in countries that mostly use electrical based heating and cooling. In the summer months, when it's hot outside, electrical energy will be used to power air conditioning units, while in the winter months when it's cold outside, energy will be used for heating our homes;
+    \item The season is the common element that influences both of the above. We don't expect photo-voltaic panels to be of much use even during noon hours in an winter month (because there is a high chance they will be covered with snow) or on rainy days when the sky is overcast.
 \end{itemize}
 
 In this paper we will also inspect this multiple regression route, where we will use several external regressors as predictors of future energy consumption or production, but also several basic forecasting methods, such as the naive method, seasonal naive, and the mean method as baselines for measuring the prediction accuracy when using more complex models such as ARIMA, Seasonal ARIMA (short: SARIMA) or (S)ARIMAX (ARIMA with external regressors and possibly seasonality).
@@ -186,18 +186,18 @@ y'_{t} = c + \phi_{1}y'_{t-1} + \cdots + \phi_{p}y'_{t-p} + \theta_{1}\varepsilo
 The left hand side of the equation represents the predicted (and differenced) value of $ y $ and the right hand side represents the "predictor" variables, where the predictors are made up of:
 
 \begin{itemize}
-    \item $ c $: a constant, which may or may not be included, depending on the shape of the data
-    \item $ \phi_{p}y'_{t-p} $: one or more Auto Regressive terms (AR), their number is defined by the $ p $ parameter of the ARIMA model and are weighted by the $ \phi_{p} $ coefficients which are computed during the fitting phase of the ARIMA model
-    \item $ \theta_{q}\varepsilon_{t-q} $: one or more Moving Average terms (MA), again, their number is defined by the $ q $ parameter of the ARIMA model and are weighted by the $ \theta_{q} $ coefficients which are computed during the fitting phase of the ARIMA model, similarly to the AR coefficients $ \phi_{p} $
-    \item $ y'_{t} $: is the differenced series (once or several times), the number of differences is given by the $ d $ parameter of the model.
+    \item $ c $: a constant, which may or may not be included, depending on the shape of the data;
+    \item $ \phi_{p}y'_{t-p} $: one or more Auto Regressive terms (AR), their number is defined by the $ p $ parameter of the ARIMA model and are weighted by the $ \phi_{p} $ coefficients which are computed during the fitting phase of the ARIMA model;
+    \item $ \theta_{q}\varepsilon_{t-q} $: one or more Moving Average terms (MA), again, their number is defined by the $ q $ parameter of the ARIMA model and are weighted by the $ \theta_{q} $ coefficients which are computed during the fitting phase of the ARIMA model, similarly to the AR coefficients $ \phi_{p} $;
+    \item $ y'_{t} $: is the differenced series (once or several times), the number of differences is given by the $ d $ parameter of the model;
     \item $ \varepsilon $: represent error terms which are independent, identically distributed with zero mean, which basically means they are random errors.
 \end{itemize}
 
 This is the basic idea of the ARIMA model, and together with its parameters is written as: $ ARIMA(p, d, q) $ \cite{fpp2nonseasonalarima}, where:
 \begin{itemize}
-    \item $ p $: the order of the autoregressive part
-    \item $ d $: the number of non-seasonal differences applied
-    \item $ q $: the order of the moving average part
+    \item $ p $: the order of the autoregressive part;
+    \item $ d $: the number of non-seasonal differences applied;
+    \item $ q $: the order of the moving average part.
 \end{itemize}
 
 So to sum the model up in a phrase, I can say that ARIMA represents future values in terms of several past values and errors, all adjusted by coefficients to match the past data as best as possible.
@@ -223,10 +223,10 @@ y'_{t} = c + & \phi_{1}y'_{t-1} + \cdots + \phi_{p}y'_{t-p} \\
 Where:
 
 \begin{itemize}
-    \item $ p $, $ d $, $ q $: keep their original, non-seasonal, meaning
-    \item $ P $, $ D $, $ Q $: are the equivalent of their lower-case version, but they define the orders of the autoregressive, differencing and moving average for the seasonal part of the data.
-    \item $ \Phi_{P}y'_{t-m-P} $: one or more Seasonal Auto Regressive terms (SAR), their number is defined by the $ P $ parameter of the SARIMA model and are weighted by the $ \Phi_{P} $ coefficients which are computed during the fitting phase of the SARIMA model
-    \item $ \Theta_{Q}\varepsilon_{t-m-Q} $: one or more Seasonal Moving Average terms (SMA), again, their number is defined by the $ Q $ parameter of the ARIMA model and are weighted by the $ \Theta_{Q} $ coefficients which are computed during the fitting phase of the SARIMA model, similarly to the SAR coefficients $ \Phi_{P} $
+    \item $ p $, $ d $, $ q $: keep their original, non-seasonal, meaning;
+    \item $ P $, $ D $, $ Q $: are the equivalent of their lower-case version, but they define the orders of the autoregressive, differencing and moving average for the seasonal part of the data;
+    \item $ \Phi_{P}y'_{t-m-P} $: one or more Seasonal Auto Regressive terms (SAR), their number is defined by the $ P $ parameter of the SARIMA model and are weighted by the $ \Phi_{P} $ coefficients which are computed during the fitting phase of the SARIMA model;
+    \item $ \Theta_{Q}\varepsilon_{t-m-Q} $: one or more Seasonal Moving Average terms (SMA), again, their number is defined by the $ Q $ parameter of the ARIMA model and are weighted by the $ \Theta_{Q} $ coefficients which are computed during the fitting phase of the SARIMA model, similarly to the SAR coefficients $ \Phi_{P} $;
     \item $ m $: this parameter is in fact a pseudo one, usually it cannot vary, being fixed to the seasonal period of the data. For example a birthday occurs yearly, weekends occur weekly, and the examples may continue for monthly events and even quarterly for business and data belonging to the economics domain.
 \end{itemize}
 
@@ -260,19 +260,19 @@ n'_{t} &= \phi_{1} n'_{t-1} + \cdots + \phi_{p} n'_{t-p} + \theta_{1} \varepsilo
 
 Equation \ref{arimaxequationfpp2} is easier to interpret as a regression with ARIMA errors, since we rewrite the right hand side part of equation \ref{arimaxequation} as a different term:
 \begin{itemize}
-    \item $ y'_{t} $: is the forecast time series, optionally differenced
-    \item $ x'_{t} $: is the external regressors time series, such as temperatures, hours of day, days of week, months, etc.
-    \item $ \beta $: is the coefficient applied to the external regressors time series
-    \item $ n'_{t} $: is an $ ARIMA(p, d, q) $ error time series
-    \item $ \phi $, $ \theta $, $ \varepsilon $, $ p $, $ d $, and $ q $: keep their original meanings
+    \item $ y'_{t} $: is the forecast time series, optionally differenced;
+    \item $ x'_{t} $: is the external regressors time series, such as temperatures, hours of day, days of week, months, etc.;
+    \item $ \beta $: is the coefficient applied to the external regressors time series;
+    \item $ n'_{t} $: is an $ ARIMA(p, d, q) $ error time series;
+    \item $ \phi $, $ \theta $, $ \varepsilon $, $ p $, $ d $, and $ q $: keep their original meanings.
 \end{itemize}
 
 Rob J. Hyndman and George Athanasopoulos list several useful predictors \cite{fpp2usefulpredictors} to be used for the $ x_{t} $ term in the regression equation in their book Forecasting: Principles and Practice \cite{fpp2}. Among them, they list:
 
 \begin{itemize}
-    \item trend, or time: some time-series are highly correlated with time, for example the increasing value of good wine or musical instruments are highly correlated with the passing of time
-    \item dummy variables: electrical energy consumption might be influenced by public events. These events may attract other people in an area and I expect them to be accommodated overnight, one might predict an increase in electricity demand during the period of the event. These events may be modeled as dummy variables, only influencing the analyzed data around the time they take place. 
-    \item seasonal dummy variables: household electrical energy consumption might be influenced by public holidays as well, since most people do not have to work on public holidays we might expect an increase in electricity demand during those holidays Easter, Christmas, National Day, etc. when people are more prone to staying at home. These events may be modeled as seasonal dummy variables, as well. They only influence the analyzed data around the time they take place, but they do it periodically, in the case of may enumeration, yearly. We could just as well imagine scenarios where the seasonality is weekly, or quarterly.
+    \item Trend, or time: some time-series are highly correlated with time, for example the increasing value of good wine or musical instruments are highly correlated with the passing of time;
+    \item Dummy variables: electrical energy consumption might be influenced by public events. These events may attract other people in an area and I expect them to be accommodated overnight, one might predict an increase in electricity demand during the period of the event. These events may be modeled as dummy variables, only influencing the analyzed data around the time they take place;
+    \item Seasonal dummy variables: household electrical energy consumption might be influenced by public holidays as well, since most people do not have to work on public holidays we might expect an increase in electricity demand during those holidays Easter, Christmas, National Day, etc. when people are more prone to staying at home. These events may be modeled as seasonal dummy variables, as well. They only influence the analyzed data around the time they take place, but they do it periodically, in the case of may enumeration, yearly. We could just as well imagine scenarios where the seasonality is weekly, or quarterly.
 \end{itemize}
 
 The authors of the aforementioned book, also note that one need not use seasonal dummies when the seasonal period is very long. Instead one can use terms of the Fourier series \cite{fpp2dhr} to model longer and more complex seasonality. The intuitive explanation given to this fact is the the Fourier terms can smooth a little bit the predicted time series and at the same time, take the shape of it, akin to using the Fourier series in signal processing or data compression.
@@ -306,11 +306,11 @@ Although not state of the art, these methods are the basic building blocks of ot
 
 The three benchmark methods \cite{fpp2simplemethods} that I used to create baseline predictions are:
 \begin{enumerate}
-    \item naive: use the last available data point as a forecast for the next data point. The equivalent equation would be: \[ y_{t+1} = y_{t} \]
-    This method is also known as the "random walk model" and can be compared to answering the question "What will tomorrow be like?" with: "Tomorrow will be a lot like today" since we only have information about the past and present and because we infer that the near future cannot change that drastically, we infer that it will be the same as the present.
-    \item seasonally naive: similarly to the naive method, this method will forecast the next value to be exactly the same value from the previous season. Mathematically this is: \[ y_{t+1} = y_{t+1-m} \] 
-    Intuitively, if $ m $ (the seasonal period) is one week, is like answering the question "What will tomorrow (Wednesday) be like?" with: "Tomorrow (Wednesday) will be exactly like the previous week's Wednesday", there being no reason to believe that things will change dramatically from one week to the other.
-    \item average: finally, the average method takes all known past values, averages them together and predicts the future values using that result. Mathematically: \[ y_{t+1} = \frac{y_{1} + \cdots + y_{t}}{T} \]
+    \item Naive: use the last available data point as a forecast for the next data point. The equivalent equation would be: \[ y_{t+1} = y_{t} \]
+    This method is also known as the "random walk model" and can be compared to answering the question "What will tomorrow be like?" with: "Tomorrow will be a lot like today" since we only have information about the past and present and because we infer that the near future cannot change that drastically, we infer that it will be the same as the present;
+    \item Seasonally naive: similarly to the naive method, this method will forecast the next value to be exactly the same value from the previous season. Mathematically this is: \[ y_{t+1} = y_{t+1-m} \] 
+    Intuitively, if $ m $ (the seasonal period) is one week, is like answering the question "What will tomorrow (Wednesday) be like?" with: "Tomorrow (Wednesday) will be exactly like the previous week's Wednesday", there being no reason to believe that things will change dramatically from one week to the other;
+    \item Average: finally, the average method takes all known past values, averages them together and predicts the future values using that result. Mathematically: \[ y_{t+1} = \frac{y_{1} + \cdots + y_{t}}{T} \]
     Where $ T $ is the number of previous observations.
 \end{enumerate}
 
@@ -367,8 +367,8 @@ f <- function(x, y) {
 
 The two down sides that I have found while working with R are the following:
 \begin{enumerate}
-    \item R's lists and vectors start at index 1, most other programming languages start the indexing at 0. While this is no technical shortcoming, it is a different mindset that one has to adapt to.
-    \item the preferred assignment operator in R is "<-". Most of the time, while valid and totally interchangeable for simple assignments, the usage of "=" is discouraged. The usage of "=" for assigning default values for function parameters is preferable however \cite{RassignOps}.
+    \item R's lists and vectors start at index 1, most other programming languages start the indexing at 0. While this is no technical shortcoming, it is a different mindset that one has to adapt to;
+    \item The preferred assignment operator in R is "<-". Most of the time, while valid and totally interchangeable for simple assignments, the usage of "=" is discouraged. The usage of "=" for assigning default values for function parameters is preferable however \cite{RassignOps}.
 \end{enumerate}
 
 The multitude of tutorials and learning resources available on R online are making the programmer's life easier and make for a sweeter learning curve as the language is really popular in scientific internet circles it is easy to find answers to problems that arise while working with it. Also the plotting library ggplot2 \footnote{\url{https://ggplot2.tidyverse.org/}} is the state of the art in terms of drawing plots from code. While not very beginner friendly there are a lot of learning materials on the web for it and its documentation is plentiful to offset the learning curve of the library. The technical complexity of the library comes from the fact that the plots are very customizable.
@@ -441,8 +441,8 @@ In order to capture different seasonal periods of a time series, multiple runs o
 
 The usual way to find a time series' seasonality is to inspect two plots, namely:
 \begin{enumerate}
-    \item seasonal plot: each data point is plotted against its respective season. An example plot may be seen in figure \ref{exampleseasonalplot}
-    \item subseries plot: each season is plotted separately, with data points collected in several mini time series plots. An example of such a plot may be seen in figure \ref{examplesubseriesplot}
+    \item Seasonal plot: each data point is plotted against its respective season. An example plot may be seen in figure \ref{exampleseasonalplot};
+    \item Subseries plot: each season is plotted separately, with data points collected in several mini time series plots. An example of such a plot may be seen in figure \ref{examplesubseriesplot}.
 \end{enumerate}
 
 As discussed in \cite{fpp2seasonalplot} and \cite{fpp2subseriesplot}, both of the above plots helps the statistician analyze a time series from the point of view of seasonality.
@@ -497,7 +497,7 @@ What these statements lead to is that seasonal time-series are not stationary, t
 
 Other time-series that present increasing or decreasing trends, such as the data shown in figure \ref{energytrend} for the energy consumption plot are not stationary either. They are dependent on time, if we look at the data in different time slots, we're going to see, again, different means, depending on which years we choose to inspect.
 
-One example of a stationary time series is a white noise series. Regardless of the time we choose to inspect the data, it will look much the same from a statistical standpoint. No noticeable changes happen that might influence the properties of the data. An example white-noise series is given in figure \ref{whitenoiseplot}. This figure was generated by the piece of R code given in listing \ref{Rwhitenoisecode}.
+One example of a stationary time series is a white noise series. Regardless of the time we choose to inspect the data, it will look much the same from a statistical standpoint. No noticeable changes happen that might influence the properties of the data. An example white-noise series is given in figure \ref{whitenoiseplot}. This figure was generated by the piece of R code given in listing \ref{Rwhitenoisecode}. This code generated 200 random points with an average of zero and a standard deviation of 1, plotted as if they were generated separately in time according to their generation index.
 
 \begin{listing}[h]
     \begin{minted}{R}
@@ -528,7 +528,7 @@ For the purpose of illustration I am going to present a few examples of non-stat
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{dnonstationarityexamples}
-    \caption{goog200: Google stock price for 200 consecutive days; strikes: Annual number of strikes in the US; elec: Monthly Australian electricity production; beer: Monthly Australian beer production; eggs: Annual price of a dozen eggs in the US (constant dollars); hsales: Monthly sales of new one-family houses sold in the US; pigs: Monthly total of pigs slaughtered in Victoria, Australia }
+    \caption{\texttt{goog200}: Google stock price for 200 consecutive days; \texttt{strikes}: Annual number of strikes in the US; \texttt{elec}: Monthly Australian electricity production; \texttt{beer}: Monthly Australian beer production; \texttt{eggs}: Annual price of a dozen eggs in the US (constant dollars); \texttt{hsales}: Monthly sales of new one-family houses sold in the US; \texttt{pigs}: Monthly total of pigs slaughtered in Victoria, Australia }
     \label{nonstationarityexamples}
 \end{figure}
 
@@ -579,7 +579,7 @@ I'm going to take the aforementioned data \texttt{goog200} and apply a single di
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.75\textwidth]{ddiffgoog200}
-    \caption{goog200: Google stock price for 200 consecutive days; goog200': first difference of goog200 data }
+    \caption{\texttt{goog200}: Google stock price for 200 consecutive days; \texttt{goog200'}: first difference of \texttt{goog200} data }
     \label{ddiffgoog200}
 \end{figure}
 
@@ -610,14 +610,154 @@ Again, using data from the \texttt{fpp2} R package, I'm going to illustrate the 
     \label{euretaildiffs}
 \end{figure}
 
-Please note that other seasonal period than $ m = 4 $ does not make sense here, considering the nature of the data. The interpretation of such differences being that they represent the change from one season to the next, that is from one year's first semester to the next year's first semester, from one year's second semester to the next year's second semester, and so on.
+Please note that other seasonal period than $ m = 4 $ does not make sense here, considering the nature of the data (quarterly). The interpretation of such differences being that they represent the change from one season to the next, that is from one year's first semester to the next year's first semester, from one year's second semester to the next year's second semester, and so on.
 
 In R one can use the \texttt{ndiffs} and \texttt{nsdiffs} functions from the \texttt{forecast} package in order to automatically determine the order of non-seasonal and seasonal differences needed to make a time series stationary. Both functions having support for multiple unit root tests, including the ones mentioned previously, ADF \cite{adftest} and PP \cite{unitroottestsPhillips}. I considered these functions when I investigated the electrical consumption and production data set used in this work, but I settled on the interpretation of the plots for choosing the order of differences.
 
 \section{Box-Cox transformation} \label{boxcoxtransformation}
-%TODO: usmelec example from \cite{fpp2stationarity}
 
+In figure \ref{nonstationarityexamples} I showed several examples of non-stationary data, among those time series resides the \texttt{elec} data series which because of its trend and increasing variance was categorized as non-stationary. When dealing with such data one might apply a transformation in order to be able to make the series stationary.
 
+Examples of data transformations are given in \cite{fpp2transformations} and they include transformations such as:
+\begin{itemize}
+    \item Calendar transformations: used when examining monthly patterns, because the number of days in a month is different this analysis can become cumbersome, so the transformation entails transforming monthly values in daily average values;
+    \item Population transformations: as is the case with calendar data, instead of analyzing data relative to the total, it might be easier to adjust the data per capita, thousand or million people;
+    \item Inflation transformations: this adjustment is mostly used with economic data, where we have to adjust money value from a past period to the present, data for which inflation likely increased the value of objects;
+    \item Logarithm transformations: logarithms have the property of making data interpretable relative to the original scale. If a base 10 logarithm is used, an increase of 1 in the transformed data will in fact be an increase of 10 in the original data set;
+    \item Power transformations: power transformations such as square roots and cube roots may be used, but they are not as interpretable and suggestive as the other transformations mentioned here.
+\end{itemize}
+
+A set of adjustments that combines logarithms and power transformations, known under the name Box-Cox transformations, is defined mathematically as in equation \ref{boxcoxequation}.
+
+\begin{equation}
+w_t  =
+\begin{cases}
+\log(y_t)                     & \text{if $ \lambda = 0 $};  \\
+\frac{y_t^\lambda-1}{\lambda} & \text{if $ \lambda \ne 0 $}.
+\end{cases}
+\label{boxcoxequation} 
+\end{equation}
+
+Where:
+\begin{itemize}
+    \item $ y_{t} $: is the original time series;
+    \item $ w_{t} $: is the transformed time series;
+    \item $ \lambda $: is a parameter of the transformation operation;    
+    \item The logarithm is a natural one, that is, to base $ e $;
+\end{itemize}
+
+Some common cases of the Box-Cox transformation include setting $ \lambda = 0 $, in which case the natural logarithm transformation is used. While the other cases are power transformations, when $ \lambda \ne 0 $, together with some scaling by the same $ \lambda $ parameter. The only specific case of power transformations worth noting is when $ \lambda = 1 $, in this case the right hand side of the equation will become $ y_{t} - 1 $, thus accomplishing a simple downward shift with one unit.
+
+For the above example of \texttt{elec} data, if we apply either a logarithmic transformation or a power one, the results will be satisfactory, as can be seen in figure \ref{boxcoxelec}, the variance is reduced in both cases. 
+
+%grid.arrange(autoplot(elec), autoplot(BoxCox(elec, lambda=0)) + ylab(bquote("elec," ~ lambda ~ "=" ~ 0) ), autoplot(BoxCox(elec, lambda=0.26)) + ylab(bquote('elec,' ~ lambda ~ '=' ~ 0.26)), nrow=3)
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{dboxcoxelec}
+    \caption{Top to bottom: \texttt{elec}: Monthly Australian electricity production; elec, $ \lambda = 0 $: logarithmically transformed \texttt{elec} data; \texttt{elec}, $ \lambda = 0.26 $: power transformed \texttt{elec} time series.}
+    \label{boxcoxelec}
+\end{figure}
+
+I have applied a logarithmic transformation through a Box-Cox operation with the $ \lambda $ parameter set to $ 0 $. And a power transformation, again through a Box-Cox transformation with $ \lambda = 0.26 $. The value for $ \lambda$ has been generated using the \texttt{BoxCox.lambda} function from the \texttt{forecast} R package \cite{fpp2transformations} \cite{rforecastpackage}. One can easily see that the last two plots in figure \ref{boxcoxelec} have approximately the same height for the variations in the data, which is not true for the original data in the first plot from the figure.
+
+Whenever transforming data and passing it to the ARIMA algorithm, the forecast data is still in the transformed space. So in order to get data in the original space back, we have to apply the inverse transformation \cite{fpp2transformations}, which in the case of Box-Cox is given by equation \ref{inverseboxcoxequation}.
+
+\begin{equation}
+y_{t} =
+\begin{cases}
+\exp(w_{t}) & \text{if $ \lambda = 0 $};\\
+(\lambda w_t+1)^{1/\lambda} & \text{if $ \lambda \ne 0 $}.
+\end{cases}
+\label{inverseboxcoxequation}
+\end{equation}
+
+\section{Correlation of two variables}
+
+If two variables $ a $ and $ b $ are correlated, that means that $ a $ influences $ b $ and vice versa. This could also mean that variables that are correlated might be redundant and half of them removed for the purposes of simplifying the model, since the information that one needs is already contained in the other half of the variables. When two variables are correlated, that means that if one increases, so will the second.
+
+There is also the concept of anti-correlation, in this case when one variable goes up, the other goes down. One mathematical indicator for correlation is the Pearson Correlation Coefficient (or PCC for short) \cite{pearson1895note} developed by Karl Pearson, based on previous work by Francis Galton \cite{stiglercorrelationgalton}.
+
+The Pearson Correlation for a data sample is presented mathematically in equation \ref{pearsonequation}.
+\begin{equation}
+r_{xy} = \frac{1}{n-1}\sum_{i=1}^{n}\left(\frac{x_{i}-\bar{x}}{s_{x}}\right)\left(\frac{y_{i}-\bar{y}}{s_{y}}\right)
+\label{pearsonequation}
+\end{equation}
+
+Where:
+\begin{itemize}
+    \item $ x_{i} $: are the sample points for the $ x $ variable;
+    \item $ y_{i} $: are the sample points for the $ y $ variable;
+    \item $ n $: is the sample size for both variables;
+    \item $ \bar{x} $, analogous for $ \bar{y} $: is the sample mean for the variable, defined as:
+    \[\frac{1}{n}\sum_{i=1}^{n}x_{i}\]
+    \item $ s_{x} $, analogous for $ s_{y} $: is defined as: 
+    \[\sqrt{\frac{1}{n-1}\sum_{i=1}^{n}(x_{i}-\bar{x})^2}\]
+    Also known as the sample standard deviation.
+\end{itemize}
+Please note that this formula for correlation may have many other forms, I chose the one easiest to understand on an intuitive level as explained in \cite{nauregression}, by Robert Nau from Duke University. 
+$ r_{xy} $ may vary between -1 and 1. With a value of -1, the variables being anti-correlated, while at 1 being correlated, with the meaning given above: when one increases, so does the other in the case of correlation and when one increases the other decreases, in the case of anti-correlation. When $ r_{xy} \approx 0 $, then we say that the variables are not correlated, so we cannot assign a relationship between them since they are independent.
+
+The explanation for the equation \ref{pearsonequation} is that $ r_{xy} $ should be positive if both variables $ x$ and $ y $ tend to vary on the same side of their means at the same point in time (that is if $ \left(\frac{x_{i}-\bar{x}}{s_{x}}\right) $ and $ \left(\frac{y_{i}-\bar{y}}{s_{y}}\right) $ have the same sign for the same $ i $) and $ r_{xy} $ should be negative if the variables vary on opposite sides of their means (that is, the standard scores have different signs)\cite{nauregression}.
+
+\section{Autocorrelation function}
+
+If one is interested in time-series, then one should look at the autocorrelation function.
+
+The autocorrelation function computes the correlation between lagged values of the same time series. Lagged means: values at different points in time, that is, the correlation of the current observed value of the series with a previously observed value of the time series. Hence the name "autocorrelation", a correlation measure with oneself. Autocorrelation is also known as serial correlation.
+
+It is computed by the equation given in \ref{acfequation} taken from "Forecasting: Principles and Practice" \cite{fpp2} which in turn uses Hyndman's previous research on the topic \cite{hyndman2015acf}.
+
+\begin{equation}
+r_{k} = \frac{\sum\limits_{t=k+1}^{n}(y_{t}-\bar{y})(y_{t-k}-\bar{y})}
+{\sum\limits_{t=1}^{n}(y_{t}-\bar{y})^2},
+\label{acfequation}
+\end{equation}
+
+This time I have used $ t $ instead of $ i $ to index the data, in order to make it more clear that now time-series are under the spotlight. The other notations have similar meaning as above. Note that $ r_{k} $ has a single letter as index since we're talking about the autocorrelation of a time series, I only have to specify an index, not two because the values are already in the time series for which we study the correlation. $ r_{1} $ measures the correlation between $ y_{t} $ and $ y_{t-1} $. $ r_{2} $ measures the correlation between $ y_{t} $ and $ y_{t-2} $ and so on. If I compute these coefficients on a time series, then I could also plot them, creating what is known as a correlogram. Two such plots can be seen in figure \ref{goog200acf}.
+
+%grid.arrange(ggAcf(goog200) + ggtitle("goog200"), ggAcf(diff(goog200)) + ggtitle("goog200'"), nrow=2)
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{dgoog200acf}
+    \caption{Top: ACF of \texttt{goog200}; Bottom: ACF of the \texttt{goog200} first difference.}
+    \label{goog200acf}
+\end{figure}
+
+One of the ways for identifying stationary or non-stationary time series is by using the autocorrelation function plot. This plot will drop to zero pretty quickly for a stationary time series, while on the other hand the ACF of non-stationary time series will decrease very slowly \cite{fpp2stationarity}. This is also how the augmented Dickey-Fuller test works at an intuitive level. Because the data are autocorrelated, future values may be created from past values, hence the data is non-stationary. An example of this behavior is also given in figure \ref{goog200acf}, where on the top plot we see the original \texttt{goog200} autocorrelation function and on the bottom plot of the figure we see the ACF of the differentiated series. The former is slowly decreasing towards zero since the data is non-stationary, while the other displays no such behavior since the differenced series is stationary.
+
+\subsection{Critical values}
+
+The dotted blue lines in figure \ref{goog200acf} represent the critical values for the autocorrelation function (and later partial autocorrelation function). If the value of the ACF is between these lines, with a value close to zero, then the correlation is considered not significant, otherwise it is significant.
+
+These significance values are usually considered at the 95\% interval for a two-tailed distribution. So by using a Z table, or standard normal distribution table, we can easily see that for a 95\% confidence interval corresponds a $ Z $ value of 1.96 ($ \approx 2 $).
+
+The final confidence value is given by equation \ref{criticalvalueequation}
+\begin{equation}
+\bar{y} \pm Z \sigma 
+\label{criticalvalueequation}
+\end{equation}
+
+Where:
+\begin{itemize}
+    \item $ \bar{y} $: is the mean of the sample data, in the case of Pearson correlation it is expected to be equal to 0;
+    \item $ Z $: is the value taken from the standard normal distribution table for the necessary confidence interval, 1.96 for 95\% in the case at hand;
+    \item $ \sigma $: the standard deviation of the data, in the case of normal distributions we expect it to be 1. We can replace this with the standard error of the mean: $ \frac{\sigma}{\sqrt{n}} $, which in turn is expected to be equal to $ \frac{1}{\sqrt{n}} $. Where $ n $ is the sample size.
+\end{itemize}
+So one could say that the critical values are approximately two standard deviations (or precisely 1.96) away from the mean. The final formula for computing the confidence values is: $ \pm \frac{1.96}{\sqrt{n}} $ \cite{nauregression}.  
+
+\section{Partial Autocorrelation function}
+%TODO: Reiterate the critical vales idea from the previous section
+
+\section{Choosing AR(p) and MA(q) terms}
+
+reference the $ I(d) $ part.
+Say something about SAR(P) and SMA(Q).
+Say that AR is a bit of differencing (R. Nau citation)
+Say that MA is a bit of removing differencing (R. Nau citation)
+
+The autocorrelation spectrum, image from R. Nau
+
+\section{Residuals analysis}
 
 %TODO: time-series analysis on wiki
 
@@ -628,27 +768,8 @@ In R one can use the \texttt{ndiffs} and \texttt{nsdiffs} functions from the \te
 %TODO: look at the arima models that I have generated and explain everythign in there, plots and tests
 
 
-
-
-\section{Autocorrelation function}
-%TODO: ACF used to see non-stationarity since all values are highly correlated between them, this is how the ADF test works at an intuitive level as well.
-One of the ways for identifying stationary or non-stationary time series is by using the Autocorrelation function plot. This plot will drop to zero pretty quickly for a stationary time series, while on the other hand the ACF of non-stationary time series will decrease very slowly \cite{fpp2stationarity}.
-%TODO: acf(goog200) and acf(diff(goog200)) \cite{fpp2stationarity} examples. as well as euretail from \cite{fpp2seasonalarima}
-
-Say that AR is a bit of differencing (R. Nau citation)
-
-The autocorrelation spectrum, image from R. Nau
-
-\subsection{Critical values}
-
-\section{Partial Autocorrelation function}
-%TODO: Reiterate the critical vales idea from the previous section
-
-Say that MA is a bit of removing differencing (R. Nau citation)
-
-\section{Residuals analysis}
 \subsection{QQ plots}
-%TODO: more subsections as needed from the Rmd
+%TODO:space: more subsections as needed from the Rmd
 \subsection{Ljung-Box test}
 ARIMA, introduce each concept individually
 
@@ -656,7 +777,7 @@ ARIMA, introduce each concept individually
 
 \section{Accuracy measures}
 
-\section{The backshift operator}
+%TODO:space: \section{The backshift operator}
 
 \section{Dynamic harmonic regression} \label{dynamicharmonicregression}
 Fourier
