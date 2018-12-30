@@ -789,15 +789,44 @@ Robert Nau also suggests, adding to the above rules, that positive ACF is also a
 
 An example time series which yields a sinusoidal ACF after applying first seasonal and non-seasonal differences is presented in figure \ref{usgdpacfpacf}. For this data one might choose to set $ p = 1 $ since there is only a single lag significant in the PACF plot, while the other significant spikes are at seasonal lags, a topic which I will reiterate later on. \cite{hyndman2008forecasting}
 
-Since ARIMA is invertible (look for citation) ACF swaps places with PACF for determining MA(q).
+According to Hyndman and Athanasopoulos, for choosing the $ MA(q) $ part of the model, one has to apply a similar reasoning, but swapped for the two plots. Here the $ q $ order will be chosen from the ACF plot, depending on the lag that becomes non-significant. At the same time the PACF plot should display sinusoidal features or exponential decaying shape \cite{fpp2nonseasonalarima}. Similarly for MA data, Robert Nau suggests, that negative (P)ACF is also an indication of MA terms in the ARIMA model. \cite{nauarimaarmarules}
 
-Say something about SAR(P) and SMA(Q). Use \ref{usgdpacfpacf} as an example.
-Say that AR is a bit of differencing (R. Nau citation)
-Say that MA is a bit of removing differencing (R. Nau citation)
+As such, I may summarize the rules for choosing an $ ARIMA(p, d, 0) $ model as:
+\begin{itemize}
+    \item the autocorrelation function has sinusoidal form or is exponentially decreasing \cite{nauarimaarmarules};
+    \item the partial autocorrelation function has significant lags up to an including lag $ p $, but none beyond it \cite{fpp2nonseasonalarima} .
+\end{itemize}
 
-The autocorrelation spectrum, image from R. Nau
+While the summary of rules for choosing an $ ARIMA(0, d, q) $ process is:
+\begin{itemize}
+    \item the autocorrelation function has significant lags up to an including lag $ q $, but none beyond it;
+    \item the partial autocorrelation function has sinusoidal form or is exponentially decreasing \cite{fpp2nonseasonalarima}.
+\end{itemize}
+
+In the same manner we shall decide on the $ SAR(P) $ and $ SMA(Q) $ parameters in the case of SARIMA for seasonal time-series. One such example might be the US GDP data presented in figure \ref{usgdpacfpacf}. In that figure, apart from the significant lags at the beginning of the series that determined the choosing of $ p = 1 $, we also see significant lags at and near index 4 for the ACF and at indexes 4, 8, 12, 16 and 20 in the PACF plot. These lags, at equal intervals of four suggest a seasonal term, and since we already used a non-seasonal AR term, we have to add a seasonal AR term in addition to that, thus leading to a final model of $ ARIMA(1, 1, 0)(1, 1, 0)[4] $. The $ p = 1 $ parameter was chosen using the above described rules, then $ P = 1 $ was chosen since we also have significant spikes at the seasonal intervals, which also determined the seasonal period of $ m = 4 $ because there are four quarters in a year. $ d $ and $ D $, representing the non-seasonal and seasonal differences, were set at 1 since I had to differentiate the data set once in order to make it stationary.
 
 After the parameters have been chosen, the estimation of $ \phi $, $ \theta $, in case of ARIMA, and $ \Phi $, $ \Theta $ in case of SARIMA, is left to the algorithm. Usually the $ c $ constant in the ARIMA equation will be chosen as the mean of the data, remember though that this constant may not be included, depending on the software implementation of the ARIMA model.
+
+%grid.arrange(autoplot(usgdp) + xlab("Year") + ylab("US Dollars") + ggtitle("Under-differenced data"), ggAcf(usgdp) + ggtitle(""), ggPacf(usgdp) + ggtitle(""), 
+%autoplot(diff(usgdp)) + ylab("") + xlab("Year") + ggtitle("Autoregressive data"), ggAcf(diff(usgdp)) + ggtitle(""), ggPacf(diff(usgdp)) + ggtitle(""), 
+%autoplot(diff(usgdp, differences=2)) + ylab("") + xlab("Year") + ggtitle("White Noise"), ggAcf(diff(usgdp, differences=2)) + ggtitle(""), ggPacf(diff(usgdp, differences=2)) + ggtitle(""),
+%autoplot(diff(usgdp, differences=3)) + ylab("") + xlab("Year") + ggtitle("Moving average data"), ggAcf(diff(usgdp, differences=3)) + ggtitle(""), ggPacf(diff(usgdp, differences=3)) + ggtitle(""),
+%autoplot(diff(usgdp, differences=4)) + ylab("") + xlab("Year") + ggtitle("Over-differenced data"), ggAcf(diff(usgdp, differences=4)) + ggtitle(""), ggPacf(diff(usgdp, differences=4)) + ggtitle(""),
+%layout_matrix = cbind(c(1,2,3), c(4, 5,6), c(7, 8, 9), c(10, 11, 12), c(13, 14, 15)))
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{darmadynamics}
+    \caption{Top line, \texttt{usgdp} data (Quarterly US GDP), from left to right non-differenced data to over-differenced data; Middle line: ACF of the corresponding plots on the same column from the first line; Bottom line: PACF of the corresponding plots on the same column from the first line.}
+    \label{armadynamics}
+\end{figure}
+
+In order to set things in perspective I have generated an image similar to "the autocorrelation spectrum", an image originally from Robert Nau of Duke University \cite{nauspectrum}. The image represents a grid of plots and can be seen in figure \ref{armadynamics}.
+
+The top line represents the original data (first plot on the left) and then, going further to the right shows the data being sequentially differenced, an action that at first has the effect of making the time series stationary, then making it look like white noise, then over-differentiating it, making it look like data fit to be forecast using a moving average ARIMA model.
+
+The middle line and the bottom line of the grid show the ACF and the PACF, respectively, of the first line of plots. If we consider the rules mentioned before, we can see that they apply nicely to these plots, the AR data being on the positive side of the (P)ACF plots and the MA data being on the negative side of these plots.
+
+This also intuitively explains the choosing of MA and AR terms by swapping the ACF and PACF plots interpretation, since moving to the right of the plot moves from an AR process to an MA one, whereas moving from the right of the plot to its left moves between an MA process and an AR one. What this plot also shows is that the action of adding AR terms to an ARIMA model (that is: increasing $ p $) is almost equivalent to taking another difference of the time-series, while adding MA terms to an ARIMA model (that is: increasing $ q $) is almost equivalent to removing a difference \cite{nauarimaarmarules}.
 
 \section{Residuals analysis}
 
