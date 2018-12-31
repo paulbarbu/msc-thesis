@@ -699,7 +699,7 @@ $ r_{xy} $ may vary between -1 and 1. With a value of -1, the variables being an
 
 The explanation for the equation \ref{pearsonequation} is that $ r_{xy} $ should be positive if both variables $ x$ and $ y $ tend to vary on the same side of their means at the same point in time (that is if $ \left(\frac{x_{i}-\bar{x}}{s_{x}}\right) $ and $ \left(\frac{y_{i}-\bar{y}}{s_{y}}\right) $ have the same sign for the same $ i $) and $ r_{xy} $ should be negative if the variables vary on opposite sides of their means (that is, the standard scores have different signs)\cite{nauregression}.
 
-\section{Autocorrelation function}
+\section{Autocorrelation function} \label{autocorrelationfunctionsection}
 
 If one is interested in time-series, then one should look at the autocorrelation function.
 
@@ -793,14 +793,14 @@ According to Hyndman and Athanasopoulos, for choosing the $ MA(q) $ part of the 
 
 As such, I may summarize the rules for choosing an $ ARIMA(p, d, 0) $ model as:
 \begin{itemize}
-    \item the autocorrelation function has sinusoidal form or is exponentially decreasing \cite{nauarimaarmarules};
-    \item the partial autocorrelation function has significant lags up to an including lag $ p $, but none beyond it \cite{fpp2nonseasonalarima} .
+    \item The autocorrelation function has sinusoidal form or is exponentially decreasing \cite{nauarimaarmarules};
+    \item The partial autocorrelation function has significant lags up to an including lag $ p $, but none beyond it \cite{fpp2nonseasonalarima} .
 \end{itemize}
 
 While the summary of rules for choosing an $ ARIMA(0, d, q) $ process is:
 \begin{itemize}
-    \item the autocorrelation function has significant lags up to an including lag $ q $, but none beyond it;
-    \item the partial autocorrelation function has sinusoidal form or is exponentially decreasing \cite{fpp2nonseasonalarima}.
+    \item The autocorrelation function has significant lags up to an including lag $ q $, but none beyond it;
+    \item The partial autocorrelation function has sinusoidal form or is exponentially decreasing \cite{fpp2nonseasonalarima}.
 \end{itemize}
 
 In the same manner we shall decide on the $ SAR(P) $ and $ SMA(Q) $ parameters in the case of SARIMA for seasonal time-series. One such example might be the US GDP data presented in figure \ref{usgdpacfpacf}. In that figure, apart from the significant lags at the beginning of the series that determined the choosing of $ p = 1 $, we also see significant lags at and near index 4 for the ACF and at indexes 4, 8, 12, 16 and 20 in the PACF plot. These lags, at equal intervals of four suggest a seasonal term, and since we already used a non-seasonal AR term, we have to add a seasonal AR term in addition to that, thus leading to a final model of $ ARIMA(1, 1, 0)(1, 1, 0)[4] $. The $ p = 1 $ parameter was chosen using the above described rules, then $ P = 1 $ was chosen since we also have significant spikes at the seasonal intervals, which also determined the seasonal period of $ m = 4 $ because there are four quarters in a year. $ d $ and $ D $, representing the non-seasonal and seasonal differences, were set at 1 since I had to differentiate the data set once in order to make it stationary.
@@ -830,23 +830,121 @@ This also intuitively explains the choosing of MA and AR terms by swapping the A
 
 \section{Residuals analysis}
 
-%TODO: time-series analysis on wiki
+Once the parameters for the model are chosen and the model is fitted on the data, one has to examine the produced errors. These errors, produced on the training set part of the data during the fitting process are called residuals \cite{boxjenkins}.
 
-%TODO: https://en.wikipedia.org/wiki/Box%E2%80%93Jenkins_method
+The residuals follow the equation \ref{residualsequation}.
 
-%TODO: look in the FPP2 book for ARIMA concepts
+\begin{equation}
+e_{t} = y_{t}-\hat{y}_{t}
+\label{residualsequation}
+\end{equation}
 
-%TODO: look at the arima models that I have generated and explain everythign in there, plots and tests
+Where:
+\begin{itemize}
+    \item $ e_{t}$: are the residuals;
+    \item $ y_{t}$: are the observed values of the time series;
+    \item $ \hat{y}_{t}$: are the fitted values from the model (the forecasts of the model for the training data).
+\end{itemize}
 
+If we extracted all useful information from the time series, then the produced residuals should not show any correlation and should have a mean of zero. Hence they should look like white noise. 
+
+While fitting a model on the data I expect to extract all useful information from it, to take advantage of every correlation one can find between the lags of the time series, if this is not the case and information remains that I do not model, then this information will be visible in the residuals, through non-zero mean and correlation (like trends and level shifts). Also, according to Hyndman and Athanasopoulos, it would be useful if the residuals had constant variance and are normally distributed \cite{fpp2residuals}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{d1hrsph1residuals-0eb37d71c48b26211c0dcb74b7712259}
+    \caption{Top line, Residuals obtained after fitting an ARIMA model; Bottom line: ACF of the corresponding residuals (left) and their histogram on the right.}
+    \label{1hrsph1residuals-0eb37d71c48b26211c0dcb74b7712259}
+\end{figure}
+
+For the reason presented above, I will analyze the residuals through several means, first of which being the plot shown in figure \ref{1hrsph1residuals-0eb37d71c48b26211c0dcb74b7712259}. This figure shows on the top plot the residuals obtained after fitting an ARIMA model to the data, this is a residuals versus time plot, in which we see that the residuals are indeed gravitating around mean zero and no significant trends or level shifts may be observed. In the lower left corner of the image is an ACF plot for the residuals, which, again looks relatively good, only three out of over fifty lags being significant, so we can safely ignore them and still be in the 95\% confidence interval. Finally, the lower right plot is a histogram plot of the residuals with the added guideline (in red) for a standard normal distribution for comparison purposes. I conclude from that plot that the residuals are as good as they can be, in reasonable limits, excluding only several outliers.
+Another helping plot is the plot for the PACF of the residuals, which, again, should not show any correlation, for brevity purposes, such a plot is not shown here anymore, its structure not being different from an usual PACF plot.
 
 \subsection{QQ plots}
-%TODO:space: more subsections as needed from the Rmd
+
+If one has to compare a data set to a normal distribution, then a quantile-quantile plot comes in handy. A quantile is represented by the data point in a sorted data set under which reside a certain percent of the remaining data. Thus a quantile-quantile plot compares two data sets after computing their respective quantiles.
+
+More often than not, in a QQ plot, one distribution is the standard distribution (the case also for the current work), but it can be used with other distributions as well. \cite{qqplots}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{d1hrsph1residualsqq-0eb37d71c48b26211c0dcb74b7712259}
+    \caption{Example QQ plot.}
+    \label{1hrsph1residualsqq-0eb37d71c48b26211c0dcb74b7712259}
+\end{figure}
+
+Figure \ref{1hrsph1residualsqq-0eb37d71c48b26211c0dcb74b7712259} depicts a QQ plot for a set of residuals obtained after applying ARIMA on a time series, the same residuals have been shown in figure \ref{1hrsph1residuals-0eb37d71c48b26211c0dcb74b7712259} as well. The black, straight, line represents an ideal standard normal distribution and the dots represent the quantiles of the residuals. Again, these residuals, are very close to a normal distribution, with the exception of three outliers in the upper right part of the plot, corresponding to the high values on the histogram plot presented in figure \ref{1hrsph1residuals-0eb37d71c48b26211c0dcb74b7712259}.
+
 \subsection{Ljung-Box test}
-ARIMA, introduce each concept individually
 
-\section{Information criteria}
+Apart from graphical interpretation of the plots, there are statistical tests for mathematically checking if the residuals have any autocorrelations left in them. The Ljung-Box test has been specifically developed for use with residuals generated by ARIMA models.
 
-\section{Accuracy measures}
+The test's equation is given in \ref{ljungboxequation}.
+\begin{equation}
+Q^* = n(n+2) \sum_{k=1}^h \frac{r_k^2}{n-k}
+\label{ljungboxequation}
+\end{equation}
+
+Where:
+\begin{itemize}
+    \item $ n $: is the same size (total number of residuals);
+    \item $ r_{k} $: is the sample autocorrelation at lag $ k $, see details in section \ref{autocorrelationfunctionsection};
+    \item $ h $: is the number of residual lags being tested.
+\end{itemize}
+
+From Ljung-Box's formula we conclude that a higher $ Q^* $ will mean a more correlated set of residuals, hence I expect that the ARIMA model might be improved. This test statistic becomes helpful when comparing two ARIMA models by their residuals, a lower $ Q^* $ will mean less correlated residuals, hence a better model that extracts more of the information contained in the data. \cite{ljungboxtest}
+
+%TODO:space:
+%\section{Information criteria}
+%
+%Since I mentioned before that comparing ARIMA models can be done by how much information is left in the residuals (the autocorrelation of residuals, a measure indicated by the Ljung-Box test) I also have to mention that there are specific measures developed for the purpose of examining the fit of a model.
+%
+%Such measures include, but are not limited to \cite{fpp2predictors}:
+%\begin{itemize}
+%    \item 
+%\end{itemize}
+%
+%But I will use out-of-band testing and the accuracy measures described in section \ref{accuracymeasuressection}.
+
+\section{Accuracy measures} \label{accuracymeasuressection}
+
+In order to be able to compare ARIMA models and how they fit the given time-series I have to measure how good a model performs on a data set.
+This is done by measuring the forecasting errors a model makes.
+
+Usually in computer science one measures the accuracy of a model by using the so called 80/20 rule \cite{8020rule}. This means that we randomly have to create two sets of data:
+
+\begin{enumerate}
+    \item The training set, accounting for 80\% of the total volume of data. The model will be ran on this part of the data set;
+    \item The test set, accounting for the remaining 20\% of the data. The model's final evaluation will be done o this data set, no other changes to the model will be made to better fit the data in this set.
+\end{enumerate}
+
+The 80/20 rule may be bent a little bit, and the size of the training and test sets might be adjusted to a ratio of 60/40, 70/30 or 90/10, what is important is that we need two separate training and test sets.
+
+In time-series analysis there is a catch to this rule, one cannot take a random sample from the data, since time-series are time dependent, shuffling the data points could potentially (and very probably) ruin the meaning of the data. So the way that I apply this rule is by sequentially using the first 80\% of the observations from the time-series for training and the rest for testing the models.
+
+There are several measures used to judge the accuracy of a model, including \cite{Hyndman06anotherlook}:
+\begin{itemize}
+    \item Mean Error, is just the positive or negative average deviation from the true value, it is given by equation:
+    \[\text{ME} = \frac{1}{n} \sum_{t=1}^{n} y_{t}-\hat{y}_{t}\]
+    
+    \item Mean Absolute Error, similar to the mean error, but always positive:
+    \[\text{MAE} = \frac{1}{n} \sum_{t=1}^{n} |y_{t}-\hat{y}_{t}|\]
+    
+    \item Root Mean Squared Error, is the square root of the mean of square errors, according to: 
+    \[\text{RMSE} = \sqrt{\frac{1}{n} \sum_{t=1}^{n} (y_{t}-\hat{y}_{t})^2}\]
+\end{itemize}
+
+Where:
+\begin{itemize}
+    \item $ n $: is the size of the test data;
+    \item $ y_{t} $: is the real value from the test data;
+    \item $ \hat{y}_{t} $: is the forecast value.
+\end{itemize} 
+
+A key difference between MAE and RMSE is the fact that the root mean squared error is more sensitive to outliers (because of the squared term in the errors) and hence some authors discourage its use \cite{armstrongevaluatingforecastingmethods}.
+
+I will however, try to report all three exposed error measures in the practical part of this dizertation paper, while mainly using the mean absolute error for comparing and choosing the best models to use for a time series.
+These error measures will be applied on the test set as a final means of comparison between models. According to their respective equations, the lower the errors, the better, so a low MAE and RMSE means a better performing model, while a lower ME doesn't necessarily mean a better model, here the closeness to zero matters, regardless of the negative or positive side.
 
 %TODO:space: \section{The backshift operator}
 
@@ -857,16 +955,13 @@ Fourier
 Hourly, weekly, "weekend-ly"
 +1 error in choosing dummies
 
-\section{The dataset}
-The final part of this chapter will give an insight on what the data is and what it looks like.
+%TODO: time-series analysis on wiki
 
-about the data, present a snippet of it
-talk about the 80/20 rule and how we cannot "take random samples out of the data" since we're talking about time series
+%TODO: https://en.wikipedia.org/wiki/Box%E2%80%93Jenkins_method
 
-Say that I have replaced the negative values with zeros.
+%TODO: look in the FPP2 book for ARIMA concepts
 
-Say about "down sampling" of data and why is it necessary.
-
+%TODO: look at the arima models that I have generated and explain everythign in there, plots and tests
 
 
 \newpage
@@ -880,6 +975,20 @@ R program structure
 \subsection{The forecast package}
 
 particularity: seasonality = frequency \cite{hyndmanseasonalperiods}
+
+\section{The dataset}
+The final part of this chapter will give an insight on what the data is and what it looks like.
+
+about the data, present a snippet of it
+talk about the 80/20 rule and how we cannot "take random samples out of the data" since we're talking about time series
+talk about why I first look at a week of data thn try to generalize from that for the whole 5 months
+
+Say that I have replaced the negative values with zeros.
+
+Say about "down sampling" of data and why is it necessary.
+
+
+
 \subsection{Benchmark methods in code}
 Show meanf, average, naive code.
 
