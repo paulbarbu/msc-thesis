@@ -232,7 +232,7 @@ Where:
 
 The $ ARIMA(p, d, q)(P, D, Q)[m] $ model is also known as SARIMA \cite{berkleysarimamodels}.
 
-\subsection{(S)ARIMAX}
+\subsection{(S)ARIMAX} \label{sarimaxsection}
 The ARIMA and Seasonal ARIMA models include information only about the time-series itself in the model. No other external information can be used.
 
 When forecasting electrical energy consumption it is important to be able to adjust the predictions according to the time of day for example. Since the sun is shining the brightest at noon, it is safe to say that the most electrical energy will be generated around that time by the photo voltaic panels installed on one's house. For consumption estimation it would be ideal to have also temperature data, in the hot days we would use energy to cool our houses and in the cold days energy is used to heat them. If the temperature data is not available (we should also note that it should be available in the future, when we need to make our electrical energy consumption predictions) then it might be sufficient to use the calendar month for which we should forecast the electricity demand and from there we can infer if it is a summer month or a winter month, hence having a general sense of the temperature.
@@ -244,7 +244,7 @@ This model is in fact a multiple regression model with time series error terms \
 The general mathematical form for such a model (without seasonal parts, for ease of reading and in order to avoid listing a cluttered equation) is given in equation \ref{arimaxequation} \cite{nauarimax}.
 
 \begin{equation}
-y'_{t} = c + \beta x'_{t} + \phi_{1}y'_{t-1} + \cdots + \phi_{p}y'_{t-p} + \theta_{1}\varepsilon_{t-1} + \cdots + \theta_{q}\varepsilon_{t-q} + \varepsilon_{t} 
+y'_{t} = c + \beta x_{t} + \phi_{1}y'_{t-1} + \cdots + \phi_{p}y'_{t-p} + \theta_{1}\varepsilon_{t-1} + \cdots + \theta_{q}\varepsilon_{t-q} + \varepsilon_{t} 
 \label{arimaxequation}
 \end{equation}
 
@@ -252,7 +252,7 @@ Or it may be written as in equation \ref{arimaxequationfpp2} \cite{hyndmanarimax
 
 \begin{equation}
 \begin{split}
-y'_{t} &= \beta x'_{t} + n'_{t} \\
+y'_{t} &= \beta x_{t} + n'_{t} \\
 n'_{t} &= \phi_{1} n'_{t-1} + \cdots + \phi_{p} n'_{t-p} + \theta_{1} \varepsilon_{t-1} + \cdots + \theta_{q} \varepsilon_{t-q} + \varepsilon_{t}
 \end{split}
 \label{arimaxequationfpp2}
@@ -261,7 +261,7 @@ n'_{t} &= \phi_{1} n'_{t-1} + \cdots + \phi_{p} n'_{t-p} + \theta_{1} \varepsilo
 Equation \ref{arimaxequationfpp2} is easier to interpret as a regression with ARIMA errors, since we rewrite the right hand side part of equation \ref{arimaxequation} as a different term:
 \begin{itemize}
     \item $ y'_{t} $: is the forecast time series, optionally differenced;
-    \item $ x'_{t} $: is the external regressors time series, such as temperatures, hours of day, days of week, months, etc.;
+    \item $ x_{t} $: is the external regressors time series, such as temperatures, hours of day, days of week, months, etc.;
     \item $ \beta $: is the coefficient applied to the external regressors time series;
     \item $ n'_{t} $: is an $ ARIMA(p, d, q) $ error time series;
     \item $ \phi $, $ \theta $, $ \varepsilon $, $ p $, $ d $, and $ q $: keep their original meanings.
@@ -949,20 +949,71 @@ These error measures will be applied on the test set as a final means of compari
 %TODO:space: \section{The backshift operator}
 
 \section{Dynamic harmonic regression} \label{dynamicharmonicregression}
-Fourier
+When looking at electrical energy consumption and production we have to consider as well the seasonal aspect of data, since both the consumption and production are seasonally variable. Photo voltaic panels increase their production during sunny days in the summer months when the sky is clear, and have a reduced output during autumn and winter months.
+According to Hyndman and Athanasopoulos \cite{fpp2dhr} long seasonal periods are better suited for dynamic harmonic regression. Seasonal ARIMA models (SARIMA) being a better match for short seasonal periods like 12 for monthly data and 4 for quarterly data.
+The reason behind this being that daily data might be very noisy when looking at it in perspective, seasonal daily data for the yearly period literally means that the expected behavior for today is very similar to the one 365 days ago. This is a far fetched assumption because the seasonal pattern might change in a gap as big as the equivalent of one year.
+
+Because of the reason exposed above, a dynamic harmonic regression might be employed to model longer seasonality periods. This means that the seasonal pattern is modeled using Fourier series and the remaining data, the so called errors, handled using ARIMA errors.
+
+According to \cite{fpp2dhr} this approach is advantageous because:
+\begin{itemize}
+    \item Any seasonal period can be modeled;
+    \item Different smoothness level for the seasonal patterns may be modeled depending on how many Fourier terms are used;
+    \item The remaining, short-term dynamics of the time-series are easily captured with an ARMA model on the errors.
+\end{itemize}
+
+With the only down side that the seasonal period should not change, for example if one assumes a repeating seasonal period of 365 days, then dynamic harmonic regression will not be able to capture any change in this seasonal period, if it will become 360 or 370, no such change will be detected.
+
+In the bigger picture of ARIMA, this dynamic harmonic regression is included in the ARIMAX model, ARIMA with exogenous regressors, a concept presented in section \ref{sarimaxsection}.
+
+In order to use Fourier terms, we have to know how many of them to include, since closely mimicking a signal potentially requires one to include an infinite number of terms. Fortunately this is not the case, since we're only interested in capturing the seasonal patterns using Fourier terms. So for the purposes of this research, I have computationally varied the number of Fourier terms and selected the best performing model according to the minimum RMSE and MAE measures.
 
 \section{Forecasting with dummies}
-Hourly, weekly, "weekend-ly"
-+1 error in choosing dummies
 
-%TODO: time-series analysis on wiki
+Forecasting with dummies is similar to forecasting using Fourier terms. It's a regression with ARIMA errors, in other words ARIMAX, ARIMA with exogenous variables.
 
-%TODO: https://en.wikipedia.org/wiki/Box%E2%80%93Jenkins_method
+In the case of dummies, they model one-time events, for example public holidays, or some one-time public events, such as concerts or sporting events that take up several days and might influence electrical energy consumption or other time series that one might be interested in forecasting. Any event that doesn't fit into the "seasonal period" category can be modeled using dummies. Think of dummies as placeholders, they take on values only when a specific event has happened.
 
-%TODO: look in the FPP2 book for ARIMA concepts
+I will use seasonal dummies as an example, suppose each weekday consists of a separate event that repeats over and over again, then one needs to model weekdays separately as dummies. In the original ARIMAX equation (\ref{arimaxequation}), reiterated here for clarity:
 
-%TODO: look at the arima models that I have generated and explain everythign in there, plots and tests
+\[
+y'_{t} = c + \beta x_{t} + \phi_{1}y'_{t-1} + \cdots + \phi_{p}y'_{t-p} + \theta_{1}\varepsilon_{t-1} + \cdots + \theta_{q}\varepsilon_{t-q} + \varepsilon_{t} 
+\tag{\ref{arimaxequation}}
+\]
 
+I have used only one external variable: $ x_{t} $. If one needs to model the seven days of the week, then one needs to use six dummy variables, that is: $ x_{1\dots6,t} $. The general rule being that one needs $ n - 1 $ dummy variables if there are $ n $ separate events to be modeled \cite{fpp2usefulpredictors}.
+
+Each variable would only take two values, either zero or one, depending if the event has happened or is valid for a certain data point. For the weekday example the table \ref{weekdaydummies} depicts the way I have to choose the variables for a data set that has one observation per day.
+
+\begin{table}[h]
+    \begin{tabular}{|c|c|c|c|c|c|c|}
+        \hline 
+        \textbf{Week day} & \textbf{$x_{1,t}$} & \textbf{$x_{2,t}$} & \textbf{$x_{3,t}$} & \textbf{$x_{4,t}$} & \textbf{$x_{5,t}$} & \textbf{$x_{6,t}$} \\ \hline 
+        Monday & 1 & 0 & 0 & 0 & 0 & 0 \\ \hline 
+        Tuesday & 0 & 1 & 0 & 0 & 0 & 0 \\ \hline 
+        Wednesday &	0 & 0 & 1 & 0 & 0 & 0 \\ \hline 
+        Thursday & 0 & 0 & 0 & 1 & 0 & 0 \\ \hline 
+        Friday & 0 & 0 & 0 & 0 & 1 & 0 \\ \hline 
+        Saturday & 0 & 0 & 0 & 0 & 0 & 1 \\ \hline 
+        Sunday & 0 & 0 & 0 & 0 & 0 & 0 \\ \hline 
+        Monday & 1 & 0 & 0 & 0 & 0 & 0 \\ \hline 
+    \end{tabular} 
+    \centering
+    \caption{Dummy variables for modeling week day events}
+    \label{weekdaydummies}
+\end{table}
+
+Observe in table \ref{weekdaydummies} how Sunday is not represented by any value of one in the table, thus adhering to the $ n - 1 $ rule, having six variables for seven week day events. All the other week days have just a single 1 on their respective lines. For example Monday is modeled as $ x_{1,t} $, so each time we have an observation that was recorded on Mondays $ x_{1,t} $ will be 1, and 0 otherwise. These $ x_{1,t} = 1 $ will be repeated every 7 rows of the table (or observations), more generally $ x_{1,7t} = 1 $. The same applies for the other days of the week.
+
+Using these variables the ARIMAX equation would become:
+
+\[
+y'_{t} = c + \beta_{1} x_{1,t} + \cdots + \beta_{6} x_{6,t} + \phi_{1}y'_{t-1} + \cdots + \phi_{p}y'_{t-p} + \theta_{1}\varepsilon_{t-1} + \cdots + \theta_{q}\varepsilon_{t-q} + \varepsilon_{t} 
+\]
+
+Thus giving weights (in the form of $ \beta_{1\dots6} $) to each week day whenever it is the case. This way, whenever the event takes place, a special emphasis will be made for the observation attached to the event. Similarly, when there is no event, all of $ x_{1\dots6,t} $ will be 0, so that there will be no special handling controlled by the coefficients.
+
+In this manner one might encode as dummies weekends, hours of the day and other such periods or events, that might need special handling through dedicated coefficients (in the form of $ \beta_{1\dots6} $) in the ARIMAX polynomial.
 
 \newpage
 \chapter{Practical considerations}
@@ -996,7 +1047,7 @@ Show meanf, average, naive code.
 Show some example arima code.
 Say about the parallelization and data down sampling.
 Say about the "for"-s that I used to search through multiple possibilities.
-
+generate dummies code
 
 \section{Methodology}
 % TODO: https://en.wikipedia.org/wiki/Box%E2%80%93Jenkins_method
