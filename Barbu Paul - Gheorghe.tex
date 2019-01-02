@@ -327,7 +327,7 @@ This behavior is in contrast with the Read-Eval-Print-Loop (or REPL for short) t
 
 This is the main reason for which, during the semester project I explored programming tools such as the Jupyter Notebook \footnote{\url{https://jupyter.org/}} for Python\footnote{\url{https://www.python.org/}} and RStudio\footnote{\url{https://www.rstudio.com/}} for R. While the former tool is not a complete Integrated Development Environment (or IDE for short), it has all the necessary features to allow for decent work to be carried through, the latter tool is indeed a complete IDE. Both tools center around the idea that the programming languages they are designed for are scripting programming languages and allow the programmer access to an interactive medium, where the results of running even individual lines of code are immediately available. A huge advantage of this is that the tools even produce instant plots of the data, allowing quick, graphical, visualization of results. This is the biggest advantage of such programming environments. This superiority is nicely exposed by Bret Victor in his 2012 talk "Inventing on Principle" \footnote{\url{https://vimeo.com/36579366}}, where small changes and even big ones have an immediate outcome and are visible right away.
 
-\subsection{R}
+\subsection{R} \label{rtheorysection}
 
 After having some experience with both R and Python on the tooling side, I chose to use R as a programming language for the current research because it was specifically designed for statisticians and their needs. Having higher chances to include the needed algorithms and methods used for making time-series predictions. The biggest advantage of R was the "forecast" package \cite{rforecastpackage} \cite{automatictimeseriesforecasting} which provides an implementation for fitting of ARIMA models and their seasonal and external regressors variations.
 
@@ -1017,15 +1017,53 @@ In this manner one might encode as dummies weekends, hours of the day and other 
 
 \newpage
 \chapter{Practical considerations}
-Say something about smart meters
+This second chapter of the dissertation thesis will focus on the practical aspects of the work. More specifically the programming part and the methodological part as well as the results.
+
+Basically I'm going to describe in more detail key concepts in my R code used for forecasting the five time series in the data set.
+More importantly, I'm going to describe the methodology or how I applied the theoretical knowledge to forecast the data. The abstract steps and concepts described in the first part of this paper will now become concrete actions that will lead to choosing an ARIMA model and using it for forecasting time series.
+
+The practical considerations are of importance because, according to Moore's law \cite{moore:1965} computing power is still increasing. 
+With the trend of embedded devices being more and more inter-connected in the IoT concept (internet of things) we can expect the forecasting algorithms to be present in such devices as well and to be able to influence and to give indications on our electrical energy consumption behaviors.
+
+One such application might be in photo voltaic panels. A next-generation appliance that allows the home owners to have real-time data regarding the electrical energy production patterns of their photo voltaic panels. Like all "smart" devices, it may have downsides, like security vulnerabilities, but its pros outweigh the cons. These "smart" capabilities are enhanced by the increasing computational power of embedded devices, through which operations like consumption and production of electrical energy forecasting for a house may be made.
+
+This paper doesn't aim to give insight on how to implement forecasting algorithms in embedded devices, but can be used to draw conclusions of what is possible and what is not possible with regards to complex forecasting algorithms such as ARIMA.
 
 \section{Applied R}
-reiterate some R stuff and show some code
-R extension
-R program structure
-\subsection{The forecast package}
 
+In this section I'm going to present key pieces of code from the work I have done to forecast electrical energy consumption and production using the ARIMA model and the R programming language.
+
+As presented in section \ref{rtheorysection} I have chosen to work with R after some very low-productivity work I have done with Java in a similar fashion. R, through its design, centered on quick feedback by its Read-Eval-Print-Loop philosophy, enables the programmer to easily and immediately see the results of the code he is writing. There is no need for a compilation and running step, both of which happen at the same time. While running depends on quality of the written code and what it does, compilation on the other hand is almost instantaneous, and transparent to the user.
+This is a consequence to the fact that R is in fact belonging to the scripting languages family. 
+
+R also benefits of a very large collection of packages, it has over 13000 (thirteen thousand) of them available online\footnote{Early 2019, according to: \url{https://cran.r-project.org/web/packages/}}. These packages vary in function and cover a wide range of scientific fields, there are packages that can be used to accomplish different tasks, from simple string operations, to what I need for this paper: forecasting of time-series data.
+
+The main packages I am using are: 
+\begin{itemize}
+    \item \texttt{forecast}: The forecast package is the basis of this work since it provides the ARIMA model implementation that I'm using. It offers all the forms of ARIMA a statistician might need, from simple ARMA, to ARIMA and (S)ARIMAX. It is based on the work of Rob J. Hyndman, a highly active and productive professor of statistics at Monash University in Australia \cite{forecastpackagearticle} \cite{forecastpackagemanual}. Using this package requires one to understand at least the meaning of the algorithms' parameters.;
+    \item \texttt{ggplot2}\footnote{\url{https://ggplot2.tidyverse.org/}}: This may be the most popular package in the scientific world of R since it easily allows the programmer to display plots of data. Its variety of plots make it suitable to every scenario imaginable while also staying very flexible and customizable. It implements a very modular way of building the plots, based on the book The Grammar of Graphics \cite{thegrammarofgraphics};
+    \item \texttt{tictoc}\footnote{\url{https://cran.r-project.org/package=tictoc}}: A small and simple package that allows one to measure how much time a piece of code takes to run;
+    \item \texttt{foreach}\footnote{\url{https://cran.r-project.org/package=foreach}} \& \texttt{doParallel}\footnote{\url{https://cran.r-project.org/package=doParallel}}: These two packages, used in conjunction, allow the programmer to easily write parallel R code.
+\end{itemize}
+
+The functions that I used from the \texttt{forecast} package will be described in detail in section \ref{forecastpackagesection}.
+
+reiterate some R stuff and show some code for tictoc ggplot2, doParallel
+.R extension
+R program structure
+\subsection{The forecast package} \label{forecastpackagesection}
+%TODO: https://otexts.org/fpp2/the-forecast-package-in-r.html
 particularity: seasonality = frequency \cite{hyndmanseasonalperiods}
+
+\subsection{Benchmark methods in code}
+Show meanf, average, naive code.
+
+\subsection{ARIMA in code}
+Show some example arima code.
+Say about the parallelization and data down sampling.
+Say about the "for"-s that I used to search through multiple possibilities.
+generate dummies code
+
 
 \section{The dataset}
 The final part of this chapter will give an insight on what the data is and what it looks like.
@@ -1038,29 +1076,23 @@ Say that I have replaced the negative values with zeros.
 
 Say about "down sampling" of data and why is it necessary.
 
-
-
-\subsection{Benchmark methods in code}
-Show meanf, average, naive code.
-
-\subsection{ARIMA in code}
-Show some example arima code.
-Say about the parallelization and data down sampling.
-Say about the "for"-s that I used to search through multiple possibilities.
-generate dummies code
-
 \section{Methodology}
 % TODO: https://en.wikipedia.org/wiki/Box%E2%80%93Jenkins_method
 start using my data as the example workflow and reiterating the theory to achieve the complete work-flow
+the methodology explains why I can parallelize the code
 
 \section{Difficulties in implementation of the methodology}
 No difficulty in the theoretical part since it is well established and widely used by now.
 But the technical part, parallelization, errors, etc
 
+down-sampling the data since it was too frequent
+
 \section{Results}
 %TODO -Which are the main results of your paper and application areas ?
 
 %TODO: tables with results and attached plots
+
+compare with other methods (NN and markov)
 
 
 \section{Future work}
@@ -1070,6 +1102,8 @@ But the technical part, parallelization, errors, etc
 
 \section{Conclusions}
 %TODO: abstract, introduction, R, data, methodology, ARIMA, results, future work
+
+arima is not really suited for high frequency data
 
 \newpage
 \bibliographystyle{plain}
