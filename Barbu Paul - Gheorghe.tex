@@ -968,7 +968,7 @@ In the bigger picture of ARIMA, this dynamic harmonic regression is included in 
 
 In order to use Fourier terms, we have to know how many of them to include, since closely mimicking a signal potentially requires one to include an infinite number of terms. Fortunately this is not the case, since we're only interested in capturing the seasonal patterns using Fourier terms. So for the purposes of this research, I have computationally varied the number of Fourier terms and selected the best performing model according to the minimum RMSE and MAE measures.
 
-\section{Forecasting with dummies}
+\section{Forecasting with dummies} \label{dummiessection}
 
 Forecasting with dummies is similar to forecasting using Fourier terms. It's a regression with ARIMA errors, in other words ARIMAX, ARIMA with exogenous variables.
 
@@ -1040,7 +1040,7 @@ R also benefits of a very large collection of packages, it has over 13000 (thirt
 
 The main packages I am using are: 
 \begin{itemize}
-    \item \texttt{forecast}: The forecast package is the basis of this work since it provides the ARIMA model implementation that I'm using. It offers all the forms of ARIMA a statistician might need, from simple ARMA, to ARIMA and (S)ARIMAX. It is based on the work of Rob J. Hyndman, a highly active and productive professor of statistics at Monash University in Australia \cite{forecastpackagearticle} \cite{forecastpackagemanual}. Using this package requires one to understand at least the meaning of the algorithms' parameters.;
+    \item \texttt{forecast}: The forecast package is the basis of this work since it provides the ARIMA model implementation that I'm using. It offers all the forms of ARIMA a statistician might need, from simple ARMA, to ARIMA and (S)ARIMAX. It is based on the work of Rob J. Hyndman, a highly active and productive professor of statistics at Monash University in Australia \cite{forecastpackagearticle} \cite{forecastpackagemanual}. Using this package requires one to understand at least the meaning of the algorithms' parameters;
     \item \texttt{ggplot2}\footnote{\url{https://ggplot2.tidyverse.org/}}: This may be the most popular package in the scientific world of R since it easily allows the programmer to display plots of data. Its variety of plots make it suitable to every scenario imaginable while also staying very flexible and customizable. It implements a very modular way of building the plots, based on the book The Grammar of Graphics \cite{thegrammarofgraphics};
     \item \texttt{tictoc}\footnote{\url{https://cran.r-project.org/package=tictoc}}: A small and simple package that allows one to measure how much time a piece of code takes to run;
     \item \texttt{foreach}\footnote{\url{https://cran.r-project.org/package=foreach}} \& \texttt{doParallel}\footnote{\url{https://cran.r-project.org/package=doParallel}}: These two packages, used in conjunction, allow the programmer to easily write parallel R code.
@@ -1050,13 +1050,13 @@ The functions that I used from the \texttt{forecast} package will be described i
 
 The package \texttt{tictoc} mainly consists of functions \texttt{tic()}, called when timing of a code section should begin and \texttt{toc()}, called when timing of a code section should end. The last call has the side effect of printing the time elapsed between the \texttt{tic()} and the \texttt{toc()} call, this behavior can be avoided and the time elapsed could be stored in a variable for later processing.
 
-The \texttt{ggplot2} offers a wide range of plots that one can create with several simple lines of code. All plots in this work have been created using features of \texttt{ggplot2}. From displaying simple time plots of time-series data, seasonal and seasonal sub-series plots to the QQ plots used in analyzing the residuals, \texttt{ggplot2} offers this functionality, allowing the programmer to focus on more important things like finding model parameters, instead of manually creating plots. If this package wouldn't have existed the programmer himself should have arranged the data in sub-series and then plotted them together in a seasonal sub-series image, an operation that is time consuming and not really focused on the end-goal of the project.
+The \texttt{ggplot2} package offers a wide range of plots that one can create with several simple lines of code. All plots in this work have been created using features of \texttt{ggplot2}. From displaying simple time plots of time-series data, seasonal and seasonal sub-series plots to the QQ plots used in analyzing the residuals, \texttt{ggplot2} offers this functionality, allowing the programmer to focus on more important things like finding model parameters, instead of manually creating plots. If this package wouldn't have existed the programmer himself should have arranged the data in sub-series and then plotted them together in a seasonal sub-series image, an operation that is time consuming and not really focused on the end-goal of the project.
 
 Fortunately there is this package that automates much of the tasks needed for creating different kind of plots from time-series:
 
 \begin{itemize}
     \item \texttt{ggseasonplot}: Plots like the one in figure \ref{exampleseasonalplot} are easily constructed by using the \texttt{ggseasonplot()} function of the \texttt{ggplot2} library;
-    \item \texttt{ggsubseriesplot}: In order to avoid manually computing each subseries of a time-series one can use the \texttt{ggsubseriesplot()} function offered by \texttt{ggplot2} to compute the subseries and plot them, along with their respective mean values, thus saving the programmer some time, an example plot produced by this function can be seen in \ref{examplesubseriesplot};
+    \item \texttt{ggsubseriesplot}: In order to avoid manually computing each subseries of a time-series one can use the \texttt{ggsubseriesplot()} function offered by \texttt{ggplot2} to compute the subseries and plot them, along with their respective mean values, thus saving the programmer some time, an example plot produced by this function can be seen in figure \ref{examplesubseriesplot};
     \item \texttt{ggAcf} and \texttt{ggPacf}: While R offers functions to compute the numerical values of the (partial) auto correlation function, this will directly plot the numerical values together with the 95\% critical value, examples of both of these plots can be seen in figure \ref{uschangeacfpacf}.
 \end{itemize}
 
@@ -1076,8 +1076,6 @@ The QQ plot can be drawn easily using the code in listing \ref{qqplotr}. In this
     \label{qqplotr}
 \end{listing}
 
-reiterate some R stuff and show some code for doParallel
-
 Another package that I have used in developing this project is the \texttt{doParallel} package. This package, according to their description \footnote{https://cran.r-project.org/web/packages/doParallel/index.html}, allows the programmer to easily parallelize a piece of code by using the \texttt{\%dopar\%} function when iterating over a collection of data. In other words, this package transforms the usual (sequential) \texttt{foreach} loop in a parallel loop. Of course this can only be done if the data are independent from each other and if the processing of the data doesn't depend on previously computed results. For ARIMA and time series both of these assumptions hold true. The listing \ref{exampleparallelcode} shows an example on how the \texttt{doParallel} package can be used practically and demonstrates another reason for using R in the scientific community, the ease of use of such packages improve the life of the programmer. In listing \ref{exampleparallelcode}, the square root function will be run in parallel, thus computing all results at once\footnote{given the fact that the computer where the code is run has more than 3 cores}.
 
 \begin{listing}[h]
@@ -1096,7 +1094,7 @@ The package also provides settings for the number of cores to be used when paral
 \subsection{The forecast package} \label{forecastpackagesection}
 
 The main R package leveraged by this dissertation is the \texttt{forecast} package \cite{forecastpackagemanual}, written by Rob J. Hyndman and others \cite{forecastpackagearticle} this is the main package used when forecasting time series.
-Combined with the time series data type in R it provides to most possibilities for analyzing and forecasting such data.
+Combined with the time series data type in R (\texttt{ts()}) it provides the widest range of possibilities for analyzing and forecasting such data.
 
 Compared with other solutions in other programming languages this package is used and maintained by professionals which conduct their work and research that requires forecasting tools. Hence we can be sure of the quality of the tools we are using.
 
@@ -1138,7 +1136,7 @@ The second part of the listing involves actually using the fitted data to create
 
 The \texttt{h} parameter represents the number of observations that we want to predict. We also have to specify the external regressors that should be used when predicting the data. Since the regressors were included in the initial model fitting, we also have to provide them now in order for the model to work, otherwise predictions cannot be made due to missing data.
 
-This is a down-side of using external regressors, they have to be available for the future data at the time of forecasting, which if we'd like to use an organic value (such as temperature) to help predict other time-series creates a chicken and egg type of problem. Suppose we'd like to forecast energy consumption based on the temperature outside. This can only be done if the outside temperature is available before the electricity consumption can be made. Although one can indeed forecast the temperature first and then forecast the electricity consumption, this is not feasible since it involves two layers of forecasting and, consequently, two opportunities for errors to accumulate. This is the reason I have chosen to work with Fourier terms and dummy values for the external regressors fed into the ARIMA model. Both of them can be artificially created based on past data, cleanly solving the chicken and egg problem and avoiding accumulating errors while forecasting.
+This is a down-side of using external regressors, they have to be available for the future data at the time of forecasting, which if we'd like to use an organic value (such as temperature) to help predict other time-series creates a chicken and egg type of problem. Suppose we'd like to forecast energy consumption based on the temperature outside. This can only be done if the outside temperature is available before the electricity is actually consumed. Although one can indeed forecast the temperature first and then forecast the electricity consumption, this is not feasible since it involves two layers of forecasting and, consequently, two opportunities for errors to accumulate. This is the reason I have chosen to work with Fourier terms and dummy values for the external regressors fed into the ARIMA model. Both of them can be artificially created based on past data, cleanly solving the chicken and egg problem and avoiding accumulating errors while forecasting.
 
 In order for the forecasts to be accurate, I have heeded the advice given by Hyndman in \cite{fpp2dhr} to vary the order of the Fourier terms dynamically in order to find the best matching one.
 
@@ -1153,32 +1151,105 @@ Actual code for this can be seen in listing \ref{actualKcode}.
     for(k in 1:(frequency(datasets[['1hrs ph1']]$series)/2))
     {
         print(paste("Trying k =", k))
-        m <- paste0('Arima(order=c(1, 0, 0), seasonal=c(1, 0, 0), method="CSS", xreg=fourier(., K=', k, '))')
+        m <- paste0('Arima(order=c(1, 0, 0),
+            seasonal=c(1, 0, 0),
+            xreg=fourier(., K=', k, '))')
         xreg <- paste0('fourier(., h=h, K=', k, ')')
         current <- fullforecast(model = m,
-        dataset = datasets[['1hrs ph1']]$series,
-        transformation = 'identity()',
-        traindays = best.traindays, # 7
-        testdays = best.testdays, # 2
-        xreg=xreg)
+            dataset = datasets[['1hrs ph1']]$series,
+            transformation = 'identity()',
+            traindays = best.traindays,
+            testdays = best.testdays,
+            xreg=xreg)
         
-        if(is.null(best.fcast.k.1hrsPh1) || current$accuracy[[2]] < best.fcast.k.1hrsPh1$accuracy[[2]])
+        if(is.null(best.fcast.k.1hrsPh1) || 
+            current$accuracy[[2]] < best.fcast.k.1hrsPh1$accuracy[[2]])
         {
             best.fcast.k.1hrsPh1 <- current
             best.k <- k
         }
     }
-
 \end{minted}
 
-\caption{Actual code for fining the best \texttt{K} that approximates the data seasonality for use with Fourier terms as external regressors}
+\caption{Actual code for finding the best \texttt{K} that approximates the data seasonality for use with Fourier terms as external regressors}
 \label{actualKcode}
 \end{listing}
 
-%TODO: explain the code
-Say about the "for"-s that I used to search through multiple possibilities.
-generate dummies code
+What this code does is go through each possible value of K (starting from 1 up to half of the seasonality of the data) and it actually uses that value in order to evaluate the ARIMA model. Finally, based on the best accuracy obtained throughout the tests, the best value for K is chosen.
+The accuracy measure used is the Mean Absolute Error, described in section \ref{accuracymeasuressection}.
 
+As you can see from listing \ref{actualKcode}, there is a \texttt{fullforecast} function defined by me and two variables, \texttt{best.traindays} and \texttt{best.testdays} used for evaluating the current model.
+
+As explained in section \ref{accuracymeasuressection}, I use the Pareto rule for splitting the training and test data and since we're talking about time series data it cannot be split randomly, since it would lose its meaning. So I'm using a simple algorithm to find the best splitting ratio for the training and test data. 
+
+\texttt{best.traindays} represents the best number of training days for the current data set, while \texttt{best.testdays} represents the best number of test days for the current data set.
+The data set will then be split according to these ratios in order to establish the model's accuracy.
+The algorithm to find these values simply tries out several possibilities for each variable (training days and test days) according to the currently analyzed data set and keeps the values that give the best accuracy for a given model, hence finding the two variables \texttt{best.traindays} and \texttt{best.testdays}.
+
+After the Pareto principle has been applied, I then apply the \texttt{fullforecast} function using the found parameters in order to actually forecast and determine the accuracy of a given model. This function has the following header: \texttt{fullforecast <- function(dataset, transformation, model, traindays, testdays, xreg)}, from this it can be seen that it is just a wrapper around the main ARIMA algorithm (a combination of the \texttt{Arima} function and the \texttt{forecast} function) described in section \ref{forecastpackagesection} as it applies a \texttt{transformation} like the BoxCox transformation to the given \texttt{dataset}, then it trains the \texttt{model} on \texttt{traindays} number of days, after which it generated predictions and returns the accuracy on the remaining \texttt{testdays}. The \texttt{xreg} parameter feeds the external regressors to the ARIMA model, if the model requires such data.
+
+One case where the \texttt{xreg} parameter should be used is when using either Fourier terms, like in code listing \ref{actualKcode} or when using dummies as external regressors.
+
+As specified in section \ref{dummiessection} and depending on the analyzed data, the dummies used for forecasting might vary from one-time events to seasonal events that require the use of seasonal dummy variables. I will illustrate the generation of such seasonal dummies in the next part of this disseration.
+
+There are two main cases that have arisen during the analysis of the data, both of which are covered in listing \ref{dummiescode}:
+\begin{itemize}
+    \item Generating week day dummies (\texttt{getDailyDummies}), as first shown in table \ref{weekdaydummies} in section \ref{dummiessection}. While that particular table illustrates a data set with a single observation per day and Monday as the starting day, the code in listing \ref{dummiescode} can handle any number of observations per day and any starting day (coded with 0 for Monday, up to 6 for Sunday);
+    \item Generating intra-day dummies (\texttt{getNthObsDummies}), that might be useful for simulating events that take place inside of a single day such as the span of time of maximum sunlight when modeling the electrical energy production from solar panels. This function can only be used with data sets that have more than one observation per day.
+\end{itemize}
+
+\begin{listing}[h]
+\begin{minted}{R}
+getDailyDummies <- function(numObsToGenerate, numObsPerDay, startDay)
+{
+    # we "only" have 7 days in the week, 0 indexing for our dataset
+    startDay <- startDay %% 7  
+    dummies <- cbind(
+    Monday = c(rep(1, numObsPerDay), rep(0, 6*numObsPerDay)),
+    Tuesday = c(rep(0, 1*numObsPerDay), rep(1, numObsPerDay), rep(0, 5*numObsPerDay)),
+    Wednesday = c(rep(0, 2*numObsPerDay), rep(1, numObsPerDay), rep(0, 4*numObsPerDay)),
+    Thursday = c(rep(0, 3*numObsPerDay), rep(1, numObsPerDay), rep(0, 3*numObsPerDay)),
+    Friday = c(rep(0, 4*numObsPerDay), rep(1, numObsPerDay), rep(0, 2*numObsPerDay)),
+    Saturday = c(rep(0, 5*numObsPerDay), rep(1, numObsPerDay), rep(0, 1*numObsPerDay))
+    )
+    
+    # roll to the left, startDay is 0 based
+    dummies <- apply(dummies, 2, roll, -startDay*numObsPerDay) 
+    week.len <- numObsPerDay * 7
+    
+    if(numObsToGenerate < length((week.len)))
+    {
+        dummies <- head(dummies, numObsToGenerate)
+    }else{
+        upRoundedDummies <- do.call("rbind", 
+            (replicate((numObsToGenerate/week.len)+1, dummies, simplify=FALSE)))
+        dummies <- head(upRoundedDummies, numObsToGenerate)
+    }
+    
+    return(dummies)
+}
+
+getNthObsDummies <- function(nth, dummyLen, len, numObsPerDay)
+{
+    assertthat::assert_that(nth < numObsPerDay)
+    
+    dummies <- NULL
+    oneDay <- c(rep(0, nth-1), rep(1, dummyLen), rep(0, numObsPerDay-nth-dummyLen+1))
+    
+    upRoundedDays <- rep(oneDay, (len/numObsPerDay)+1)
+    dummies <- head(upRoundedDays, len)
+    
+    return(dummies)
+}
+\end{minted}
+
+\caption{Actual code for generating seasonal dummies as external regressors}
+\label{dummiescode}
+\end{listing}
+
+The \texttt{getDailyDummies} function accepts as parameters the number of observations to generate dummies for (\texttt{numObsToGenerate}), this is needed since not all data sets end on a full week, some might end in the middle of the day. The parameter \texttt{numObsPerDay} specifies how may observations are there per day, this is needed in order to be able to fully simulate the data set with the generated values of the dummies, this parameter is directly given by the dataset. Finally, the \texttt{startDay} parameter shows what the first day of the generated dummies should be, since the dataset might start on a different day than Monday, suppose data gathering has started on a Tuesday, then I also have to take this into account and to properly adjust the generated dummy values.
+
+Similarly the \texttt{getNthObsDummies} function takes as the first parameter the observation number where the dummies should start (\texttt{nth}), this is the index of the first dummy value inside one observed day. The \texttt{dummyLen} parameter specifies the number of observations for which to generate dummies. The \texttt{len} parameter represents the total number of observations for which to generate dummies, this is similar to the   \texttt{numbObsToGenerate} parameter for the \texttt{getDailyDummies} function and serves an identical purpose. Finally, the last parameter, \texttt{numObsPerDay}, is again identical in purpose with the same parameter for the \texttt{getDailyDummies} function, it specifies how many observations are there in a single day for the current data set, this parameter is directly influenced by the way the data set was captured.
 
 \section{The dataset}
 The final part of this chapter will give an insight on what the data is and what it looks like.
