@@ -1019,7 +1019,7 @@ In this manner one might encode as dummies weekends, hours of the day and other 
 \chapter{Practical considerations}
 This second chapter of the dissertation thesis will focus on the practical aspects of the work. More specifically the programming part and the methodological part as well as the results.
 
-Basically I'm going to describe in more detail key concepts in my R code used for forecasting the five time series in the data set.
+Basically I'm going to describe in more detail key concepts in my R code used for forecasting the time series in the data set.
 More importantly, I'm going to describe the methodology or how I applied the theoretical knowledge to forecast the data. The abstract steps and concepts described in the first part of this paper will now become concrete actions that will lead to choosing an ARIMA model and using it for forecasting time series.
 
 The practical considerations are of importance because, according to Moore's law \cite{moore:1965} computing power is still increasing. 
@@ -1116,7 +1116,7 @@ As we see from the functions presented above, the model fitting to data is done 
 %\subsection{Benchmark methods in code}
 %Show meanf, average, naive code.
 
-\subsection{ARIMA in code}
+\subsection{ARIMA in code} \label{arimaincode}
 The code for calling the \texttt{Arima} function for building a model and creating predictions is presented in listing \ref{examplearimacode}.
 
 \begin{listing}[h]
@@ -1252,24 +1252,151 @@ The \texttt{getDailyDummies} function accepts as parameters the number of observ
 Similarly the \texttt{getNthObsDummies} function takes as the first parameter the observation number where the dummies should start (\texttt{nth}), this is the index of the first dummy value inside one observed day. The \texttt{dummyLen} parameter specifies the number of observations for which to generate dummies. The \texttt{len} parameter represents the total number of observations for which to generate dummies, this is similar to the   \texttt{numbObsToGenerate} parameter for the \texttt{getDailyDummies} function and serves an identical purpose. Finally, the last parameter, \texttt{numObsPerDay}, is again identical in purpose with the same parameter for the \texttt{getDailyDummies} function, it specifies how many observations are there in a single day for the current data set, this parameter is directly influenced by the way the data set was captured.
 
 \section{The dataset}
-The final part of this chapter will give an insight on what the data is and what it looks like.
+This section of the chapter will give an insight on what the data that I used is and what it looks like.
 
-about the data, present a snippet of it
-talk about the 80/20 rule and how we cannot "take random samples out of the data" since we're talking about time series
-talk about why I first look at a week of data thn try to generalize from that for the whole 5 months
+As mentioned in the previous chapter I will work on a set of data that was used in other works as well, including that of Feilmeier \cite{feilmeier} who analyzed that data using neural networks and predicted it using those methods.
 
-Say that I have replaced the negative values with zeros.
+The data set consists of five time series, called \texttt{Ph1}, \texttt{Ph2}, \texttt{Ph3}, \texttt{PV1} and \texttt{PV2}.
+The first three series represent electrical energy consumption of a household on each phase for three phase current while the last two time series represent the electrical energy of two photo voltaic panels installed in the same household.
 
-Say about "down sampling" of data and why is it necessary.
-Data too long, forecast by chunks, which are independent.
+Each observation from each of the time series in the dataset is captured once every five minutes, so in short I can say that the sampling frequency is five minutes.
+The length of time during which the data was captured is five months, from January 2015 to May 2015, all five time series were captured at the same time. This means that for each time series we have 150 days worth of data, with 288 samples per day,  totaling to approximately 43200 data points per time series.
+
+Table \ref{exampledata} shows a sample of the data just at the beginning of the year 2015 when the data was being captured.
+
+\begin{table}[h]
+    \begin{tabular}{|c|c|c|c|c|c|}
+        \hline
+        \textbf{Date and time}      & \textbf{PV1} & \textbf{PV2} & \textbf{Ph1}  & \textbf{Ph2} & \textbf{Ph3}   \\ \hline
+        01/01/15 00:00 & 0   & 0   & 0    & 352.8                                              & 401.2 \\ \hline
+        01/01/15 00:05 & 0   & 0   & 0    & 354.8                                              & 484.6 \\ \hline
+        01/01/15 00:10 & 0   & 0   & 0    & 356.8                                              & 423.6 \\ \hline
+        01/01/15 00:15 & 0   & 0   & 0    & 388.2                                              & 418.6 \\ \hline
+        01/01/15 00:20 & 0   & 0   & 0    & 353                                                & 187.2 \\ \hline
+        01/01/15 00:25 & 0   & 0   & 0    & 352.4                                              & 247   \\ \hline
+        01/01/15 00:30 & 0   & 0   & 64.2 & 377.2                                              & 203.4 \\ \hline
+        01/01/15 00:35 & 0   & 0   & 0    & 209.6                                              & 217   \\ \hline
+        01/01/15 00:40 & 0   & 0   & 0    & 234.4                                              & 603.4 \\ \hline
+        01/01/15 00:45 & 0   & 0   & 46.8 & 232                                                & 948.2 \\ \hline
+        01/01/15 00:50 & 0   & 0   & 70.4 & 110.6                                              & 148   \\ \hline
+        01/01/15 00:55 & 0   & 0   & 0    & 0                                                  & 109.2 \\ \hline
+        01/01/15 01:00 & 0   & 0   & 0    & 0                                                  & 149.4 \\ \hline
+        01/01/15 01:05 & 0   & 0   & 0    & 0                                                  & 128.8 \\ \hline
+        01/01/15 01:10 & 0   & 0   & 0    & 0                                                  & 47    \\ \hline
+        01/01/15 01:15 & 0   & 0   & 0    & 0                                                  & 0     \\ \hline
+        01/01/15 01:20 & 0   & 0   & 0    & 0                                                  & 23.6  \\ \hline
+        01/01/15 01:25 & 0   & 0   & 0    & 0                                                  & 146.4 \\ \hline
+        01/01/15 01:30 & 0   & 0   & 0    & 0                                                  & 139.4 \\ \hline
+    \end{tabular}
+\centering
+\caption{First 20 observations of the data set for each of the time series}
+\label{exampledata}
+\end{table}
+
+The initial data contained negative values from time to time, since energy consumption or production is measured only in positive values, I can classify these negative values as measurement errors and hence I replaced them with the value $ 0 $ (zero). This replacement algorithm is written in listing \ref{negativereplacementcode}, thus automating the replacement of erroneous values.
+
+\begin{listing}[h]
+    \begin{minted}{R}
+PV1[PV1 < 0] <- 0
+PV2[PV2 < 0] <- 0
+Ph1[Ph1 < 0] <- 0
+Ph2[Ph2 < 0] <- 0
+Ph3[Ph3 < 0] <- 0
+\end{minted}
+
+\caption{Example code for replacing negative values}
+\label{negativereplacementcode}
+\end{listing}
+
+In R the reading of the data set is accomplished by using the \texttt{read.csv} function, which takes at least one parameter: the path to the Comma Separated Values file to be read. Finally, the columns of the file may be accessed by indexing, as can be seen in listing \ref{readingthedataset}.
+
+\begin{listing}[h]
+    \begin{minted}{R}
+    series <- read.csv(file = '/path/to/data/file.csv')
+    
+    Ph3 <- ts(series['Ph3'])
+    Ph2 <- ts(series['Ph2'])
+    Ph1 <- ts(series['Ph1'])
+    
+    PV1 <- ts(series['PV1'])
+    PV2 <- ts(series['PV2'])
+    \end{minted}
+    
+    \caption{Example code for reading the data set}
+    \label{readingthedataset}
+\end{listing}
+
+Considering the fact that we have five months worth of data, it might seem enough to extract some rich patterns from it, but in fact it is only enough to reach the early summer months (in order to get meaningful predictions of the \texttt{PV1} and \texttt{PV2} time series). Apparently, in spite of having a very high frequency data set and five months worth of data it is not enough to extract some monthly patterns of the electrical energy consumption and production, only daily and weekly patterns can be obtained as will be explained in the following sections of the paper.
+
+The high sampling frequency of the data means that we have approximately 43200 data points in a single time series, these are a lot of points.
+As shown until now, ARIMA was designed to work on seasonal data with seasonal periods of a year, quarter year or month, not minutely data.
+For this reason and for practicality and speed of algorithm execution concerns, I have further transformed the initial data by down sampling it.
+By down sampling I mean that for each of the five time series I create another two, one where I keep a data point every hour and one time series where I keep a data point every two hours from the original time series. Hence, at the end of the process I get 15 (fifteen) different time series.
+The original five series, five time series sampled at one hour intervals and another five time series sampled at an interval of two hours.
+
+As we will see, the down sampling of the data didn't lose too much information from it, since the results of the ARIMA models applied to them will be very similar with better running times. Faster execution means faster prediction times as well, which is a big advantage and can be compromised with an increase in the errors if needed.
+
+Figure \ref{fulltimeseriesfigure} presents all the time series, including the original, and the down sampled ones.
+
+
+%
+%source('datasets.R')
+%library('gridExtra')
+%library('ggplot2')
+%library('forecast')
+%library('fpp2')
+%grid.arrange(autoplot(datasets[['ph1']]$series) + xlab("Observation [days]") + ylab("Energy [Watts]") + ggtitle("Ph1"), 
+%autoplot(datasets[['1hrs ph1']]$series) + xlab("Observation [days]") + ylab("Energy [Watts]") + ggtitle("Ph1 1hrs"),
+%autoplot(datasets[['2hrs ph1']]$series) + xlab("Observation [days]") + ylab("Energy [Watts]") + ggtitle("Ph1 2 hrs"), 
+%
+%autoplot(datasets[['ph2']]$series) + xlab("Observation [days]") + ylab("Energy [Watts]") + ggtitle("Ph2"), 
+%autoplot(datasets[['1hrs ph2']]$series) + xlab("Observation [days]") + ylab("Energy [Watts]") + ggtitle("Ph2 1hrs"),
+%autoplot(datasets[['2hrs ph2']]$series) + xlab("Observation [days]") + ylab("Energy [Watts]") + ggtitle("Ph2 2 hrs"), 
+%
+%autoplot(datasets[['ph3']]$series) + xlab("Observation [days]") + ylab("Energy [Watts]") + ggtitle("Ph3"), 
+%autoplot(datasets[['1hrs ph3']]$series) + xlab("Observation [days]") + ylab("Energy [Watts]") + ggtitle("Ph3 1hrs"),
+%autoplot(datasets[['2hrs ph3']]$series) + xlab("Observation [days]") + ylab("Energy [Watts]") + ggtitle("Ph3 2 hrs"), 
+%
+%autoplot(datasets[['pv1']]$series) + xlab("Observation [days]") + ylab("Energy [Watts]") + ggtitle("PV1"), 
+%autoplot(datasets[['1hrs pv1']]$series) + xlab("Observation [days]") + ylab("Energy [Watts]") + ggtitle("PV1 1hrs"),
+%autoplot(datasets[['2hrs pv1']]$series) + xlab("Observation [days]") + ylab("Energy [Watts]") + ggtitle("PV1 2 hrs"), 
+%
+%autoplot(datasets[['pv2']]$series) + xlab("Observation [days]") + ylab("Energy [Watts]") + ggtitle("PV2"), 
+%autoplot(datasets[['1hrs pv2']]$series) + xlab("Observation [days]") + ylab("Energy [Watts]") + ggtitle("PV2 1hrs"),
+%autoplot(datasets[['2hrs pv2']]$series) + xlab("Observation [days]") + ylab("Energy [Watts]") + ggtitle("PV2 2 hrs"), 
+%
+%layout_matrix = cbind(c(1,2,3), c(4, 5,6), c(7, 8, 9), c(10, 11, 12), c(13, 14, 15)))
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{dfulltimeseries.png}
+    \caption{The 15 time series used for forecasting}
+    \label{fulltimeseriesfigure}
+\end{figure}
+
+As can be seen, the first row of figure \ref{fulltimeseriesfigure} presents the original time series (just with the negative values cleaned).
+The second row shows the down sampled time series, the sampling frequency here being one hour. Finally, the last row of the grid shows the time series down sampled with the frequency of two hours.
+
+One can easily observe that the columns do not lose their shape by down sampling, which is a good thing, indicating that we didn't loose to much information from the data in the process. It should be noted how similar the \texttt{Ph1}, \texttt{Ph2} and \texttt{Ph3} time series are. \texttt{PV1} and \texttt{PV2} look much alike as well.
+
+One can also observe from the plots that the data is still too dense. Even when using a sample frequency of two hours it is almost impossible to graphically analyze it and to draw any conclusions from it. So in order to apply the concepts discussed in the first chapter of this paper, for example to analyze the autocorrelation plot or the partial autocorrelation plot and decide on the parameters of the ARIMA model, I have to find an alternative way of analyzing the data.
+
+This alternative way consists of breaking the data into representative chunks and then the analysis is done on those chunks and generalized to the whole time series. This process will be repeated 15 (fifteen) times, as many times as we have time series. As such, the data will be analyzed week by week and the patterns found for a week will be used to model the entire period of five months. Since electricity consumption or production patterns do not change very rapidly, such an approach is valid because we can generalize from a period of one week to the full period of five months. The consumption and production patterns will change ever so slightly that the algorithm will not notice any change. A household's schedule will only vary when there are unexpected events or changes in schedule and it is safe to assume that these do not happen too often, so the conclusion is that the schedule for a household keeps the same structure over a five month period as for a single (repeated) week.
+
+If still there is any noticeable change, we could account for it by only taking into account one week and predicting the next several days, then by moving to the next week, modeling it using ARIMA and predicting the next days and repeating the process until we have processed the entire time series I would be able to cover the whole analyzed period without having to relay on the representativeness of a single week for the full data. In order to keep the above assumptions (although valid) to a minimum I have chosen this way of working with the data.
+
+In summary, in order to be able to analyze the data I have looked at pieces of it, each piece being approximately the size of a week, and in order to avoid assumptions about the representativeness of that week, we always model with ARIMA a single week and produce forecasts for several days. This approach also falls in line with the Pareto principle, having approximately a week for training and several days for testing, presented also in listing \ref{actualKcode} via the \texttt{best.traindays} and \texttt{best.testdays}. The exact size for the training days and test days is determined as explained in section \ref{arimaincode}. As we will see in section \ref{methodologysection} this "week by week" forecasting approach is also useful in parallelizing the code. The code is embarrassingly parallel since every data chunk is independent of the previous or the next chunk. I can create an ARIMA model for a week and produce forecasts from it without influencing in any way the model and predictions for the previous or next week, for which all the data is independent. Of course the parallelization was done using the \texttt{foreach}\footnote{\url{https://cran.r-project.org/package=foreach}} \& \texttt{doParallel}\footnote{\url{https://cran.r-project.org/package=doParallel}} R packages.
 
 \section{Methodology} \label{methodologysection}
 % TODO: https://en.wikipedia.org/wiki/Box%E2%80%93Jenkins_method
 
 show the arima\_model code in steps
 start using my data as the example workflow and reiterating the theory to achieve the complete work-flow
+data too frequent, arima takes very long to run -> parallelization and down sampling
+
+Say about "down sampling" of data and why is it necessary.
 the methodology explains why I can parallelize the code
 Data too long, forecast by chunks, which are independent.
+
 
 \section{Difficulties in implementation of the methodology}
 No difficulty in the theoretical part since it is well established and widely used by now.
