@@ -380,7 +380,7 @@ Both Python and R have the advantage of being fully open-source, that means that
 
 %TODO:space: expand on R and the ARIMA packges?
 
-\section{Seasonal data}
+\section{Seasonal data} \label{seasonaldatasection}
 In what is left of this chapter, I am going to explain each concept that I have used in understanding the ARIMA model and its variations, both in isolation and in relation to the model and its role in choosing the fittest ARIMA model.
 
 I'm going to start with the concept of seasonality, which is an important one for longer time series, like I have here. As a reminder the time-series I'm going to inspect are 150 days long, with 288 observations every day.
@@ -751,7 +751,7 @@ The partial autocorrelation function (or PACF for short), is very similar to the
 
 The critical values idea here is the same as for ACF, as explained in section \ref{cirticalvaluesection}.
 
-\section{Choosing AR(p) and MA(q) terms}
+\section{Choosing AR(p) and MA(q) terms} \label{choosingarandmasection}
 
 For now I have only focused on the basic concepts that underlie the ARIMA model and that will help choose the right parameters for it.  I have only given indications on choosing the $ d $ parameter (the number of differences required to make the time series stationary) for the $ I(d) $ part of ARIMA.
 
@@ -1251,7 +1251,7 @@ The \texttt{getDailyDummies} function accepts as parameters the number of observ
 
 Similarly the \texttt{getNthObsDummies} function takes as the first parameter the observation number where the dummies should start (\texttt{nth}), this is the index of the first dummy value inside one observed day. The \texttt{dummyLen} parameter specifies the number of observations for which to generate dummies. The \texttt{len} parameter represents the total number of observations for which to generate dummies, this is similar to the   \texttt{numbObsToGenerate} parameter for the \texttt{getDailyDummies} function and serves an identical purpose. Finally, the last parameter, \texttt{numObsPerDay}, is again identical in purpose with the same parameter for the \texttt{getDailyDummies} function, it specifies how many observations are there in a single day for the current data set, this parameter is directly influenced by the way the data set was captured.
 
-\section{The dataset}
+\section{The dataset} \label{datasetsection}
 This section of the chapter will give an insight on what the data that I used is and what it looks like.
 
 As mentioned in the previous chapter I will work on a set of data that was used in other works as well, including that of Feilmeier \cite{feilmeier} who analyzed that data using neural networks and predicted it using those methods.
@@ -1387,6 +1387,73 @@ If still there is any noticeable change, we could account for it by only taking 
 In summary, in order to be able to analyze the data I have looked at pieces of it, each piece being approximately the size of a week, and in order to avoid assumptions about the representativeness of that week, we always model with ARIMA a single week and produce forecasts for several days. This approach also falls in line with the Pareto principle, having approximately a week for training and several days for testing, presented also in listing \ref{actualKcode} via the \texttt{best.traindays} and \texttt{best.testdays}. The exact size for the training days and test days is determined as explained in section \ref{arimaincode}. As we will see in section \ref{methodologysection} this "week by week" forecasting approach is also useful in parallelizing the code. The code is embarrassingly parallel since every data chunk is independent of the previous or the next chunk. I can create an ARIMA model for a week and produce forecasts from it without influencing in any way the model and predictions for the previous or next week, for which all the data is independent. Of course the parallelization was done using the \texttt{foreach}\footnote{\url{https://cran.r-project.org/package=foreach}} \& \texttt{doParallel}\footnote{\url{https://cran.r-project.org/package=doParallel}} R packages.
 
 \section{Methodology} \label{methodologysection}
+This section deals takes all the presented pieces and puts them together. All the steps taken towards finding and fitting a proper ARIMA model will now be explained in logical order along with the decisions taken at every step in order to facilitate forecasting of electrical energy consumption and production.
+
+First of all, during the modeling and forecasting process no distinction is made between the consumption of energy and the production of it. Both are treated as similar time series. This is possible because both are measured in the same units and are captured at the same intervals (the sampling frequency of the data set is five minutes). Thus the modeling and prediction process for the consumption and production doesn't have to be different, only the conclusions drawn will have to be different since the two processes are driven by different causes.
+
+For reasons explained previously in section \ref{datasetsection} I will not use directly at the original time series in the data set, instead I will try to use the down sampled time series in order to be able to properly interpret the plots, since the high frequency time series yields plots that are way too dense to be interpreted. Also this is done because forecasting the original time series with ARIMA is very time consuming due to the high frequency of the data points and due to the sheer amount of data points available in a single time series (around 43200 points per time series). Hence I will use the down sampled time series, with sampling frequency of one and two hours respectively to be able to interpret the plots. I will use only chunks of one week to find the ARIMA parameters that properly fit the data and then forecast several days ahead, this process is then repeated, week by week, until all the data was fit and forecast. In summary: I will analyze a chunk of data (the down sampled data), approximately the size of a week, try to come up with proper ARIMA parameters for that respective week, then forecast the next several days (the size of the chunk and the size of the forecast horizon will be set to match the Pareto principle). The found parameters for ARIMA will be kept constant (considering that the model is representative for the whole data), but the model will then be re-fit for every next chunk of data from the time series, hence avoiding the assumption that the data doesn't change (or changes ever so slightly that it doesn't matter). This process will be repeated as many times as necessary, also yielding the embarrassingly parallel nature of the code, hence speeding things up a bit.
+
+In what follows I will start walking through the steps necessary to model and forecast with ARIMA by actually giving an example for one of the time series. I will use as example the last week of the series \texttt{Ph3} sampled every two hours.
+
+I start by analyzing a chunk of the data equivalent to the last week from the data since if we need to forecast what comes next, this week might prove to be the closest approximation there is. The simplest prediction one can make is to say that the future will look like the past, I will try to improve on this by finding an appropriate ARIMA model.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{dlastweek2hrsph3}
+    \caption{Last week of the Ph3 data sampled every two hours}
+    \label{dlastweek2hrsph3}
+\end{figure}
+
+For reference, the last week of the data can be seen in figure \ref{dlastweek2hrsph3}.
+With blue I have represented the training data and the red line represents the test data for out-of-sample testing of the fitted model. The training data consists of 10 days and the test data of three days.
+
+At a first glance from this figure we can observe that each day has a peak of consumption by which it can be easily recognized. We can see that the sixth day of the week is exceptionally large from the point of view of energy consumption. This data being gathered in Germany, we can be sure that this is a Saturday, hence a plausible explanation is that, indeed, this consumption is valid, and that the spike is not a glitch of the measurement or sampling system, since for a typical household everybody is at home on Saturdays and the consumption of electricity is expected to increase in such a case. This assumption is also confirmed by looking at other weeks from the data, all show the same spike on Saturdays, hence we cannot categorize it as an outlier due to measurement errors.
+
+The nature o the data is further revealed by looking at the seasonal plot and subseries plot shown in figures \ref{dlastweek2hrsph3seasonal} and \ref{dlastweek2hrsph3subseries} respectively.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{dlastweek2hrsph3seasonal}
+    \caption{Last week of the Ph3 data shown by seasons}
+    \label{dlastweek2hrsph3seasonal}
+\end{figure}
+
+Both of these plots can be interpreted as explained in section \ref{seasonaldatasection}.
+The seasonal plot, takes the time series data and arranges it in seasons, in this case two hour seasons. This can be seen on the X axis, which has 12 points. Because the training data contained seven days worth of data, in figure \ref{dlastweek2hrsph3seasonal} we see seven distinct time series each being a different day. Note that in order to convert the season to day hours we have to multiply by two, hence the seasonality of the data becomes obvious because each day there is an increase in electricity consumption after sunrise, starting with 06:00 in the morning and diminishing in the evening.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{dlastweek2hrsph3subseries}
+    \caption{Last week of the Ph3 data shown by subseries}
+    \label{dlastweek2hrsph3subseries}
+\end{figure}
+
+In the sub series plot the original data in split into seasons as well. Similarly the X axis also shows 12 points.
+Each season on the plot is represented as an individual time series. Each observation belonging to the same season in a day is arranged in its respective slot. Since the training data had seven days worth of data, each mini time series consists of seven points, each from a different day, but the same season. The blue line shows the mean of each sub series. This plot shows that the energy consumption increases around lunch hours, hence reaching the conclusion this time series has daily seasonality.
+So for now we might expect a seasonal ARIMA model to best fit the data, this conclusion will be also helpful when generating the dummies for use with the \texttt{SARIMAX} model.
+
+Directly from the time plot of the data one can see that there are no trends or level shifts that might make the data non-stationary. Hence we can quickly conclude that there is no need for transformations (like the general BoxCox transformation) or for differencing, be it seasonal or non-seasonal.
+
+Next, I shall inspect the autocorrelation and partial autocorrelation of the data in order to establish the \texttt{AR} and \texttt{MA} terms of ARIMA. These will also provide confirmation that the decision not to transform or differentiate the data was accurate. Both the ACF and PACF plots are shown in figure \ref{dlastweek2hrsph3acfpacf}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{dlastweek2hrsph3acfpacf}
+    \caption{ACF and PACF of the data presented earlier}
+    \label{dlastweek2hrsph3acfpacf}
+\end{figure}
+
+From the fact that the ACF plot doesn't slowly decay, but instead quickly drops, I get confirmation for the fact that the data is indeed stationary and it doesn't need differencing or seasonal differencing. So this settles the discussion for the $ d $ and $ D $ parameters of the seasonal ARIMA model. Both will be set to zero, $ d = 0 $ and $ D = 0 $.
+
+From both the autocorrelation plot and the partial autocorrelation plot one can decide whether the model needs \texttt{AR} or \texttt{MA} terms.
+According to what was presented in section \ref{choosingarandmasection} with regards to choosing the $ p $ or $ q $ parameters and to the ACF and PACF plots shown in figure \ref{dlastweek2hrsph3acfpacf} I decide that this data needs one \texttt{AR} term and one \texttt{SAR} term. So we will have $ p = 1 $ and $ P = 1 $. First of all, the ACF shown a sinusoidal form: positive for the first lag, negative around lag 6 and then positive again on lag 12, negative at lag 18 and back over zero around lag 24, a strong indication of an auto-regressive model. The order of the model can be deduced from the PACF plot, which has only one significant lag, then only non-significant ones, hence $ p = 1 $ is a good decision. The \texttt{SAR} order $ P = 1 $ is chosen this way since we have significant spikes at seasonal lags 12 and almost significant spikes at lag 24. Please keep in mind that there are only 12 observation per day, since the data presented here is sampled with a frequency of two hours, so these significant spikes match a full day, a 24 hour period, thus matching our initial observations from the seasonal and seasonal subseries plots in figures \ref{dlastweek2hrsph3seasonal} and \ref{dlastweek2hrsph3subseries} respectively.
+
+With this I have arrived at an initial model that looks like this: $ ARIMA(1, 0, 0)(1, 0, 0) $. That is, a first order non-seasonal and seasonal auto-regressive ARIMA model with no differences and no moving average.
+
+Now I shall see how this model behaves and if it captures all the information in the data.
+
+Present results fro this model, then show how fourier and dummies improve it, directly on the full 2hrs ph3 data.
+
 % TODO: https://en.wikipedia.org/wiki/Box%E2%80%93Jenkins_method
 
 show the arima\_model code in steps
@@ -1396,6 +1463,8 @@ data too frequent, arima takes very long to run -> parallelization and down samp
 Say about "down sampling" of data and why is it necessary.
 the methodology explains why I can parallelize the code
 Data too long, forecast by chunks, which are independent.
+
+Summary of time-series (15 of them, as line sin table) and models chosen.
 
 
 \section{Difficulties in implementation of the methodology}
@@ -1408,6 +1477,7 @@ down-sampling the data since it was too frequent
 %TODO -Which are the main results of your paper and application areas ?
 
 %TODO: tables with results and attached plots
+Show only the best results on the down sampled time series and all of them on the original data. complete with running times as well.
 
 compare with other methods (NN and markov)
 
@@ -1421,7 +1491,7 @@ compare with other methods (NN and markov)
 %TODO: abstract, introduction, R, data, methodology, ARIMA, results, future work
 
 arima is not really suited for high frequency data
-
+consumption vs production of electrical energy
 \newpage
 \bibliographystyle{plain}
 \bibliography{bibliografie}
