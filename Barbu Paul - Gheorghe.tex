@@ -1695,15 +1695,20 @@ As can be seen in figure \ref{d2hrsph3fourierDummiesforecast}, no forecasts are 
 The above explanation can now be applied for any of the 15 time series: the five original ones, \texttt{Ph1}, \texttt{Ph2}, \texttt{Ph3}, \texttt{PV1}, \texttt{PV2} and their sub-sampled versions, with sampling frequencies of one and two hours (the original sampling frequency was 5 minutes). The results I have reached in doing so are presented in section \ref{resultssection}.
 
 \section{Difficulties in implementation of the methodology}
-No difficulty in the theoretical part since it is well established and widely used by now.
-But the technical part, parallelization, errors, etc
+This section of my dissertation deals with the technical difficulties in implementing the topics discussed before. I will note the biggest hurdles I have overcome and the way I overcame them.
 
-data too frequent, arima takes very long to run -> parallelization and down sampling
-Say about "down sampling" of data and why is it necessary.
-the methodology explains why I can parallelize the code
+It should be pointed out that the theoretical part of ARIMA processes is widely used and accepted, though there is little technical documentation on the subject, a lot of the quality implementations are done in paid software such as IBM's SPSS, SAS or SAP. Thus one has to turn to open source implementations such as R's implementation which, in spite of its free nature is a very high quality one and documented plentiful. Thus showing again the power of community efforts in a specialized statistics programming language such as R.
 
-Data too long, forecast by chunks, which are independent. and show I I brought them together, also th three days worth of predictions decay very fast, hence we try several possibilities.
+After understanding the basic statistical principles underlying the ARIMA model, concepts presented here as well, one has to tailor them to the specific data set analyzed. For me the dataset did not present much trouble since it is pretty easy to interpret and to find good theories fitting the observation.
 
+First hurdle encountered while trying to forecast the electricity demand and production using ARIMA consisted of very long running times of the algorithm. On the initial time series, sampled every 5 minutes, these running times ranged from approximately one hour to up to five hours, depending on the data and the ARIMA model chosen. It is clear that these computations would have to be done only once, but in order to be able to make several of them in a reasonable amount of time, one would have to reduce the running time to a more feasible value.
+
+The solution to this issue consists of two complementary parts. First step was to down sample the data. The original data set was observed every 5 minutes, while the down sampling achieved two other sets, one with a sampling frequency of one hour and another one with a sampling frequency of two hours. This simply means that instead of noting the electrical energy production and consumption every five minutes, the consumption and production is noted every one and two hours respectively. The implication of this is that the data set reduces its size from over 40 thousand, to 3600 for every hour samples and 1800 respectively for two hours sampling. Thus making the data easier to inspect when plotted and faster to process when modeled with ARIMA, this process was explained in detail in section \ref{datasetsection}. The second step was to only analyze chunks of data in order to produce proper interpretations of it. This is possible because the data seems to have the same characteristics over time, hence one could apply a single model found on a chunk of the data to the whole of it, piece by piece, in order to account for the small variations that may take place. This chunk-by-chunk analysis also has the effect of allowing the code to be easily parallelized. No chunk of data has any dependency on the other chunks, hence ARIMA can be run independently on each of the subsets of the data. More information on this topic can be found in section \ref{methodologysection}.
+
+Running several instances of the algorithm in parallel on the down sampled data, even on a modest computer, should result in faster running times, lowering the hour long runs to several seconds or minutes and enabling me to quickly make decisions and to adjust the ARIMA model used.
+
+errors
+Data too long, forecast by chunks, which are independent. and show I I brought them together, also th three days worth of predictions decay very fast, hence we try several possibilities(present this as "another hurdle").
 down-sampling the data since it was too frequent + R code
 
 \section{Results} \label{resultssection}
