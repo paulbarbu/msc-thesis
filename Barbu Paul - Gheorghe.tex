@@ -1707,9 +1707,20 @@ The solution to this issue consists of two complementary parts. First step was t
 
 Running several instances of the algorithm in parallel on the down sampled data, even on a modest computer, should result in faster running times, lowering the hour long runs to several seconds or minutes and enabling me to quickly make decisions and to adjust the ARIMA model used.
 
-errors
-Data too long, forecast by chunks, which are independent. and show I I brought them together, also th three days worth of predictions decay very fast, hence we try several possibilities(present this as "another hurdle").
-down-sampling the data since it was too frequent + R code
+If we look closely to the plot presented in figure \ref{dlastweek2hrsph3forecasts} we see that the forecasts for a three day period decay very fast, practically after predicting one day, they "fall" to the mean. This is another problem that had to be solved, but the solution is simple: during the model fitting phase I also varied the number of days to be predicted, along with the fitted number of days. So instead of predicting too much data into the future I predict only a small amount of observations, then I can be sure the prediction's accuracy is as high as possible.
+The code for choosing the best number of training and test days is similar to the one used for choosing the best number of dummies (see listing \ref{codedummiesconfiguration}) or for the number of Fourier terms included in the model.
+
+The down-sampling of the original 5 minute data presented earlier and in section \ref{datasetsection} can be achieved using the code presented in listing \ref{codedownsampling}, thus solving the problem of having too much data and its noise.
+
+\begin{listing}[h]
+    \begin{minted}{R}
+Ph1[0:length(Ph1)%%24 == 0]) # subsample the data every two hours
+Ph1[0:length(Ph1)%%12 == 0]) # subsample the data every one hour
+    \end{minted}
+    
+    \caption{Code for down sampling a time series}
+    \label{codedownsampling}
+\end{listing}
 
 \section{Results} \label{resultssection}
 %TODO -Which are the main results of your paper and application areas ?
