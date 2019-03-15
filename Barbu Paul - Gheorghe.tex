@@ -36,6 +36,8 @@
 
 \usepackage{amsmath}
 
+\usepackage{makecell}
+
 %\usepackage{draftwatermark}
 %\SetWatermarkText{Draft}
 %\SetWatermarkScale{1}
@@ -1723,16 +1725,74 @@ Ph1[0:length(Ph1)%%12 == 0]) # subsample the data every one hour
 \end{listing}
 
 \section{Results} \label{resultssection}
+
+This section of the paper presents the main results of the research and tries to provide some insight into the causes that led to these results.
+
+What follows are some tables that provide the main results for each of the time series, together with their down-sampled versions.
+
+Table \ref{ph1results} shows the chosen models for the \texttt{Ph1} data series, first the series sampled every two hours is shown, then the series sampled every one hour, and finally the original series. For each series several models have been fit and used to predict the time series.
+
+All the following tables will have the very same format and meanings for the columns, namely:
+\begin{itemize}
+    \item \textbf{Time series}: the series for which I applied the model;
+    \item \textbf{Model}: the model applied to the series (this will respect the ARIMA notation shown in the rest of the paper);
+    \item \textbf{K}: the number of Fourier terms, if none were used, a hyphen is shown instead;
+    \item \textbf{Dummies}: The dummies configuration in the form of \texttt{start:length}, where start represents the hour of the start dummy and length how many dummies were used (again, in hours), if none were used, a hyphen is shown instead;
+    \item \textbf{Train and test days}: the number of training days for the fitting phase of the algorithm and the number of the test days for when the accuracy was tested;
+    \item \textbf{Running time}: measured in seconds, shows how long the completion of the forecasting took on this data using the current model;
+    \item \textbf{RMSE and MAE}: the root mean squared error and mean absolute error, as described in section \ref{accuracymeasuressection}.
+\end{itemize}
+
+\begin{table}[h]
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+        \hline
+        \makecell{\textbf{Time} \\ \textbf{series}} & \textbf{Model}          & \textbf{K} & \makecell{\textbf{Dummies} \\ \textbf{(start:length)}} & \makecell{\textbf{Train} \\ \textbf{days}} & \makecell{\textbf{Test}\\ \textbf{days}} & \makecell{\textbf{Running} \\ \textbf{time {[}s{]}}} & \textbf{RMSE} & \textbf{MAE} \\ \hline
+        \textbf{2hrs ph1} & Arima(1, 0, 0)          & 2 & -    & 7 & 2 & 6.15     & 467.94 & 220.87 \\ \hline
+        \textbf{2hrs ph1} & Arima(1, 0, 0)          & 2 & 12:6  & 7 & 2 & 6.80     & 463.00 & 218.81 \\ \hline
+        \textbf{2hrs ph1} & Arima(1, 0, 0)(1, 0, 0) & 2 & -    & 7 & 2 & 4.83     & 469.44 & 223.40 \\ \hline
+        \textbf{2hrs ph1} & Arima(1, 0, 0)(1, 0, 0) & 2 & 12:6  & 7 & 2 & 5.08     & 464.96 & 222.06 \\ \hline
+        \textbf{}         &                         &   &      &   &   &          &        &        \\ \hline
+        \textbf{1hrs ph1} & Arima(1, 0, 0)          & 2 & -    & 7 & 2 & 5.25     & 454.62 & 217.44 \\ \hline
+        \textbf{1hrs ph1} & Arima(1, 0, 0)          & 2 & 11:1 & 7 & 2 & 5.97     & 450.00 & 215.51 \\ \hline
+        \textbf{1hrs ph1} & Arima(1, 0, 0)(1, 0, 0) & 2 & -    & 7 & 2 & 6.70     & 455.76 & 218.36 \\ \hline
+        \textbf{1hrs ph1} & Arima(1, 0, 0)(1, 0, 0) & 2 & 11:1 & 7 & 2 & 5.89     & 452.21 & 217.18 \\ \hline
+        \textbf{}         &                         &   &      &   &   &          &        &        \\ \hline
+        \textbf{ph1}      & mean                    & - & -    & 7 & 1 & 7.65     & 576.53 & 352.93 \\ \hline
+        \textbf{ph1}      & naive                   & - & -    & 7 & 1 & 7.75     & 655.62 & 286.68 \\ \hline
+        \textbf{ph1}      & snaive                  & - & -    & 7 & 1 & 2,906.22 & 587.99 & 231.19 \\ \hline
+        \textbf{ph1}      & Arima(1, 0, 0)  & 2 & -    & 7 & 2 & 8.42     & 460.42 & 223.15 \\ \hline
+        \textbf{ph1}      & Arima(1, 0, 0)  & 2 & 11:1 & 7 & 2 & 10.59    & 452.44 & 218.04 \\ \hline
+    \end{tabular}
+
+    \centering
+    \caption{Models for the \texttt{Ph1} data series}
+    \label{ph1results}
+\end{table}
+
+The results for \texttt{Ph1} series show that the $ ARIMA(1, 0, 0) $ with $ K=2 $ (two Fourier terms) and dummies starting at 11:00 and ending at 12:00 is best suited for forecasting the $ Ph1 $ data series with the lowest errors and an acceptable running time of almost 11 seconds, which is quite fast considering the amount of data, but this running time wouldn't have been possible without the performance improvements I described in earlier sections.
+
+The reason for choosing to use the same dummy values as for the hourly sampled data set, is simple: the more frequently sampled data set (i.e. the \texttt{1hrs ph1} series) is a more closer approximation of the real data than are the series sampled every two hours (i.e. the \texttt{2hrs ph1} series).
+
+The plot for the predicted data can be seen in figure \ref{dbestph1}.
+    
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{dbestph1}
+    \caption{prediction by the best model on the \texttt{P1} data}
+    \label{dbestph1}
+\end{figure}
+
+%TODO: tables with results and attached plots for the full data on the best model
+%TODO: Summary of time-series (more 15 of them, as line sin table) and models chosen, time to run, train/test days, fourier, dummies, and how many models are best for a given time series.
+
+%TODO: errors vs values, as difference in magnitude
 %TODO -Which are the main results of your paper and application areas ?
 
-%TODO: tables with results and attached plots
-Show only the best results on the down sampled time series and all of them on the original data. complete with running times as well.
-How many train days and test days are best to forecast?
+%TODO How many train days and test days are best to forecast?
 
-Summary of time-series (more 15 of them, as line sin table) and models chosen, time to run, train/test days, fourier, dummies, and how many models are best for a given time series.
+%TODO: mean, naive explanations and the magnitute of errors
 
-
-compare with other methods (NN and markov)
+%TODO: compare with other methods (NN and markov)
 
 
 \section{Future work}
@@ -1742,6 +1802,8 @@ compare with other methods (NN and markov)
 
 \section{Conclusions}
 %TODO: abstract, introduction, R, data, methodology, ARIMA, results, future work
+
+First of all I shall remind the reader that the goal of the paper was forecasting the electricity consumption of a house over a set period of time. As shown by these results the goal has been successfully achieved and a variation of the ARIMA algorithm is used for predicting electrical energy demand. The results are favorable compared to those produced by the ANN method, but not by much compared to some benchmark algorithms which are much simpler in terms of mathematical complexity and shorter in term of both implementation and running time.
 
 arima is not really suited for high frequency data
 consumption vs production of electrical energy
