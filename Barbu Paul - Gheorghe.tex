@@ -1771,9 +1771,25 @@ The running time of the algorithm is almost 7 seconds, which is a very short tim
     \label{dbestph2}
 \end{figure}
 
+The results for the $ Ph3 $ data series come as no surprise, the best model for this series is shown in table \ref{ph3results}, it consists of dynamic harmonic regression with two Fourier terms ($ K = 2 $) and dummies between 9:00 and 11:00 with a first order autoregressive ARIMA error.
+For this data series it appears best to fit the model on 7 days and predict maximum two days or even a single one. For this model, as for the others, the hourly sampled data dummies also apply best to the original time series since it is more similar to it than the one sampled at an interval of two hours.
+
+The plot for this model applied on the $ Ph3 $ data can be seen in figure \ref{dbestph3}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{dbestph3}
+    \caption{Prediction by the best model on the \texttt{Ph3} data}
+    \label{dbestph3}
+\end{figure}
+
+With this, the part of the results where I predict the electrical energy consumption of a household is complete. An intermediary conclusion I can draw is the fact that all the phases have similar behaviors, all three of them having similar models that fit best. All observations can be deduced from the previous one (first order auto-regressive ARIMA model), all are seasonal (Fourier terms have been used successfully, even better than the usual seasonality captured by SARIMA models) and the observations that influence the results are situated in the first part of the day, morning to noon. Unsurprising result, since that is the time people prepare for work or have their lunch.
+
+The next two sets of results deal with the $PV1 $ and $ PV2 $ data series. These represent the electrical energy production of a household that has two photo-voltaic panels installed.
+
+First, table \ref{pv1results} shows the results for the $ PV1 $ time series and the sub-sampled series.
 
 %TODO: tables with results and attached plots for the full data on the best model
-%TODO: Summary of time-series (more 15 of them, as line sin table) and models chosen, time to run, train/test days, fourier, dummies, and how many models are best for a given time series.
 
 %TODO: errors vs values, as difference in magnitude
 %TODO -Which are the main results of your paper and application areas ?
@@ -1854,6 +1870,57 @@ consumption vs production of electrical energy
     \centering
     \caption{Models for the \texttt{Ph2} data series}
     \label{ph2results}
+\end{table}
+
+\begin{table}[h]
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+        \hline
+        \makecell{\textbf{Time} \\ \textbf{series}} & \textbf{Model}          & \textbf{K} & \makecell{\textbf{Dummies} \\ \textbf{(start:length)}} & \makecell{\textbf{Train} \\ \textbf{days}} & \makecell{\textbf{Test}\\ \textbf{days}} & \makecell{\textbf{Running} \\ \textbf{time {[}s{]}}} & \textbf{RMSE} & \textbf{MAE} \\ \hline
+\textbf{2hrs ph3} & Arima(1, 0, 0)          & 2 & -    & 7 & 3 & 6.64   & 320.11 & 183.13 \\ \hline
+\textbf{2hrs ph3} & Arima(1, 0, 0)          & 2 & 10:2 & 7 & 3 & 6.25   & 318.23 & 179.03 \\ \hline
+\textbf{2hrs ph3} & Arima(1, 0, 0)(1, 0, 0) & 2 & -    & 7 & 3 & 5.48   & 318.85 & 182.83 \\ \hline
+\textbf{2hrs ph3} & Arima(1, 0, 0)(1, 0, 0) & 2 & 10:2 & 7 & 3 & 6.17   & 318.42 & 179.90 \\ \hline
+\textbf{}         &                         &   &      &   &   &        &        &        \\ \hline
+\textbf{1hrs ph3} & Arima(1, 0, 0)          & 2 & -    & 7 & 2 & 5.74   & 311.43 & 179.01 \\ \hline
+\textbf{1hrs ph3} & Arima(1, 0, 0)          & 2 & 9:2  & 7 & 2 & 5.74   & 308.27 & 172.99 \\ \hline
+\textbf{1hrs ph3} & Arima(1, 0, 0)(1, 0, 0) & 2 & -    & 7 & 2 & 5.19   & 311.07 & 179.53 \\ \hline
+\textbf{1hrs ph3} & Arima(1, 0, 0)(1, 0, 0) & 2 & 9:2  & 7 & 2 & 8.11   & 308.68 & 174.30 \\ \hline
+\textbf{}         &                         &   &      &   &   &        &        &        \\ \hline
+\textbf{ph3}      & mean                    & - & -    & 7 & 1 & 8.45   & 353.48 & 216.88 \\ \hline
+\textbf{ph3}      & naive                   & - & -    & 7 & 1 & 9.58   & 402.14 & 215.26 \\ \hline
+\textbf{ph3}      & snaive                  & - & -    & 7 & 1 & 596.37 & 418.50 & 218.67 \\ \hline
+\textbf{ph3}      & Arima(1, 0, 0)          & 2 & -    & 7 & 1 & 18.12  & 324.82 & 187.96 \\ \hline
+\textbf{ph3}      & Arima(1, 0, 0)          & 2 & 9:2  & 7 & 2 & 9.75   & 323.56 & 183.96 \\ \hline
+
+\end{tabular}
+
+\centering
+\caption{Models for the \texttt{Ph3} data series}
+\label{ph3results}
+\end{table}
+
+
+\begin{table}[h]
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+        \hline
+        \makecell{\textbf{Time} \\ \textbf{series}} & \textbf{Model}          & \textbf{K} & \makecell{\textbf{Dummies} \\ \textbf{(start:length)}} & \makecell{\textbf{Train} \\ \textbf{days}} & \makecell{\textbf{Test}\\ \textbf{days}} & \makecell{\textbf{Running} \\ \textbf{time {[}s{]}}} & \textbf{RMSE} & \textbf{MAE} \\ \hline
+    \end{tabular}
+    
+    \centering
+    \caption{Models for the \texttt{PV1} data series}
+    \label{pv1results}
+\end{table}
+
+
+\begin{table}[h]
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+        \hline
+        \makecell{\textbf{Time} \\ \textbf{series}} & \textbf{Model}          & \textbf{K} & \makecell{\textbf{Dummies} \\ \textbf{(start:length)}} & \makecell{\textbf{Train} \\ \textbf{days}} & \makecell{\textbf{Test}\\ \textbf{days}} & \makecell{\textbf{Running} \\ \textbf{time {[}s{]}}} & \textbf{RMSE} & \textbf{MAE} \\ \hline
+    \end{tabular}
+    
+    \centering
+    \caption{Models for the \texttt{PV2} data series}
+    \label{pv2results}
 \end{table}
 
 \end{appendices}
