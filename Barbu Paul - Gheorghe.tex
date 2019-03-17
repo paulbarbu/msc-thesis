@@ -1821,7 +1821,24 @@ Looking at all the results, a pattern can be observed throughout all of them, th
 
 Also, having a look at the big picture and comparing the errors produced by the ARIMA models and the benchmark models shown in each table, one can easily say that there is not much difference, considering that the difference between their errors is on the order of one or two hundred Watts and the fact that the data is on the order of several thousand Watts. So one could say that in certain cases, the increase in complexity from using an algorithm such as ARIMA is not worth the effort to predict electrical energy consumption or production when alternatives such as the mean model and even the naive model provide similar results at much lower costs, implementation and maintenance, because of the lower complexity involved.
 
-%TODO: compare with other methods (NN and markov)
+Table \ref{overallcomparisonMAE} shows a comparison between the mean absolute errors from the neural networks model used in \cite{feilmeier}, the mean absolute errors from the Markov model used in \cite{antonescu} and the MAE obtained on each time series with ARIMA models used in this work by me.
+The last column of this table shows the average of the mean absolute errors on all the five time series as a summary of the results.
+
+%df <- data.frame(Model=rep(c('Markov', 'Neural', 'ARIMA'), each=6), Data=rep(c("PV1", "PV2", "Ph1", "Ph2", "Ph3", "Mean"), 3),
+%MAE=c(27.29,	26.16,	42.39,	25.18,	51.11, 34.426, 111.71,	107.16,	279.99,	199.35,	357.14, 211.07, 225.91,	220.00,	218.04,	161.40,	183.96, 201.86))
+%head(df)
+%
+%p<-ggplot(data=df, aes(x=Data, y=MAE, fill=Model)) +
+%geom_bar(stat="identity", position=position_dodge())
+%p
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{doverallcomparisonplot}
+    \caption{Plot of the MAE from different types of models}
+    \label{doverallcomparisonplot}
+\end{figure}
+
+The plot obtained from this table can be seen in figure \ref{doverallcomparisonplot}. On average the ARIMA model performs better than the neural networks model, but far worse than the Markov model. Apparently the magnitude of the errors for both the NN method and the ARIMA method is similar, while the Markov method provides exceptionally good results, almost too good, since they are one order of magnitude lower than the other two methods.
 
 \section{Future work}
 %TODO -Which are the main steps to develop your research in the future ?
@@ -1988,6 +2005,20 @@ since the mean and naive models perform almost as good without the price of comp
     \centering
     \caption{Models for the \texttt{PV2} data series}
     \label{pv2results}
+\end{table}
+
+\begin{table}[h]
+    \begin{tabular}{|c|c|c|c|c|c|c|}
+        \hline
+        \textbf{Model/Time series} & \textbf{PV1} & \textbf{PV2} & \textbf{Ph1} & \textbf{Ph2} & \textbf{Ph3} & \textbf{Mean} \\ \hline
+        \textbf{Markov}            & 27.29        & 26.16        & 42.39        & 25.18        & 51.11        & 34.426        \\ \hline
+        \textbf{Neural}            & 111.71       & 107.16       & 279.99       & 199.35       & 357.14       & 211.07        \\ \hline
+        \textbf{ARIMA}             & 225.91       & 220.00       & 218.04       & 161.40       & 183.96       & 201.86        \\ \hline
+    \end{tabular}
+
+    \centering
+    \caption{Overall results comparison of the MAE from different types of models}
+    \label{overallcomparisonMAE}
 \end{table}
 
 \end{appendices}
