@@ -1788,18 +1788,40 @@ With this, the part of the results where I predict the electrical energy consump
 The next two sets of results deal with the $PV1 $ and $ PV2 $ data series. These represent the electrical energy production of a household that has two photo-voltaic panels installed.
 
 First, table \ref{pv1results} shows the results for the $ PV1 $ time series and the sub-sampled series.
+It can be seen that the running times are very similar to the running times on the consumption time series, showing in fact that apart from the semantic difference of producing and consuming energy, there is no difference between the two.
+What is fundamentally different though is the time covered by the dummies. Here the interval is directly proportional with the interval the sun shines most, which, as shown ere by the best model is between 11:00 in the morning and 17:00 in the afternoon (start dummy is 11, and length is 6).
+In this case I consider the best model to be the one with the lowest overall errors, hence: $ ARIMA(1, 0, 0) $ with three Fourier terms and dummies starting at the 11th hour and lasting 6 hours. These dummies are necessary to capture the peaks created by the high production of electrical energy during the afternoon hours when the sun shines brightest.
 
-%TODO: tables with results and attached plots for the full data on the best model
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{dbestpv1}
+    \caption{Prediction by the best model on the \texttt{PV1} data}
+    \label{dbestpv1}
+\end{figure}
 
-%TODO: errors vs values, as difference in magnitude
-%TODO -Which are the main results of your paper and application areas ?
+The plot showing the best model for the $ PV1 $ time series is shown in figure \ref{dbestpv1}. It can be seen that the model is far from perfect, but it takes the form of the data, at least the trend of it. The trend is increasing, the reason behind this is the fact that the winter months, when the measurements started do not provide as much sunshine, but as the time progresses and summer draws nearer, the sunshine increases and so does the energy production from the first installed photo voltaic panel. I expect this to hold true for the second one as well.
 
-%TODO How many train days and test days are best to forecast?
+The results produced by the found models on the $ PV2 $ data can be seen in table \ref{pv2results}.
+The best model in this case is $ ARIMA(1,0,0) $ with three Fourier terms for modeling the seasonality in the data. The plot created by forecasting the $ PV2 $ data with this model is drawn in figure \ref{dbestpv2}. As noted earlier this data series also has an increasing trend and the model correctly follows this shape.
 
-%TODO: mean, naive explanations and the magnitute of errors
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{dbestpv2}
+    \caption{Prediction by the best model on the \texttt{PV2} data}
+    \label{dbestpv2}
+\end{figure}
+
+What is different in this case, is the fact that I have chosen as the "best" model the one without dummies. The reason behind this decision was the similar running times of all the ARIMA models and the similar errors as well, so the decision was all about the complexity of the model, hence choosing the simplest one. Apparently this case is modeled sufficiently good by capturing the seasonality with the three Fourier terms and one autoregressive term for the errors.
+
+Both of the models for the $ PV1 $ and $ PV2 $ data work best when they are fit on five training days and when predicting two days.
+
+From this we see that the term "best", used until now for all the chosen models, is relative, if one looks carefully at the data in the results tables, one sees that the all the results for the original data series have very similar errors as well as similar running times (with the note that all the models have been parallelized as noted in the previous sections of this work, otherwise the running times would've been higher). As such choosing the best model becomes a matter of personal preference, I have used the error criteria (the error should be lowest), the time criteria (running time should be shortest) and the complexity criteria (the complexity of the model should be minimal) to declare the "best" model that fits each time series in the provided data set. Also one other important criterion in choosing the representative model was that the model should clearly explain the patterns in the data and the phenomenon behind it.
+
+Looking at all the results, a pattern can be observed throughout all of them, the \texttt{snaive} model is exceptionally slow. This is true for all the seasonal models, this is one reason I did not choose to use them on the full data (the ones sampled at every five minutes). Another reason for not using the \texttt{SARIMA} model is also the fact that it does not yield better results than the \texttt{ARIMA} model with Fourier external regressors (also known as dynamic harmonic regression with ARIMA errors).
+
+Also, having a look at the big picture and comparing the errors produced by the ARIMA models and the benchmark models shown in each table, one can easily say that there is not much difference, considering that the difference between their errors is on the order of one or two hundred Watts and the fact that the data is on the order of several thousand Watts. So one could say that in certain cases, the increase in complexity from using an algorithm such as ARIMA is not worth the effort to predict electrical energy consumption or production when alternatives such as the mean model and even the naive model provide similar results at much lower costs, implementation and maintenance, because of the lower complexity involved.
 
 %TODO: compare with other methods (NN and markov)
-
 
 \section{Future work}
 %TODO -Which are the main steps to develop your research in the future ?
@@ -1813,6 +1835,8 @@ First of all I shall remind the reader that the goal of the paper was forecastin
 
 arima is not really suited for high frequency data
 consumption vs production of electrical energy
+since the mean and naive models perform almost as good without the price of complexity.
+
 \newpage
 \bibliographystyle{plain}
 \bibliography{bibliografie}
@@ -1904,6 +1928,29 @@ consumption vs production of electrical energy
     \begin{tabular}{|c|c|c|c|c|c|c|c|c|}
         \hline
         \makecell{\textbf{Time} \\ \textbf{series}} & \textbf{Model}          & \textbf{K} & \makecell{\textbf{Dummies} \\ \textbf{(start:length)}} & \makecell{\textbf{Train} \\ \textbf{days}} & \makecell{\textbf{Test}\\ \textbf{days}} & \makecell{\textbf{Running} \\ \textbf{time {[}s{]}}} & \textbf{RMSE} & \textbf{MAE} \\ \hline
+        \textbf{2hrs pv1} & Arima(1, 0, 0)          & 2 & -    & 5 & 2 & 5.76     & 467.43 & 241.34 \\ \hline
+        \textbf{2hrs pv1} & Arima(1, 0, 0)          & 2 & 16:4 & 5 & 2 & 6.89     & 466.47 & 238.33 \\ \hline
+        \textbf{2hrs pv1} & Arima(1, 0, 0)(1, 0, 0) & 2 & -    & 5 & 2 & 6.94     & 488.49 & 244.64 \\ \hline
+        \textbf{2hrs pv1} & Arima(1, 0, 0)(1, 0, 0) & 2 & 16:4 & 5 & 2 & 6.81     & 489.46 & 242.84 \\ \hline
+        \textbf{2hrs pv1} & Arima(1, 0, 1)          & 2 & -    & 5 & 2 & 6.39     & 467.23 & 242.13 \\ \hline
+        \textbf{2hrs pv1} & Arima(2, 0, 0)          & 2 & -    & 5 & 2 & 6.50     & 467.81 & 241.65 \\ \hline
+        \textbf{2hrs pv1} & Arima(2, 0, 0)          & 2 & 16:4 & 5 & 2 & 6.98     & 466.74 & 239.15 \\ \hline
+        \textbf{}         &                         &   &      &   &   &          &        &        \\ \hline
+        \textbf{1hrs pv1} & Arima(1, 0, 0)          & 2 & -    & 5 & 2 & 5.27     & 460.68 & 237.59 \\ \hline
+        \textbf{1hrs pv1} & Arima(1, 0, 0)          & 2 & 11:6 & 5 & 2 & 5.32     & 460.22 & 234.52 \\ \hline
+        \textbf{1hrs pv1} & Arima(1, 0, 0)(1, 0, 0) & 2 & -    & 5 & 2 & 5.86     & 460.76 & 232.71 \\ \hline
+        \textbf{1hrs pv1} & Arima(1, 0, 0)(1, 0, 0) & 2 & 11:6 & 5 & 2 & 5.62     & 461.12 & 230.87 \\ \hline
+        \textbf{1hrs pv1} & Arima(2, 0, 0)          & 2 & -    & 5 & 2 & 5.27     & 460.61 & 237.27 \\ \hline
+        \textbf{1hrs pv1} & Arima(2, 0, 0)          & 2 & 11:6 & 5 & 2 & 5.29     & 460.10 & 234.58 \\ \hline
+        \textbf{1hrs pv1} & Arima(3, 0, 0)          & 2 & -    & 5 & 2 & 5.78     & 460.68 & 237.09 \\ \hline
+        \textbf{1hrs pv1} & Arima(3, 0, 0)          & 2 & 11:6 & 5 & 2 & 6.19     & 460.30 & 234.80 \\ \hline
+        \textbf{}         &                         &   &      &   &   &          &        &        \\ \hline
+        \textbf{pv1}      & mean                    & - & -    & 7 & 1 & 7.35     & 771.81 & 516.38 \\ \hline
+        \textbf{pv1}      & naive                   & - & -    & 7 & 1 & 7.60     & 936.01 & 445.33 \\ \hline
+        \textbf{pv1}      & snaive                  & - & -    & 7 & 1 & 2,633.70 & 604.05 & 262.57 \\ \hline
+        \textbf{pv1}      & Arima(1, 0, 0)          & 2 & -    & 5 & 2 & 7.90     & 461.61 & 238.26 \\ \hline
+        \textbf{pv1}      & Arima(1, 0, 0)          & 2 & 16:4 & 5 & 2 & 8.38     & 461.27 & 237.10 \\ \hline
+        \textbf{pv1}      & Arima(1, 0, 0)          & 3 & 11:6 & 5 & 2 & 9.02     & 458.45 & 225.91 \\ \hline
     \end{tabular}
     
     \centering
@@ -1916,6 +1963,26 @@ consumption vs production of electrical energy
     \begin{tabular}{|c|c|c|c|c|c|c|c|c|}
         \hline
         \makecell{\textbf{Time} \\ \textbf{series}} & \textbf{Model}          & \textbf{K} & \makecell{\textbf{Dummies} \\ \textbf{(start:length)}} & \makecell{\textbf{Train} \\ \textbf{days}} & \makecell{\textbf{Test}\\ \textbf{days}} & \makecell{\textbf{Running} \\ \textbf{time {[}s{]}}} & \textbf{RMSE} & \textbf{MAE} \\ \hline
+        \textbf{2hrs pv2} & Arima(1, 0, 0)          & 2 & -    & 5 & 2 & 6.33     & 457.75 & 234.55 \\ \hline
+        \textbf{2hrs pv2} & Arima(1, 0, 0)          & 2 & 8:8  & 5 & 2 & 6.12     & 456.56 & 235.44 \\ \hline
+        \textbf{2hrs pv2} & Arima(1, 0, 0)(1, 0, 0) & 2 & -    & 5 & 2 & 6.77     & 479.54 & 238.04 \\ \hline
+        \textbf{2hrs pv2} & Arima(1, 0, 0)(1, 0, 0) & 2 & 8:8  & 5 & 2 & 6.37     & 478.86 & 239.05 \\ \hline
+        \textbf{2hrs pv2} & Arima(2, 0, 0)          & 2 & -    & 5 & 2 & 6.77     & 458.02 & 234.83 \\ \hline
+        \textbf{2hrs pv2} & Arima(2, 0, 0)          & 2 & 8:8  & 5 & 2 & 6.28     & 456.89 & 235.60 \\ \hline
+        \textbf{}         &                         &   &      &   &   &          &        &        \\ \hline
+        \textbf{1hrs pv2} & Arima(1, 0, 0)          & 3 & -    & 5 & 2 & 4.58     & 448.50 & 220.40 \\ \hline
+        \textbf{1hrs pv2} & Arima(1, 0, 0)          & 3 & 13:2 & 5 & 2 & 4.61     & 448.85 & 219.32 \\ \hline
+        \textbf{1hrs pv2} & Arima(1, 0, 0)(1, 0, 0) & 3 & -    & 5 & 2 & 4.66     & 452.64 & 219.20 \\ \hline
+        \textbf{1hrs pv2} & Arima(1, 0, 0)(1, 0, 0) & 3 & 13:2 & 5 & 2 & 5.00     & 453.24 & 219.01 \\ \hline
+        \textbf{1hrs pv2} & Arima(2, 0, 0)          & 3 & -    & 5 & 2 & 4.59     & 448.49 & 220.30 \\ \hline
+        \textbf{1hrs pv2} & Arima(2, 0, 0)          & 3 & 13:2 & 5 & 2 & 5.11     & 448.91 & 219.54 \\ \hline
+        \textbf{}         &                         &   &      &   &   &          &        &        \\ \hline
+        \textbf{pv2}      & mean                    & - & -    & 7 & 1 & 7.27     & 751.67 & 499.84 \\ \hline
+        \textbf{pv2}      & naive                   & - & -    & 7 & 1 & 7.83     & 908.89 & 428.08 \\ \hline
+        \textbf{pv2}      & snaive                  & - & -    & 7 & 1 & 2,862.77 & 590.95 & 255.51 \\ \hline
+        \textbf{pv2}      & Arima(1, 0, 0)          & 3 & -    & 5 & 2 & 8.93     & 448.73 & 220.00 \\ \hline
+        \textbf{pv2}      & Arima(1, 0, 0)          & 3 & 13:2 & 5 & 2 & 9.54     & 448.70 & 220.02 \\ \hline
+        \textbf{pv2}      & Arima(1, 0, 0)          & 2 & 8:8  & 5 & 2 & 8.91     & 451.94 & 232.03 \\ \hline
     \end{tabular}
     
     \centering
