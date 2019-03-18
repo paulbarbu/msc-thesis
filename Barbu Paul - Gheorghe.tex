@@ -1741,7 +1741,7 @@ All the results tables from appendix \ref{resultsappendix} will have the same fo
     \item \textbf{K}: the number of Fourier terms, if none were used, a hyphen is shown instead;
     \item \textbf{Dummies}: The dummies configuration in the form of \texttt{start:length}, where start represents the hour of the start dummy and length how many dummies were used (again, in hours), if none were used, a hyphen is shown instead;
     \item \textbf{Train and test days}: the number of training days for the fitting phase of the algorithm and the number of the test days for when the accuracy was tested;
-    \item \textbf{Running time}: measured in seconds, shows how long the completion of the forecasting took on this data using the current model;
+    \item \textbf{Running time}: measured in seconds, shows how long the fitting and forecasting took on this data using the current model;
     \item \textbf{RMSE and MAE}: the root mean squared error and mean absolute error, as described in section \ref{accuracymeasuressection}.
 \end{itemize}
 
@@ -1799,7 +1799,7 @@ In this case I consider the best model to be the one with the lowest overall err
     \label{dbestpv1}
 \end{figure}
 
-The plot showing the best model for the $ PV1 $ time series is shown in figure \ref{dbestpv1}. It can be seen that the model is far from perfect, but it takes the form of the data, at least the trend of it. The trend is increasing, the reason behind this is the fact that the winter months, when the measurements started do not provide as much sunshine, but as the time progresses and summer draws nearer, the sunshine increases and so does the energy production from the first installed photo voltaic panel. I expect this to hold true for the second one as well.
+The plot showing the best model for the $ PV1 $ time series is shown in figure \ref{dbestpv1}. It can be seen that the model is far from perfect, but it takes the form of the data, at least the trend of it. The trend is increasing, the reason behind this is the fact that the winter months, when the measurements started, do not provide as much sunshine, but as the time progresses and summer draws nearer, the sunshine increases and so does the energy production from the first installed photo voltaic panel. I expect this to hold true for the second one as well.
 
 The results produced by the found models on the $ PV2 $ data can be seen in table \ref{pv2results}.
 The best model in this case is $ ARIMA(1,0,0) $ with three Fourier terms for modeling the seasonality in the data. The plot created by forecasting the $ PV2 $ data with this model is drawn in figure \ref{dbestpv2}. As noted earlier this data series also has an increasing trend and the model correctly follows this shape.
