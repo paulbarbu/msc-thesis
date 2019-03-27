@@ -1860,7 +1860,7 @@ First of all I shall remind the reader that the goal of the paper was forecastin
 
 The goal of analyzing and forecasting has been achieved with the help of specific tools, such as those provided by the R programming language and its ecosystem. Namely the \texttt{forecast} package and the \texttt{ggplot2} package, the former package I have used for its ARIMA model implementation and the latter I have used for the plotting functionalities it provides. The route to understand forecasting methods that I have chosen is a visual one, based on plots, so creating them quickly and accurately was of utmost importance.
 
-Though not mathematically exact, and not always based on statistical tests (as noted in the previous section) the results of the work do seem to be reasonable and further usable to predict electrical energy consumption and production. The results are comparable with other methods applied on the same data set and even better then the artificial neural networks approach.
+Though based on the graphical method of choosing the model's parameters, the results of the work do seem to be reasonable and further usable to predict electrical energy consumption and production. The results are comparable with other methods applied on the same data set and even better then the artificial neural networks approach.
 
 My aim was not to produce exact forecasts, but to understand the principles behind time series forecasting, which I explained in this work, and to show that producing usable forecasts from electrical consumption and production data is possible, with the hope that these forecasting principles could be used in the future for smart devices and smart homes to optimize the consumption of electricity, or any other resource for that matter,  in order to ensure a better, greener, healthier environment. 
 
@@ -1872,11 +1872,11 @@ The analyzed data set was composed of five time series, three representing the e
 
 Both groups of time series have similarities and differences. They are similar in the fact that both are influenced by the time of day, but the difference between them comes from the way that time influences in different ways the consumption and production as shown by the seasonal and seasonal sub-series plots. The consumption of energy peaks in the late morning and is independent of the time of year while the production of electrical energy peaks during the afternoon and is heavily influenced by the time of year since during the summer months the sun shines both brighter and the angle of incidence of the light is the widest, positively influencing the photo voltaic panels and implicitly the production of electrical energy.
 
-Regarding the errors of the algorithm...
+Regarding the errors of the algorithm, the results show that the benchmark methods, much easier to implement and to understand, in some basic cases, provide comparable results. This is a disadvantage for the ARIMA model in this scenario, but provides insights into how we can use similar ideas to achieve the same end result, that is to create some forecasts for a time series using much less resources. Please note that this substitution of ARIMA with the benchmark methods \texttt{mean}, \texttt{naive}, \texttt{snaive} may be dependent on the data and cannot be generalized to other data sets without proper research.
 
-since the mean and naive models perform almost as good without the price of complexity.
-
-In conclusion, we can use ARIMA, but there are better alternatives and maybe it is better suited for not-so high frequency data.
+In conclusion, I declare this research as successful, since the goal of understanding forecasting of time series through ARIMA has been met.
+I have successfully used the method to forecast electricity demand and production by analyzing the five data series presented earlier. The results are marginally better than the ones produced by the neural network models, but worse than the ones produced by the Markov models. So there is also room for improvement.
+Overall we can use ARIMA to predict electrical energy demand and production, but there are better alternatives and the algorithm is suited for lower frequency data.
 
 \newpage
 \bibliographystyle{plain}
