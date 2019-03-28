@@ -1875,8 +1875,10 @@ Both groups of time series have similarities and differences. They are similar i
 Regarding the errors of the algorithm, the results show that the benchmark methods, much easier to implement and to understand, in some basic cases, provide comparable results. This is a disadvantage for the ARIMA model in this scenario, but provides insights into how we can use similar ideas to achieve the same end result, that is to create some forecasts for a time series using much less resources. Please note that this substitution of ARIMA with the benchmark methods \texttt{mean}, \texttt{naive}, \texttt{snaive} may be dependent on the data and cannot be generalized to other data sets without proper research.
 
 In conclusion, I declare this research as successful, since the goal of understanding forecasting of time series through ARIMA has been met.
-I have successfully used the method to forecast electricity demand and production by analyzing the five data series presented earlier. The results are marginally better than the ones produced by the neural network models, but worse than the ones produced by the Markov models. So there is also room for improvement.
-Overall we can use ARIMA to predict electrical energy demand and production, but there are better alternatives and the algorithm is suited for lower frequency data.
+I have successfully used the method to forecast electricity demand and production by analyzing the five data series presented earlier.
+I consider the final method, explained in the methodology chapter, as being an innovative one since I had to think out of the box in order to reach a good model, which was done by combining the ARIMA algorithm with external regressors such as dummies and Fourier terms. Also, in order to feasibly run the algorithm, some optimizations needed to be made, down sampling and parallelization after splitting the data in chunks.
+The results are marginally better than the ones produced by the neural network models, but worse than the ones produced by the Markov models. So there is also room for improvement.
+Overall we can use ARIMA to predict electrical energy demand and production, but there are better alternatives and the algorithm is best combined with external regressors such as dummy variables and Fourier terms for describing the seasonality of the data.
 
 \newpage
 \bibliographystyle{plain}
