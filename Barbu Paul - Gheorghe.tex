@@ -40,9 +40,9 @@
 
 \usepackage[toc,page]{appendix}
 
-%\usepackage{draftwatermark}
-%\SetWatermarkText{Draft}
-%\SetWatermarkScale{1}
+\usepackage{draftwatermark}
+\SetWatermarkText{DRAFT}
+\SetWatermarkScale{1}
 
 \author{Barbu Paul - Gheorghe}
 
@@ -106,17 +106,17 @@ The current dissertation thesis aims to develop an understanding of time series 
 
 Electric energy consumption is something that we take for granted. Even if actively consuming electricity while using a desktop computer, by lightning our rooms or by passively consuming electric energy while our smart-phones are in standby mode it is safe to say that we use electric energy all the time. That is, without even considering industrial use-cases, where up times of 24 hours 7 days a week are expected from most factories. As such, I consider that electricity is a much needed depletable resource and, as is the case with any such resource that we have to generate, we also have to know how we use it in order to better manage it.
 
-Considering the fact that electricity domestic consumption has been steadily increasing (with the exception of 2009, maybe because of the financial crisis and other hard to explain factors) \cite{enerdata} for the world as a whole, it is past time to take note of our consumption patterns and start adapting them in order to reduce the footprint we leave on the medium and to minimize the waste of electrical energy, which cannot be reliably stored in high amounts.
+Considering the fact that domestic electricity consumption has been steadily increasing (with the exception of 2009, maybe because of the financial crisis and other hard to explain factors) \cite{enerdata} for the world as a whole, it is past time to take note of our consumption patterns and start adapting them in order to reduce the footprint we leave on the medium and to minimize the waste of electrical energy, which cannot be reliably stored in high amounts.
 
 Hence this work focuses on finding the patterns in the electrical energy consumption and predicting them using ARIMA models, with the hopes that being able to tell how consumers will use the energy in the near future, home owners, companies and governments may optimize their behavior and the import and export of electricity.
 
-This work will focus on a single set of data for making the forecasts about energy consumption, although the principles, models and the way of thinking presented herein should be general enough to be applicable for other time-series data sets that are out there. What will change is, of course, the parameters given to the used ARIMA models and the interpretation of the results.
+This work will focus on a single set of data for making the forecasts about energy consumption and production, although the principles, models and the way of thinking presented herein should be general enough to be applicable for other time-series data sets that are out there. What will change is, of course, the parameters given to the used ARIMA models and the interpretation of the results.
 
 The Auto Regressive Integrated Moving Average algorithm was chosen to make the predictions since it is a combination of several other models and can generalize them, covering a wide range of possibilities through its parameters. Being a very general algorithm for time-series predictions it is also widely used, not only for electric energy consumption \cite{bouzerdoum}, but also for finance and socio-political data \cite{fpp2}.
 
 This work will present how the ARIMA models work and the statistical machinery around them from my experience while forecasting one data set, comprised of five different time-series. The data set has been used in other works as well, one of which was done here at "Lucian Blaga" University of Sibiu, in the same department. The paper, called "Loads management based on Photovoltaic and Energy Storage System" \cite{feilmeier}, studies the very same idea that I set out to study in this work, the difference being that the author uses artificial neural networks to model and predict the given data. So given the fact that this data has already been analyzed, we have the opportunity for comparing the performance of Artificial Neural Networks, computed by Stefan Feilmeier, with the performance of ARIMA, computed in this paper by myself.
 
-The five time-series in the dataset are all gathered at the same time, starting with the beginning of year 2015 on 1st of January. Each data point represents the current Watt usage of a home, gathered every five minutes during a period of five months, so until the month of May 2015 (inclusive), tallying up to around 150 days of data, each consisting of 288 individual sampling points. Although there is plenty of data to work with, only three of the time-series represent actual consumption, on each of the three phases of three phase current (Ph1, Ph2 and Ph3). The other two time-series (namely: PV1 and PV2) are actually the number of Watts produced by two photo-voltaic panels mounted on the same house.
+The five time-series in the dataset are all gathered at the same time, starting with the beginning of year 2015 on 1st of January. Each data point represents the current Watt usage of a home, gathered every five minutes during a period of five months, so until the month of May 2015 (inclusive), tallying up to around 150 days of data, each consisting of 288 individual sampling points. Although there is plenty of data to work with, only three of the time-series represent actual consumption, on each of the three phases of three phase current (Ph1, Ph2 and Ph3). The other two time-series (namely: PV1 and PV2) are actually the number of Watts produced by two photovoltaic panels mounted on the same house.
 Because of the nature of the data, there should be no difference in forecasting the two groups of time-series, it doesn't matter if the energy is gathered or consumed, the prediction work-flow and mechanisms used in this paper should remain generally applicable, only the semantics of the conclusions will change, instead of saying "I predict there will be consumed X Watts over the next period of time", one would instead say: "I predict there will be generated X Watts of energy over the next period of time".
 
 The current state of the time-series algorithms and available statistical tools in the programming communities have pushed me to use the R programming language \footnote{\url{https://www.r-project.org/}} in order to carry out the task of this dissertation paper, because R seems to be the best and among the most used \cite{Rdesign} choice for interactive analysis of data and statistical studies, having over 13000 (thirteen thousand) packages available online\footnote{At the beginning of 2019, according to: \url{https://cran.r-project.org/web/packages/}}, packages that can be used to carry out different tasks, from string manipulation and XML parsing, to forecasting time-series data.
@@ -133,7 +133,7 @@ This paper has set as its goal to predict the electrical energy consumption and 
 
 The underlaying problem that pushed me to choose this kind of a project is the fact that electrical energy cannot be stored in high amounts and, as a consequence, countries and governments need to understand the patterns of consumption and production of their residents in order to optimize the import and export of electrical energy. Through such optimizations the price of electricity could be reduced, which is a benefit to the domestic consumer.
 
-We also have to keep in mind that there is an increase in electrical energy consumption worldwide, according to Enerdata \cite{enerdata} and their plot of electricity demand which can be seen in figure \ref{energytrend}. All the while there is an increasing interest for green energy, while forecasting in itself doesn't help on this front of the problem, it can help to predict which households might be suited for photo voltaic panels installation in order to further reduce the carbon dioxide footprint. 
+We also have to keep in mind that there is an increase in electrical energy consumption worldwide, according to Enerdata \cite{enerdata} and their plot of electricity demand which can be seen in figure \ref{energytrend}. All the while there is an increasing interest for green energy, while forecasting in itself doesn't help on this front of the problem, it can help to predict which households might be suited for photovoltaic panels installation in order to further reduce the carbon dioxide footprint. 
 
 \begin{figure}[h]
     \centering
@@ -142,16 +142,16 @@ We also have to keep in mind that there is an increase in electrical energy cons
     \label{energytrend}
 \end{figure}
 
-In what follows, apart from the word "forecasting" I will also use the words "model" and "algorithm". Most of the time I will use the two words interchangeably, for example "ARIMA model" or "ARIMA algorithm", but, if being pedantic is desired, their meaning is different since "model" refers to the mathematical or statistical model that is the basis for the later-developed algorithm. We can look at it this way: the model is the building block of the algorithm. The algorithm on the other hand being the series of steps taken to solve a particular problem.
+In what follows, apart from the word "forecasting" I will also use the words "model" and "algorithm". Most of the time I will use the two words interchangeably, for example "ARIMA model" or "ARIMA algorithm", but, if being pedantic is desired, their meaning is different since "model" refers to the mathematical or statistical model that is the basis for the later-developed algorithm. We can look at it this way: the model is the building block of the algorithm. The algorithm on the other hand is the series of steps taken to solve a particular problem.
 
-In the end I'd like to be able to state that for a given time frame in the future a household will consume or generate a certain amount of energy with 80\% or even 95\% confidence.
+In the end I'd like to be able to predict that, for a given time frame in the future, a household will consume or generate a certain amount of energy with 80\% or even 95\% confidence.
 
 \section{Structure of the dissertation}
 
 The paper is arranged in two chapters, the present one, which aims to explain the theoretical concepts behind time-series forecasting using ARIMA and to give insights to the statistical concepts underlaying the decisions taken throughout the research phase.
 This chapter should present the current state of the domain and the advances in forecasting time-series data, each concept occupying its own section. A cursory look at the R programming language and its ecosystem of statistical tools and Integrated Development Environments (or in short: IDEs) will be provided. Then an in depth explanation will be provided to each and every one of the main concepts involved in the process of forecasting electrical energy demand using the ARIMA model.
 
-The second chapter shall disseminate the actual research work flow that I applied in solving the problem of electricity demand forecasting with ARIMA. The concepts explained in this second chapter are using the theoretical basis introduced in the first chapter.
+The second chapter shall disseminate the actual research workflow that I applied in solving the problem of electricity demand forecasting with ARIMA. The concepts explained in this second chapter are using the theoretical basis introduced in the first chapter.
 Here I will present the results of my work and compare the ARIMA algorithm to previous work done on the same data but by using Artificial Neural Networks (or in short ANNs) by Stefan Feilmeier.
 
 The second chapter will also shine some light on why R is one of the best tools to use in such a context, where easily accessible statistical instruments are of utmost importance. This will be accomplished by showing and explaining the key code snippets of the research, while to full source code will be available on the accompanying CD.
@@ -164,9 +164,9 @@ Taking a bird's eye view of the problem, it is no different than what we are use
 
 Similarly, for electrical energy demand prediction we can have models that take into account several predictor variables, such as the time of day, the temperature, the season and maybe other social elements.
 \begin{itemize}
-    \item Time of day is important in prediction because in the case of electrical energy consumption we could imagine a scenario where the consumption would be highest in the morning when everyone gets ready for work or school and then decrease a bit, only to increase back again during the evenings when everybody returns home. The same logic applies to electricity production by photo-voltaic panels, their peak would be at noon, when the sun shies brightest and the light's angle of incidence is the widest;
+    \item Time of day is important in prediction because in the case of electrical energy consumption we could imagine a scenario where the consumption would be highest in the morning when everyone gets ready for work or school and then decrease a bit, only to increase back again during the evenings when everybody returns home. The same logic applies to electricity production by photovoltaic panels, their peak would be at noon, when the sun shies brightest and the light's angle of incidence is the widest;
     \item The outside temperature is also important in countries that mostly use electrical based heating and cooling. In the summer months, when it's hot outside, electrical energy will be used to power air conditioning units, while in the winter months when it's cold outside, energy will be used for heating our homes;
-    \item The season is the common element that influences both of the above. We don't expect photo-voltaic panels to be of much use even during noon hours in an winter month (because there is a high chance they will be covered with snow) or on rainy days when the sky is overcast.
+    \item The season is the common element that influences both of the above. We don't expect photovoltaic panels to be of much use even during noon hours in an winter month (because there is a high chance they will be covered with snow) or on rainy days when the sky is overcast.
 \end{itemize}
 
 In this paper we will also inspect this multiple regression route, where we will use several external regressors as predictors of future energy consumption or production, but also several basic forecasting methods, such as the naive method, seasonal naive, and the mean method as baselines for measuring the prediction accuracy when using more complex models such as ARIMA, Seasonal ARIMA (short: SARIMA) or (S)ARIMAX (ARIMA with external regressors and possibly seasonality).
@@ -231,7 +231,7 @@ Where:
     \item $ P $, $ D $, $ Q $: are the equivalent of their lower-case version, but they define the orders of the autoregressive, differencing and moving average for the seasonal part of the data;
     \item $ \Phi_{P}y'_{t-m-P} $: one or more Seasonal Auto Regressive terms (SAR), their number is defined by the $ P $ parameter of the SARIMA model and are weighted by the $ \Phi_{P} $ coefficients which are computed during the fitting phase of the SARIMA model;
     \item $ \Theta_{Q}\varepsilon_{t-m-Q} $: one or more Seasonal Moving Average terms (SMA), again, their number is defined by the $ Q $ parameter of the ARIMA model and are weighted by the $ \Theta_{Q} $ coefficients which are computed during the fitting phase of the SARIMA model, similarly to the SAR coefficients $ \Phi_{P} $;
-    \item $ m $: this parameter is in fact a pseudo one, usually it cannot vary, being fixed to the seasonal period of the data. For example a birthday occurs yearly, weekends occur weekly, and the examples may continue for monthly events and even quarterly for business and data belonging to the economics domain.
+    \item $ m $: this is in fact a pseudo-parameter, usually it cannot vary, being fixed to the seasonal period of the data. For example a birthday occurs yearly, weekends occur weekly, and the examples may continue for monthly events and even quarterly for business and data belonging to the economics domain.
 \end{itemize}
 
 The $ ARIMA(p, d, q)(P, D, Q)[m] $ model is also known as SARIMA \cite{berkleysarimamodels}.
@@ -239,7 +239,7 @@ The $ ARIMA(p, d, q)(P, D, Q)[m] $ model is also known as SARIMA \cite{berkleysa
 \subsection{(S)ARIMAX} \label{sarimaxsection}
 The ARIMA and Seasonal ARIMA models include information only about the time-series itself in the model. No other external information can be used.
 
-When forecasting electrical energy consumption it is important to be able to adjust the predictions according to the time of day for example. Since the sun is shining the brightest at noon, it is safe to say that the most electrical energy will be generated around that time by the photo voltaic panels installed on one's house. For consumption estimation it would be ideal to have also temperature data, in the hot days we would use energy to cool our houses and in the cold days energy is used to heat them. If the temperature data is not available (we should also note that it should be available in the future, when we need to make our electrical energy consumption predictions) then it might be sufficient to use the calendar month for which we should forecast the electricity demand and from there we can infer if it is a summer month or a winter month, hence having a general sense of the temperature.
+When forecasting electrical energy consumption it is important to be able to adjust the predictions according to the time of day for example. Since the sun is shining the brightest at noon, it is safe to say that the most electrical energy will be generated around that time by the photovoltaic panels installed on one's house. For consumption estimation it would be ideal to have also temperature data, in the hot days we would use energy to cool our houses and in the cold days energy is used to heat them. If the temperature data is not available (we should also note that it should be available in the future, when we need to make our electrical energy consumption predictions) then it might be sufficient to use the calendar month for which we should forecast the electricity demand and from there we can infer if it is a summer month or a winter month, hence having a general sense of the temperature.
 
 The (S)ARIMAX algorithm allows us to incorporate such data into the analysis. The short form comes from the longer one: Seasonal ARIMA with eXternal regressors, the "X", coming from "external regressors".
 
@@ -279,7 +279,7 @@ Rob J. Hyndman and George Athanasopoulos list several useful predictors \cite{fp
     \item Seasonal dummy variables: household electrical energy consumption might be influenced by public holidays as well, since most people do not have to work on public holidays we might expect an increase in electricity demand during those holidays Easter, Christmas, National Day, etc. when people are more prone to staying at home. These events may be modeled as seasonal dummy variables, as well. They only influence the analyzed data around the time they take place, but they do it periodically, in the case of may enumeration, yearly. We could just as well imagine scenarios where the seasonality is weekly, or quarterly.
 \end{itemize}
 
-The authors of the aforementioned book, also note that one need not use seasonal dummies when the seasonal period is very long. Instead one can use terms of the Fourier series \cite{fpp2dhr} to model longer and more complex seasonality. The intuitive explanation given to this fact is the the Fourier terms can smooth a little bit the predicted time series and at the same time, take the shape of it, akin to using the Fourier series in signal processing or data compression.
+The authors of the aforementioned book, also note that one need not use seasonal dummies when the seasonal period is very long. Instead one can use terms of the Fourier series \cite{fpp2dhr} to model longer and more complex seasonality. The intuitive explanation given to this fact is that the Fourier terms can smooth a little bit the predicted time series and at the same time, take the shape of it, akin to using the Fourier series in signal processing or data compression.
 
 All of the presented variation on the ARIMA algorithm will be used in my research for the best model that fits the data and predicts it most accurately.
 
@@ -292,11 +292,11 @@ One widely used method for prediction purposes are the Markov Models, as shown i
 Then there are Artificial Neural Networks as researched by Stefan Feilmeier in \cite{feilmeier}, where he tackles the same subject area that I am interested in in this paper, namely predicting the electrical energy consumption and production of a household over a period of time.
 
 There are other authors such as M. Bouzerdoum et al that investigated a hybrid model (SARIMA–SVM) for short-term power forecasting
-of a small-scale grid-connected photo voltaic plant \cite{bouzerdoum}. Their research uses the SARIMA algorithm, whose results are further refined by by a Support Vector Machine model.
+of a small-scale grid-connected photovoltaic plant \cite{bouzerdoum}. Their research uses the SARIMA algorithm, whose results are further refined by by a Support Vector Machine model.
 
 Pedro and Coimbra, in 2012, have analyzed five different models: Persistent, ARIMA, k Nearest Neighbors (or shorter: kNN), ANNs and Genetic Algorithm optimized ANNs. They reported the best results with ANNs and Genetic Algorithm (or in short form: GA) optimized ANNs \cite{pedrocoimbra}.
 
-Ding and others have proposed in 2001 an ANN system with forecasts a full day into the future the power output of a photo voltaic plant. They report that improvements can be made if the day of the forecast is selected to match weather data \cite{ding2011ann}. This approach of selecting the day based on weather data is similar to using dummies in ARIMAX models, we would have one set of dummies for sunny days and another one for cloudy days.
+Ding and others have proposed in 2001 an ANN system with forecasts a full day into the future the power output of a photovoltaic plant. They report that improvements can be made if the day of the forecast is selected to match weather data \cite{ding2011ann}. This approach of selecting the day based on weather data is similar to using dummies in ARIMAX models, we would have one set of dummies for sunny days and another one for cloudy days.
 
 The scientific literature presents itself with quite a few options that one can use to efficiently and accurately predict electrical energy consumption and production, ranging from Artificial Neural Networks and k-Nearest Neighbors to Auto Regressive Integrated Moving Average (including its variations with seasonality and exogenous variables).
 
@@ -310,11 +310,20 @@ Although not state of the art, these methods are the basic building blocks of ot
 
 The three benchmark methods \cite{fpp2simplemethods} that I used to create baseline predictions are:
 \begin{enumerate}
-    \item Naive: use the last available data point as a forecast for the next data point. The equivalent equation would be: \[ y_{t+1} = y_{t} \]
+    \item Naive: use the last available data point as a forecast for the next data point. The equivalent equation would be: 
+\begin{equation}
+    y_{t+1} = y_{t}
+\end{equation} 
     This method is also known as the "random walk model" and can be compared to answering the question "What will tomorrow be like?" with: "Tomorrow will be a lot like today" since we only have information about the past and present and because we infer that the near future cannot change that drastically, we infer that it will be the same as the present;
-    \item Seasonally naive: similarly to the naive method, this method will forecast the next value to be exactly the same value from the previous season. Mathematically this is: \[ y_{t+1} = y_{t+1-m} \] 
+    \item Seasonally naive: similarly to the naive method, this method will forecast the next value to be exactly the same value from the previous season. Mathematically this is:
+\begin{equation}
+    y_{t+1} = y_{t+1-m}
+\end{equation} 
     Intuitively, if $ m $ (the seasonal period) is one week, is like answering the question "What will tomorrow (Wednesday) be like?" with: "Tomorrow (Wednesday) will be exactly like the previous week's Wednesday", there being no reason to believe that things will change dramatically from one week to the other;
-    \item Average: finally, the average method takes all known past values, averages them together and predicts the future values using that result. Mathematically: \[ y_{t+1} = \frac{y_{1} + \cdots + y_{t}}{T} \]
+    \item Average: finally, the average method takes all known past values, averages them together and predicts the future values using that result. Mathematically:
+\begin{equation}
+    y_{t+1} = \frac{y_{1} + \cdots + y_{t}}{T}
+\end{equation}
     Where $ T $ is the number of previous observations.
 \end{enumerate}
 
@@ -323,20 +332,20 @@ The three benchmark methods \cite{fpp2simplemethods} that I used to create basel
 In this section I will talk more about the technology I chose to pursue this research and the rationale behind this decision.
 While the choice now may seem very obvious, I shall not fall victim to hindsight bias \cite{hindsightbias} and believe that I should have chosen it sooner and faster.
 
-This research was preceded by a semester project \footnote{Which I made publicly available under the MIT license at: \url{https://github.com/paulbarbu/arima-energy-prediction}} during the first year of the master's degree (fall of 2017) and for that project, the tool of choice, unfortunately, was Java. The reason for that is the fact that everybody at the university understands Java, since it is taught and used in some of the bachelor courses. The project's goal was to use ARIMA to predict energy consumption on the same data that I will use for this research. The results of that project were, at best, modest. Much of the outcome is due to the fact that Java, as far as I know, lacks proper statistical analysis tools, so the ecosystem for the needed instruments is rather poor. Java has a very rich ecosystem, but apparently it lacks in the area of statistical tools. Of course the ARIMA libraries found and used by myself were also of low quality, at least from the point of view of the documentation. They were laking the instructions on how to use them, regardless of their internal quality, if there is no user manual, the internal quality has no value since it cannot be taken advantage of.
+This research was preceded by a semester project \footnote{Which I made publicly available under the MIT license at: \url{https://github.com/paulbarbu/arima-energy-prediction}} during the first year of the master's degree (fall of 2017) and for that project, the tool of choice, unfortunately, was Java. The reason for that is the fact that everybody at the university understands Java, since it is taught and used in some of the bachelor courses. The project's goal was to use ARIMA to predict energy consumption on the same data that I will use for this research. The results of that project were, at best, modest. Much of the outcome is due to the fact that Java, as far as I know, lacks proper statistical analysis tools, so the ecosystem for the needed instruments is rather poor. Java has a very rich ecosystem, but apparently it lacks in the area of statistical tools. Of course the ARIMA libraries found and used by myself were also of low quality, at least from the point of view of the documentation. They were lacking the instructions on how to use them, regardless of their internal quality, if there is no user manual, the internal quality has no value since it cannot be taken advantage of.
 
-Another reason for the poor outcome of the project is based on Java's compilable nature. In a development session with Java one has to write code, compile it, run the application and only then see the results. Notice how the writing of the code and running of the code phases are separated by another "compilation" step. The problem with this intermediary step is the fact that it is a mental hurdle. The work flow with Java is not continuous at all, making small adjustments, regardless of their impact, means that there will be empty time slots taken by the compilation step until the results of the adjustments will be observable.
+Another reason for the poor outcome of the project is based on Java's compilable nature. In a development session with Java one has to write code, compile it, run the application and only then see the results. Notice how the writing of the code and running of the code phases are separated by another "compilation" step. The problem with this intermediary step is the fact that it is a mental hurdle. The workflow with Java is not continuous at all, making small adjustments, regardless of their impact, means that there will be empty time slots taken by the compilation step until the results of the adjustments will be observable.
 
-This behavior is in contrast with the Read-Eval-Print-Loop (or REPL for short) that LISP-like languages have adopted and is specific of newer scripting programming languages such as Python and R \cite{hey2014computing}. In a REPL environment, the programmer can write single lines of code, without ever having to write the full program, the main function and other boilerplate code. Individual lines of code may be evaluated and their results inspected at once, without having to interrupt the programmer's work flow. This kind of programming enables quick exploration of ideas and rapid development of proof-of-concept applications.
+This behavior is in contrast with the Read-Eval-Print-Loop (or REPL for short) that LISP-like languages have adopted and is specific of newer scripting programming languages such as Python and R \cite{hey2014computing}. In a REPL environment, the programmer can write single lines of code, without ever having to write the full program, the main function and other boilerplate code. Individual lines of code may be evaluated and their results inspected at once, without having to interrupt the programmer's workflow. This kind of programming enables quick exploration of ideas and rapid development of proof-of-concept applications.
 
-This is the main reason for which, during the semester project I explored programming tools such as the Jupyter Notebook \footnote{\url{https://jupyter.org/}} for Python\footnote{\url{https://www.python.org/}} and RStudio\footnote{\url{https://www.rstudio.com/}} for R. While the former tool is not a complete Integrated Development Environment (or IDE for short), it has all the necessary features to allow for decent work to be carried through, the latter tool is indeed a complete IDE. Both tools center around the idea that the programming languages they are designed for are scripting programming languages and allow the programmer access to an interactive medium, where the results of running even individual lines of code are immediately available. A huge advantage of this is that the tools even produce instant plots of the data, allowing quick, graphical, visualization of results. This is the biggest advantage of such programming environments. This superiority is nicely exposed by Bret Victor in his 2012 talk "Inventing on Principle" \footnote{\url{https://vimeo.com/36579366}}, where small changes and even big ones have an immediate outcome and are visible right away.
+This is the main reason for which, during the semester project I explored programming tools such as the Jupyter Notebook \footnote{\url{https://jupyter.org/}} for Python\footnote{\url{https://www.python.org/}} and RStudio\footnote{\url{https://www.rstudio.com/}} for R. While the former tool is not a complete Integrated Development Environment (or IDE for short), it has all the necessary features to allow for decent work to be carried through, the latter tool is indeed a complete IDE. Both tools center around the idea that the programming languages they are designed for are scripting programming languages and allow the programmer access to an interactive medium, where the results of running even individual lines of code are immediately available. A huge advantage of this is that the tools even produce instant plots of the data, allowing quick graphical visualization of results. This is the biggest advantage of such programming environments. This superiority is nicely exposed by Bret Victor in his 2012 talk "Inventing on Principle" \footnote{\url{https://vimeo.com/36579366}}, where small changes and even big ones have an immediate outcome and are visible right away.
 
 \subsection{R} \label{rtheorysection}
 
 After having some experience with both R and Python on the tooling side, I chose to use R as a programming language for the current research because it was specifically designed for statisticians and their needs. Having higher chances to include the needed algorithms and methods used for making time-series predictions. The biggest advantage of R was the "forecast" package \cite{rforecastpackage} \cite{automatictimeseriesforecasting} which provides an implementation for fitting of ARIMA models and their seasonal and external regressors variations.
 
 Another favorable argument for choosing R, is the RStudio IDE, which is easily installable and once can start working right away.
-A screen shot of RStudio's main window can be seen in figure \ref{rstudiomainwindow}. The upper left corner is reserved for writing full programs, of which, one or several instructions can be run separately into the console in the lower left corner. The results of such individual executions will also be displayed right away into the console. If graphical representation such as plots are created, they will show up on the lower right corner of the window, without having to open the files from the file system or to interrupt one's work flow. The documentation of the used functions can also be accessed in the lower right corner, with the same philosophy in mind, continuous work flow and less task and context switching for the programmer. Finally, the upper right corner of the window is the place where the programmer may access the history of his executions and the variables in the current environment, all in real time.
+A screenshot of RStudio's main window can be seen in figure \ref{rstudiomainwindow}. The upper left corner is reserved for writing full programs, of which, one or several instructions can be run separately into the console in the lower left corner. The results of such individual executions will also be displayed right away into the console. If graphical representation such as plots are created, they will show up on the lower right corner of the window, without having to open the files from the file system or to interrupt one's workflow. The documentation of the used functions can also be accessed in the lower right corner, with the same philosophy in mind, continuous workflow and less task and context switching for the programmer. Finally, the upper right corner of the window is the place where the programmer may access the history of his executions and the variables in the current environment, all in real time.
 
 \begin{figure}[h]
     \centering
@@ -390,7 +399,9 @@ In what is left of this chapter, I am going to explain each concept that I have 
 I'm going to start with the concept of seasonality, which is an important one for longer time series, like I have here. As a reminder the time-series I'm going to inspect are 150 days long, with 288 observations every day.
 
 Seasonality represents a concept similar to periodicity in mathematics, it's just named differently. In a nutshell it means that the values of a time series will repeat themselves season after season. The mathematical equivalent of this is exhibited in:
-\[y_{t+m} \approx y_{t}\]
+\begin{equation}
+    y_{t+m} \approx y_{t}
+\end{equation}
 Where $ t $ is the time when the current observation is acquired and $ m $ is the period. For example if $ m $ is 24 hours, that means that the time series will repeat itself daily, meaning that every hour will be almost the same in regards to the same hour of the last day. For electricity consumption, one could say that the consumption for 12:00 PM will be similar to the demand of the 12th hour of the previous day, and the demand for the evening hour 20:00, will be the same or very similar to the consumption of the last day at 20:00.
 
 Because seasonal patterns tend to be selected from a fixed set, one might try to create a classification of them \cite{hyndmanseasonalperiods}, which can be seen in table \ref{frequentSeasonalPeriods}.
@@ -489,7 +500,7 @@ An example of cyclic data can be seen in figure \ref{dlynx}. Which shows the ann
     \label{dlynx}
 \end{figure}
 
-The cycles in the data are aperiodic and are caused when the population of lynxes increases and is too large to be able to feed, at that point they stop breeding and the population starts to decrease, after the regeneration of food sources, the population will, again, grow. After this point the cycle starts repeating, but with uncertainty with regards to each phase's length, making the time series cyclic, not seasonal \cite{fpp2stationarity}.
+The cycles in the data are aperiodic and are caused when the population of lynxes increases and is too large to be able to feed, at that point they stop breeding and the population starts to decrease, after the regeneration of food sources, the population will grow again. After this point the cycle starts repeating, but with uncertainty with regards to each phase's length, making the time series cyclic, not seasonal \cite{fpp2stationarity}.
 
 \section{Stationarity and non-stationarity} \label{stationaritysection}
 
@@ -497,7 +508,7 @@ Data stationarity is an assumption that is the basis of many time-series algorit
 
 Data is said to be stationary when its statistical properties do not change regardless of the time window used to look at the data. This also means that statistical parameters of a time series, such as mean and variance, will be stable over time. \cite{fpp2stationarity}
 
-What these statements lead to is that seasonal time-series are not stationary, their properties changing depending on which time they are observed at, if the season is different, so is, for example, the average electricity production from photo voltaic panels. If we look at summer data for electricity generation we might see that it is, on average, higher than in winter months. All because electricity production is favored by the sunny and non-cloudy days of summer, while in the winter electricity is not produced as much by photo voltaic panels since the sky is more often than not, overcast. Hence the winter electricity production should, on average, drop.
+What these statements lead to is that seasonal time-series are not stationary, their properties changing depending on which time they are observed at, if the season is different, so is, for example, the average electricity production from photovoltaic panels. If we look at summer data for electricity generation we might see that it is, on average, higher than in winter months. All because electricity production is favored by the sunny and non-cloudy days of summer, while in the winter electricity is not produced as much by photovoltaic panels since the sky is more often than not, overcast. Hence the winter electricity production should, on average, drop.
 
 Other time-series that present increasing or decreasing trends, such as the data shown in figure \ref{energytrend} for the energy consumption plot are not stationary either. They are dependent on time, if we look at the data in different time slots, we're going to see, again, different means, depending on which years we choose to inspect.
 
@@ -568,7 +579,7 @@ y"_{t} &= y'_{t} - y'_{t-1} \\
 
 In the case of second order differences, the resulting time series will be $ n - 2 $ terms long. Intuitively, these second order differences model how the change in a variable changes \cite{fpp2stationarity}. Just as the mathematical counterpart does, if we differentiate the speed of an object, we get its acceleration.
 
-Here lies the key for the "Integrated" part of Auto Regressive Integrated Moving Average algorithm. Above I specified that ARIMA should work only on stationary data, in fact this is true only or the ARMA algorithm, which cannot perform the differences that I presented in equations \ref{differencingequation} and \ref{2nddifferencingequation}. ARIMA on the other hand, through the $ I $ term, takes an integrated data series and differences it, making it stationary. Since differences are the exact opposite of integrations, this makes sense, ARIMA takes the integrated data, differences it, and theoretically speaking, feeds it later to the ARMA algorithm.
+Here lies the key for the "Integrated" part of Auto Regressive Integrated Moving Average algorithm. Above I specified that ARIMA should work only on stationary data, in fact this is true only for the ARMA algorithm, which cannot perform the differences that I presented in equations \ref{differencingequation} and \ref{2nddifferencingequation}. ARIMA on the other hand, through the $ I $ term, takes an integrated data series and differences it, making it stationary. Since differences are the exact opposite of integrations, this makes sense, ARIMA takes the integrated data, differences it, and theoretically speaking, feeds it later to the ARMA algorithm.
 
 Because the standard way of looking at ARIMA is not in stages, ARIMA applies differences and then ARMA takes over and continues the computations, but as a whole, I'm going forward with the spoken and written convention
 that ARIMA is applied to stationary data, although the data can be made stationary by ARIMA itself.
@@ -624,7 +635,7 @@ In figure \ref{nonstationarityexamples} I showed several examples of non-station
 
 Examples of data transformations are given in \cite{fpp2transformations} and they include transformations such as:
 \begin{itemize}
-    \item Calendar transformations: used when examining monthly patterns, because the number of days in a month is different this analysis can become cumbersome, so the transformation entails transforming monthly values in daily average values;
+    \item Calendar transformations: used when examining monthly patterns, because the number of days in a month is different this analysis can become cumbersome, so the transformation entails changing monthly values in daily average values;
     \item Population transformations: as is the case with calendar data, instead of analyzing data relative to the total, it might be easier to adjust the data per capita, thousand or million people;
     \item Inflation transformations: this adjustment is mostly used with economic data, where we have to adjust money value from a past period to the present, data for which inflation likely increased the value of objects;
     \item Logarithm transformations: logarithms have the property of making data interpretable relative to the original scale. If a base 10 logarithm is used, an increase of 1 in the transformed data will in fact be an increase of 10 in the original data set;
@@ -693,9 +704,13 @@ Where:
     \item $ y_{i} $: are the sample points for the $ y $ variable;
     \item $ n $: is the sample size for both variables;
     \item $ \bar{x} $, analogous for $ \bar{y} $: is the sample mean for the variable, defined as:
-    \[\frac{1}{n}\sum_{i=1}^{n}x_{i}\]
+\begin{equation}
+    \frac{1}{n}\sum_{i=1}^{n}x_{i}
+\end{equation}
     \item $ s_{x} $, analogous for $ s_{y} $: is defined as: 
-    \[\sqrt{\frac{1}{n-1}\sum_{i=1}^{n}(x_{i}-\bar{x})^2}\]
+\begin{equation}
+    \sqrt{\frac{1}{n-1}\sum_{i=1}^{n}(x_{i}-\bar{x})^2}
+\end{equation}
     Also known as the sample standard deviation.
 \end{itemize}
 Please note that this formula for correlation may have many other forms, I chose the one easiest to understand on an intuitive level as explained in \cite{nauregression}, by Robert Nau from Duke University. 
@@ -791,14 +806,14 @@ Robert Nau also suggests, adding to the above rules, that positive ACF is also a
     \label{usgdpacfpacf}
 \end{figure}
 
-An example time series which yields a sinusoidal ACF after applying first seasonal and non-seasonal differences is presented in figure \ref{usgdpacfpacf}. For this data one might choose to set $ p = 1 $ since there is only a single lag significant in the PACF plot, while the other significant spikes are at seasonal lags, a topic which I will reiterate later on. \cite{hyndman2008forecasting}
+An example time series which yields a sinusoidal ACF after applying first seasonal and non-seasonal differences is presented in figure \ref{usgdpacfpacf}. For this data one might choose to set $ p = 1 $ since there is only a single significant lag in the PACF plot, while the other significant spikes are at seasonal lags, a topic which I will reiterate later on. \cite{hyndman2008forecasting}
 
 According to Hyndman and Athanasopoulos, for choosing the $ MA(q) $ part of the model, one has to apply a similar reasoning, but swapped for the two plots. Here the $ q $ order will be chosen from the ACF plot, depending on the lag that becomes non-significant. At the same time the PACF plot should display sinusoidal features or exponential decaying shape \cite{fpp2nonseasonalarima}. Similarly for MA data, Robert Nau suggests, that negative (P)ACF is also an indication of MA terms in the ARIMA model. \cite{nauarimaarmarules}
 
 As such, I may summarize the rules for choosing an $ ARIMA(p, d, 0) $ model as:
 \begin{itemize}
     \item The autocorrelation function has sinusoidal form or is exponentially decreasing \cite{nauarimaarmarules};
-    \item The partial autocorrelation function has significant lags up to an including lag $ p $, but none beyond it \cite{fpp2nonseasonalarima} .
+    \item The partial autocorrelation function has significant lags up to and including lag $ p $, but none beyond it \cite{fpp2nonseasonalarima} .
 \end{itemize}
 
 While the summary of rules for choosing an $ ARIMA(0, d, q) $ process is:
@@ -834,7 +849,7 @@ This also intuitively explains the choosing of MA and AR terms by swapping the A
 
 \section{Residuals analysis}
 
-Once the parameters for the model are chosen and the model is fitted on the data, one has to examine the produced errors. These errors, produced on the training set part of the data during the fitting process are called residuals \cite{boxjenkins}.
+Once the parameters for the model are chosen and the model is fitted on the data, one has to examine the produced errors. These errors, produced on the training set part of the data during the fitting process, are called residuals \cite{boxjenkins}.
 
 The residuals follow the equation \ref{residualsequation}.
 
@@ -919,7 +934,7 @@ Usually in computer science one measures the accuracy of a model by using the so
 
 \begin{enumerate}
     \item The training set, accounting for 80\% of the total volume of data. The model will be ran on this part of the data set;
-    \item The test set, accounting for the remaining 20\% of the data. The model's final evaluation will be done o this data set, no other changes to the model will be made to better fit the data in this set.
+    \item The test set, accounting for the remaining 20\% of the data. The model's final evaluation will be done on this data set, no other changes to the model will be made to better fit the data in this set.
 \end{enumerate}
 
 The 80/20 rule may be bent a little bit, and the size of the training and test sets might be adjusted to a ratio of 60/40, 70/30 or 90/10, what is important is that we need two separate training and test sets.
@@ -929,13 +944,19 @@ In time-series analysis there is a catch to this rule, one cannot take a random 
 There are several measures used to judge the accuracy of a model, including \cite{Hyndman06anotherlook}:
 \begin{itemize}
     \item Mean Error, is just the positive or negative average deviation from the true value, it is given by equation:
-    \[\text{ME} = \frac{1}{n} \sum_{t=1}^{n} y_{t}-\hat{y}_{t}\]
+    \begin{equation}
+        \text{ME} = \frac{1}{n} \sum_{t=1}^{n} y_{t}-\hat{y}_{t}
+    \end{equation}
     
     \item Mean Absolute Error, similar to the mean error, but always positive:
-    \[\text{MAE} = \frac{1}{n} \sum_{t=1}^{n} |y_{t}-\hat{y}_{t}|\]
+    \begin{equation}
+        \text{MAE} = \frac{1}{n} \sum_{t=1}^{n} |y_{t}-\hat{y}_{t}|
+    \end{equation}
     
     \item Root Mean Squared Error, is the square root of the mean of square errors, according to: 
-    \[\text{RMSE} = \sqrt{\frac{1}{n} \sum_{t=1}^{n} (y_{t}-\hat{y}_{t})^2}\]
+    \begin{equation}
+        \text{RMSE} = \sqrt{\frac{1}{n} \sum_{t=1}^{n} (y_{t}-\hat{y}_{t})^2}
+    \end{equation}
 \end{itemize}
 
 Where:
@@ -947,13 +968,13 @@ Where:
 
 A key difference between MAE and RMSE is the fact that the root mean squared error is more sensitive to outliers (because of the squared term in the errors) and hence some authors discourage its use \cite{armstrongevaluatingforecastingmethods}.
 
-I will however, try to report all three exposed error measures in the practical part of this dizertation paper, while mainly using the mean absolute error for comparing and choosing the best models to use for a time series.
+I will however, try to report all three exposed error measures in the practical part of this dissertation paper, while mainly using the mean absolute error for comparing and choosing the best models to use for a time series.
 These error measures will be applied on the test set as a final means of comparison between models. According to their respective equations, the lower the errors, the better, so a low MAE and RMSE means a better performing model, while a lower ME doesn't necessarily mean a better model, here the closeness to zero matters, regardless of the negative or positive side.
 
 %TODO:space: \section{The backshift operator}
 
 \section{Dynamic harmonic regression} \label{dynamicharmonicregression}
-When looking at electrical energy consumption and production we have to consider as well the seasonal aspect of data, since both the consumption and production are seasonally variable. Photo voltaic panels increase their production during sunny days in the summer months when the sky is clear, and have a reduced output during autumn and winter months.
+When looking at electrical energy consumption and production we have to consider as well the seasonal aspect of data, since both the consumption and production are seasonally variable. photovoltaic panels increase their production during sunny days in the summer months when the sky is clear, and have a reduced output during autumn and winter months.
 According to Hyndman and Athanasopoulos \cite{fpp2dhr} long seasonal periods are better suited for dynamic harmonic regression. Seasonal ARIMA models (SARIMA) being a better match for short seasonal periods like 12 for monthly data and 4 for quarterly data.
 The reason behind this being that daily data might be very noisy when looking at it in perspective, seasonal daily data for the yearly period literally means that the expected behavior for today is very similar to the one 365 days ago. This is a far fetched assumption because the seasonal pattern might change in a gap as big as the equivalent of one year.
 
@@ -1011,11 +1032,12 @@ Observe in table \ref{weekdaydummies} how Sunday is not represented by any value
 
 Using these variables the ARIMAX equation would become:
 
-\[
+\begin{equation}
 y'_{t} = c + \beta_{1} x_{1,t} + \cdots + \beta_{6} x_{6,t} + \phi_{1}y'_{t-1} + \cdots + \phi_{p}y'_{t-p} + \theta_{1}\varepsilon_{t-1} + \cdots + \theta_{q}\varepsilon_{t-q} + \varepsilon_{t} 
-\]
+\label{expandedarimaxequation}
+\end{equation}
 
-Thus giving weights (in the form of $ \beta_{1\dots6} $) to each week day whenever it is the case. This way, whenever the event takes place, a special emphasis will be made for the observation attached to the event. Similarly, when there is no event, all of $ x_{1\dots6,t} $ will be 0, so that there will be no special handling controlled by the coefficients.
+Thus equation \ref{expandedarimaxequation} gives weights (in the form of $ \beta_{1\dots6} $) to each week day whenever it is the case. This way, whenever the event takes place, a special emphasis will be made for the observation attached to the event. Similarly, when there is no event, all of $ x_{1\dots6,t} $ will be 0, so that there will be no special handling controlled by the coefficients.
 
 In this manner one might encode as dummies weekends, hours of the day and other such periods or events, that might need special handling through dedicated coefficients (in the form of $ \beta_{1\dots6} $) in the ARIMAX polynomial.
 
@@ -1029,7 +1051,7 @@ More importantly, I'm going to describe the methodology or how I applied the the
 The practical considerations are of importance because, according to Moore's law \cite{moore:1965} computing power is still increasing. 
 With the trend of embedded devices being more and more inter-connected in the IoT concept (internet of things) we can expect the forecasting algorithms to be present in such devices as well and to be able to influence and to give indications on our electrical energy consumption behaviors.
 
-One such application might be in photo voltaic panels. A next-generation appliance that allows the home owners to have real-time data regarding the electrical energy production patterns of their photo voltaic panels. Like all "smart" devices, it may have downsides, like security vulnerabilities, but its pros outweigh the cons. These "smart" capabilities are enhanced by the increasing computational power of embedded devices, through which operations like consumption and production of electrical energy forecasting for a house may be made.
+One such application might be in photovoltaic panels. A next-generation appliance that allows the home owners to have real-time data regarding the electrical energy production patterns of their photovoltaic panels. Like all "smart" devices, it may have downsides, like security vulnerabilities, but its pros outweigh the cons. These "smart" capabilities are enhanced by the increasing computational power of embedded devices, through which forecasting operations on consumption and production of electrical energy for a house may be made.
 
 This paper doesn't aim to give insight on how to implement forecasting algorithms in embedded devices, but can be used to draw conclusions of what is possible and what is not possible with regards to complex forecasting algorithms such as ARIMA.
 
@@ -1261,7 +1283,7 @@ This section of the chapter will give an insight on what the data that I used is
 As mentioned in the previous chapter I will work on a set of data that was used in other works as well, including that of Feilmeier \cite{feilmeier} who analyzed that data using neural networks and predicted it using those methods.
 
 The data set consists of five time series, called \texttt{Ph1}, \texttt{Ph2}, \texttt{Ph3}, \texttt{PV1} and \texttt{PV2}.
-The first three series represent electrical energy consumption of a household on each phase for three phase current while the last two time series represent the electrical energy of two photo voltaic panels installed in the same household.
+The first three series represent electrical energy consumption of a household on each phase for three phase current while the last two time series represent the electrical energy of two photovoltaic panels installed in the same household.
 
 Each observation from each of the time series in the dataset is captured once every five minutes, so in short I can say that the sampling frequency is five minutes.
 The length of time during which the data was captured is five months, from January 2015 to May 2015, all five time series were captured at the same time. This means that for each time series we have 150 days worth of data, with 288 samples per day,  totaling to approximately 43200 data points per time series.
@@ -1395,7 +1417,7 @@ This section takes all the presented pieces and puts them together. All the step
 
 First of all, during the modeling and forecasting process no distinction is made between the consumption of energy and the production of it. Both are treated as similar time series. This is possible because both are measured in the same units and are captured at the same intervals (the sampling frequency of the data set is five minutes). Thus the modeling and prediction process for the consumption and production doesn't have to be different, only the conclusions drawn will have to be different since the two processes are driven by different causes.
 
-For reasons explained previously in section \ref{datasetsection} I will not use directly the original time series in the data set, instead I will try to use the down sampled time series in order to be able to properly interpret the plots, since the high frequency time series yields plots that are way too dense to be interpreted. Also this is done because forecasting the original time series with ARIMA is very time consuming due to the high frequency of the data points and due to the sheer amount of data points available in a single time series (around 43200 points per time series). Hence I will use the down sampled time series, with sampling frequency of one and two hours respectively to be able to interpret the plots. I will use only chunks of one week to find the ARIMA parameters that properly fit the data and then forecast several days ahead, this process is then repeated, week by week, until all the data was fit and forecast. In summary: I will analyze a chunk of data (the down sampled data), approximately the size of a week, try to come up with proper ARIMA parameters for that respective week, then forecast the next several days (the size of the chunk and the size of the forecast horizon will be set to match the Pareto principle). The found parameters for ARIMA will be kept constant (considering that the model is representative for the whole data), but the model will then be re-fit for every next chunk of data from the time series, hence avoiding the assumption that the data doesn't change (or changes ever so slightly that it doesn't matter). This process will be repeated as many times as necessary, also yielding the embarrassingly parallel nature of the code, hence speeding things up a bit.
+For reasons explained previously in section \ref{datasetsection} I will not use directly the original time series in the data set, instead I will try to use the down sampled time series in order to be able to properly interpret the plots, since the high frequency time series yields plots that are way too dense to be interpreted. Also this is done because forecasting the original time series with ARIMA is very time consuming due to the high frequency of the data points and due to the sheer amount of data points available in a single time series (around 43200 points per time series). Hence I will use the down sampled time series, with sampling frequency of one and two hours respectively to be able to interpret the plots. I will use only chunks of one week to find the ARIMA parameters that properly fit the data and then forecast several days ahead, this process is then repeated, week by week, until all the data was fitted and forecasted. In summary: I will analyze a chunk of data (the down sampled data), approximately the size of a week, try to come up with proper ARIMA parameters for that respective week, then forecast the next several days (the size of the chunk and the size of the forecast horizon will be set to match the Pareto principle). The found parameters for ARIMA will be kept constant (considering that the model is representative for the whole data), but the model will then be re-fit for every next chunk of data from the time series, hence avoiding the assumption that the data doesn't change (or changes ever so slightly that it doesn't matter). This process will be repeated as many times as necessary, also yielding the embarrassingly parallel nature of the code, hence speeding things up a bit.
 
 In what follows I will start walking through the steps necessary to model and forecast with ARIMA by actually giving an example for one of the time series. I will use as example the last week of the series \texttt{Ph3} sampled every two hours.
 
@@ -1432,7 +1454,7 @@ The seasonal plot, takes the time series data and arranges it in seasons, in thi
     \label{dlastweek2hrsph3subseries}
 \end{figure}
 
-In the sub series plot the original data in split into seasons as well. Similarly the X axis also shows 12 points.
+In the sub series plot the original data is split into seasons as well. Similarly the X axis also shows 12 points.
 Each season on the plot is represented as an individual time series. Each observation belonging to the same season in a day is arranged in its respective slot. Since the training data had seven days worth of data, each mini time series consists of seven points, each from a different day, but the same season. The blue line shows the mean of each sub series. This plot shows that the energy consumption increases around lunch hours, hence reaching the conclusion this time series has daily seasonality.
 So for now we might expect a seasonal ARIMA model to best fit the data, this conclusion will be also helpful when generating the dummies for use with the \texttt{SARIMAX} model.
 
@@ -1668,7 +1690,7 @@ for(startDummy in 4:8)
 
 The lower and upper limits for the \texttt{startDummy} and \texttt{lenDummy} variables were chosen to match the time the values started to increase (and respectively to decrease) in the seasonal and seasonal sub-series plots (see figures \ref{dlastweek2hrsph3seasonal} and \ref{dlastweek2hrsph3subseries}) with allowance for some variability.
 
-With this information in mind, one the best performing model (for the entire \texttt{Ph3} data, with two hour sampling frequency) I have found is: $ ARIMA(1, 0, 0) $ with 10:00 to 12:00 dummies (one dummy at the 5th observation) and two Fourier terms ($ K = 2 $). The number of training days was kept at 7 and the forecast days at 3. The full time series are forecast by fitting the found model on chunks of (in this particular case) 7 days and predicting the energy consumption or production (consumption in this case) for the next three days. The accuracy for the full time-series is computed by averaging the accuracy for each chunk of forecasts. Please keep in mind that these figures are particular to the \texttt{Ph3} time series, with two hour sampling frequency, a summary of the best performing models and their parameters on all sampling frequencies and time series will be given in section \ref{resultssection}.
+With this information in mind, one of the best performing model (for the entire \texttt{Ph3} data, with two hour sampling frequency) I have found is: $ ARIMA(1, 0, 0) $ with 10:00 to 12:00 dummies (one dummy at the 5th observation) and two Fourier terms ($ K = 2 $). The number of training days was kept at 7 and the forecast days at 3. The full time series are forecast by fitting the found model on chunks of (in this particular case) 7 days and predicting the energy consumption or production (consumption in this case) for the next three days. The accuracy for the full time-series is computed by averaging the accuracy for each chunk of forecasts. Please keep in mind that these figures are particular to the \texttt{Ph3} time series, with two hour sampling frequency, a summary of the best performing models and their parameters on all sampling frequencies and time series will be given in section \ref{resultssection}.
 
 The accuracy for the model presented earlier is shown in table \ref{accuracyoffull2hrsph3} and the forecasts for the entire span of time is shown in figure \ref{d2hrsph3fourierDummiesforecast}.
 
@@ -1787,7 +1809,7 @@ The plot for this model applied on the $ Ph3 $ data can be seen in figure \ref{d
 
 With this, the part of the results where I predict the electrical energy consumption of a household is complete. An intermediary conclusion I can draw is the fact that all the phases have similar behaviors, all three of them having similar models that fit best. All observations can be deduced from the previous one (first order auto-regressive ARIMA model), all are seasonal (Fourier terms have been used successfully, even better than the usual seasonality captured by SARIMA models) and the observations that influence the results are situated in the first part of the day, morning to noon. Unsurprising result, since that is the time people prepare for work or have their lunch.
 
-The next two sets of results deal with the $PV1 $ and $ PV2 $ data series. These represent the electrical energy production of a household that has two photo-voltaic panels installed.
+The next two sets of results deal with the $PV1 $ and $ PV2 $ data series. These represent the electrical energy production of a household that has two photovoltaic panels installed.
 
 First, table \ref{pv1results} shows the results for the $ PV1 $ time series and the sub-sampled series.
 It can be seen that the running times are very similar to the running times on the consumption time series, showing in fact that apart from the semantic difference of producing and consuming energy, there is no difference between the two.
@@ -1801,7 +1823,7 @@ In this case I consider the best model to be the one with the lowest overall err
     \label{dbestpv1}
 \end{figure}
 
-The plot showing the best model for the $ PV1 $ time series is shown in figure \ref{dbestpv1}. It can be seen that the model is far from perfect, but it takes the form of the data, at least the trend of it. The trend is increasing, the reason behind this is the fact that the winter months, when the measurements started, do not provide as much sunshine, but as the time progresses and summer draws nearer, the sunshine increases and so does the energy production from the first installed photo voltaic panel. I expect this to hold true for the second one as well.
+The plot showing the best model for the $ PV1 $ time series is shown in figure \ref{dbestpv1}. It can be seen that the model is far from perfect, but it takes the form of the data, at least the trend of it. The trend is increasing, the reason behind this is the fact that the winter months, when the measurements started, do not provide as much sunshine, but as the time progresses and summer draws nearer, the sunshine increases and so does the energy production from the first installed photovoltaic panel. I expect this to hold true for the second one as well.
 
 The results produced by the found models on the $ PV2 $ data can be seen in table \ref{pv2results}.
 The best model in this case is $ ARIMA(1,0,0) $ with three Fourier terms for modeling the seasonality in the data. The plot created by forecasting the $ PV2 $ data with this model is drawn in figure \ref{dbestpv2}. As noted earlier this data series also has an increasing trend and the model correctly follows this shape.
@@ -1847,9 +1869,9 @@ The plot obtained from this table can be seen in figure \ref{doverallcomparisonp
 While I consider this research successful, there are still things to do in order to fully polish it and apply it practically on other data sets than the one studied here, hence this section deals with the improvements that can be applied to my work to make it more usable and useful.
 
 First of all, the algorithm should be able to automatically analyze the data in order to decide the parameters to be used on the ARIMA model. Basically one can use the algorithm already described and implemented by Rob J. Hyndman in \cite{fpp2arimainr}, by just calling \texttt{auto.arima}.
-But as any automatic algorithm it has the down fall that the programmer will not completely understand what goes on behind the scenes. As such, I have not taken this path in my dissertation work. If this path were to be followed it would be best suited for an industrial use-case, where only the results (i.e. the forecasts) from the algorithm are needed. As such an improvement to the current work would be making it completely automatic, the user could only feed the raw data into the algorithm and then the algorithm will provide forecasts. Still, such a complete black box would work only on a given set of use-cases, since the "black box" would have to be tuned differently for different use cases, for example economical data tends to behave differently from engineering data.
+But as any automatic algorithm it has the downfall that the programmer will not completely understand what goes on behind the scenes. As such, I have not taken this path in my dissertation work. If this path were to be followed it would be best suited for an industrial use-case, where only the results (i.e. the forecasts) from the algorithm are needed. As such an improvement to the current work would be making it completely automatic, the user could only feed the raw data into the algorithm and then the algorithm will provide forecasts. Still, such a complete black box would work only on a given set of use-cases, since the "black box" would have to be tuned differently for different use cases, for example economical data tends to behave differently from engineering data.
 
-In order to accomplish the this automatic process, one would have to make use of more statistical tests and rely less on the graphical method of interpreting the plots. I have chosen this way of working in order to develop an understanding of how ARIMA works and what are the principles behind it. So maybe relying more on objective statistical tests (for example the Augmented Dickey–Fuller test for series stationarity) than on interpreting the plots would have led to better models to be fit on the data and then better forecasts to be produced by those models.
+In order to accomplish this automatic process, one would have to make use of more statistical tests and rely less on the graphical method of interpreting the plots. I have chosen this way of working in order to develop an understanding of how ARIMA works and what are the principles behind it. So maybe relying more on objective statistical tests (for example the Augmented Dickey–Fuller test for series stationarity) than on interpreting the plots would have led to better models to be fit on the data and then better forecasts to be produced by those models.
 
 One other step for improving the research would be to lower the errors produced by the algorithm. As could be seen in the previous section, there is an order of magnitude difference between ARIMA models and Markov models. I would say that I have reached the limit of the model, but maybe on different data sets this method of forecasting could provide better results. So in order to be sure, both my research and that of my colleagues would have to be repeated on other data sets. In short, I would say that more use cases are needed in order to properly draw conclusions about the algorithm's performance, what suits one data set might not suit the other and vice-versa.
 
@@ -1868,9 +1890,9 @@ Unfortunately, due to the high resource consumption, at present, ARIMA is not fe
 
 The data that I have analyzed had a sampling rate of five minutes, which is very high with regards to the period during which it was captured: five months. The high amount of data required some innovative solutions in order to be able to use ARIMA on it, these solutions included: using a lower sampling rate (I have chosen one and two hours) and analyzing chunks of data at a time until all the data is modeled. The combination of these two approaches seemed to work best, producing the results I have shown earlier, the errors were relatively low and the running times on the order of several seconds for the more complex models used. As such, one might conclude that ARIMA models are not really suited for use on high frequency data. If one needs to analyze such data sets, one might use the two innovative solutions, down-sampling and chunk-by-chunk analysis or one may choose to use other models, better suited to such data.
 
-The analyzed data set was composed of five time series, three representing the electrical energy consumption by a household and two of them representing the electrical energy production by the same household. Each time series had to be modeled and forecast individually. The three consumption time series ended up being modeled by similar models, showing no big difference in the consumption behavior for different phases of current. The same is true for the electrical energy production data series, the two of them have similar models. This is easily explainable since the photo voltaic panels are installed at the same location, hence the production of electrical energy cannot be that different for one or the other. Regarding the consumption data series, I think that the five month period is not long enough to show any human behavior changing, which in my opinion is the most influential factor in how much and when the consumption of electricity happens.
+The analyzed data set was composed of five time series, three representing the electrical energy consumption by a household and two of them representing the electrical energy production by the same household. Each time series had to be modeled and forecast individually. The three consumption time series ended up being modeled by similar models, showing no big difference in the consumption behavior for different phases of current. The same is true for the electrical energy production data series, the two of them have similar models. This is easily explainable since the photovoltaic panels are installed at the same location, hence the production of electrical energy cannot be that different for one or the other. Regarding the consumption data series, I think that the five month period is not long enough to show any human behavior changing, which in my opinion is the most influential factor in how much and when the consumption of electricity happens.
 
-Both groups of time series have similarities and differences. They are similar in the fact that both are influenced by the time of day, but the difference between them comes from the way that time influences in different ways the consumption and production as shown by the seasonal and seasonal sub-series plots. The consumption of energy peaks in the late morning and is independent of the time of year while the production of electrical energy peaks during the afternoon and is heavily influenced by the time of year since during the summer months the sun shines both brighter and the angle of incidence of the light is the widest, positively influencing the photo voltaic panels and implicitly the production of electrical energy.
+Both groups of time series have similarities and differences. They are similar in the fact that both are influenced by the time of day, but the difference between them comes from the way that time influences in different ways the consumption and production as shown by the seasonal and seasonal sub-series plots. The consumption of energy peaks in the late morning and is independent of the time of year while the production of electrical energy peaks during the afternoon and is heavily influenced by the time of year since during the summer months the sun shines both brighter and the angle of incidence of the light is the widest, positively influencing the photovoltaic panels and implicitly the production of electrical energy.
 
 Regarding the errors of the algorithm, the results show that the benchmark methods, much easier to implement and to understand, in some basic cases, provide comparable results. This is a disadvantage for the ARIMA model in this scenario, but provides insights into how we can use similar ideas to achieve the same end result, that is to create some forecasts for a time series using much less resources. Please note that this substitution of ARIMA with the benchmark methods \texttt{mean}, \texttt{naive}, \texttt{snaive} may be dependent on the data and cannot be generalized to other data sets without proper research.
 
