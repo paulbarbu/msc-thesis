@@ -393,7 +393,7 @@ Both Python and R have the advantage of being fully open-source, that means that
 
 %TODO:space: expand on R and the ARIMA packges?
 
-\section{Seasonal data} \label{seasonaldatasection}
+\section{Seasonal and cyclic data} \label{seasonaldatasection}
 In what is left of this chapter, I am going to explain each concept that I have used in understanding the ARIMA model and its variations, both in isolation and in relation to the model and its role in choosing the fittest ARIMA model.
 
 I'm going to start with the concept of seasonality, which is an important one for longer time series, like I have here. As a reminder the time-series I'm going to inspect are 150 days long, with 288 observations every day.
@@ -489,7 +489,7 @@ This time, though, each season is represented as a mini time series. The first o
     \label{examplesubseriesplot}
 \end{figure}
 
-\subsection{Cyclic data}
+%\subsection{Cyclic data}
 The difference between seasonal data and cyclic data is that seasonality manifests itself at fixed intervals, annually, quarterly, monthly, weekly, etc. While cyclic patterns do not exhibit such predictable features, as they are not related to calendar events, but to economic and business conditions. Cyclic patterns exhibit much more volatile properties, the variations between cycles being wider and not as predictable as seasonal variations, which are more stable \cite{fpp2tspatterns}.
 
 An example of cyclic data can be seen in figure \ref{dlynx}. Which shows the annual total of lynx trapped in the McKenzie River district of north-west Canada \cite{fpp2stationarity}.
@@ -602,8 +602,7 @@ The differenced data looks stationary, the first difference made obvious by the 
 
 As noted in \cite{churvichunitroot} and \cite{nielsenunitroot} the notation $ I(d) $ comes from the fact that the process' characteristic equation that generated the given data has at least one unit root in the complex plane. Hence the tests mentioned earlier (for example: augmented Dickey-Fuller test) are in fact unit root tests and they check if such unit roots solve the process's characteristic equation.
 
-\subsection{Seasonal differencing}
-
+%\subsection{Seasonal differencing}
 In dealing with seasonal data we employ seasonal differencing, which is very similar to non-seasonal differencing.
 As noted in the section about SARIMA, the number of these seasonal differences will be denoted by the $ D $ parameter for the model.
 Of course the seasonal differences will be applied only to seasonal data in order to make it stationary.
@@ -744,7 +743,7 @@ This time I have used $ t $ instead of $ i $ to index the data, in order to make
 
 One of the ways for identifying stationary or non-stationary time series is by using the autocorrelation function plot. This plot will drop to zero pretty quickly for a stationary time series, while on the other hand the ACF of non-stationary time series will decrease very slowly \cite{fpp2stationarity}. This is also how the augmented Dickey-Fuller test works at an intuitive level. Because the data are autocorrelated, future values may be created from past values, hence the data is non-stationary. An example of this behavior is also given in figure \ref{goog200acf}, where on the top plot we see the original \texttt{goog200} autocorrelation function and on the bottom plot of the figure we see the ACF of the differentiated series. The former is slowly decreasing towards zero since the data is non-stationary, while the other displays no such behavior since the differenced series is stationary.
 
-\subsection{Critical values} \label{cirticalvaluesection}
+%\subsection{Critical values} \label{cirticalvaluesection}
 
 The dotted blue lines in figure \ref{goog200acf} represent the critical values for the autocorrelation function (and later partial autocorrelation function). If the value of the ACF is between these lines, with a value close to zero, then the correlation is considered not significant, otherwise it is significant.
 
@@ -768,7 +767,7 @@ So one could say that the critical values are approximately two standard deviati
 
 The partial autocorrelation function (or PACF for short), is very similar to the autocorrelation function in a lot of ways \cite{boxjenkins}. The difference being that partial autocorrelation removes the influence of the middle lags and keeps the correlation of only the head and tail lags. That means that computing the partial autocorrelation of $ y_{t} $ and $ y_{t-k} $ will first remove the effects of lags $1, 2, 3, \dots, k-1 $. As a consequence of this is the fact that the first partial autocorrelation is the same as the first autocorrelation, since there is no other observation between the latest two \cite{fpp2nonseasonalarima}. What PACF accomplishes at an intuitive level is eliminating the possibility of $ y_{t} $ and $ y_{t-2} $ being correlated only because of the connection of the two with $ y_{t-1} $, which was clearly the case in ACF. Thus the PACF may uncover information related to both $ y_{t-2} $ and $ y_{t} $ that might be used for forecasting.
 
-The critical values idea here is the same as for ACF, as explained in section \ref{cirticalvaluesection}.
+The critical values idea here is the same as for ACF, as explained in section \ref{autocorrelationfunctionsection}.
 
 \section{Choosing AR(p) and MA(q) terms} \label{choosingarandmasection}
 
@@ -1555,7 +1554,7 @@ Lastly, in figure \ref{dlastweek2hrsph3forecasts} I have shown the actual foreca
 With red we can see the original training data, while brown was used to represent the original test data from the \texttt{Ph3} time series.
 The violet line was used to show the fitted values of the model and the blue line, shown for the last three days of the plot, shows the forecast values. The darker shade of blue shows the 80\% confidence interval for the predictions and the lighter shade of blue shows the 95\% confidence interval for the predictions. Regardless of the position of the line in the shaded areas, for the 80\% confidence interval we are are 80\% sure that any prediction would fall in that range, while for the 95\% prediction interval we are 95\%sure that the prediction will fall in that specific range. One can easily see that the confidence interval where the confidence is higher is larger as well, since the possibilities are more numerous.
 
-Please note that the negative prediction intervals are due to the way these are computed: the point forecast plus/minus the standard deviation multiplied by the 95\% or 80\% critical value of the two tailed Z distribution, this usually means the point forecast plus/minus twice the standard error. For more details see section \ref{cirticalvaluesection}. The lower part of the interval should be limited at zero during the
+Please note that the negative prediction intervals are due to the way these are computed: the point forecast plus/minus the standard deviation multiplied by the 95\% or 80\% critical value of the two tailed Z distribution, this usually means the point forecast plus/minus twice the standard error. For more details see section \ref{autocorrelationfunctionsection}. The lower part of the interval should be limited at zero during the
 interpretation of the results, but this is not done on the plot due to symmetry and graphical reasons.
 
 The forecasts plot shows us that the fitting phase was successful, the data is closely modeled, but not identical, this is the ideal scenario since we do not want to fall into the trap of over fitting the data without being able to generalize from it. The forecasts on the other hand only look good for the duration of the first day, then regressing to the mean of the data without actually taking the form of the valleys and peaks of the test data. This is one reason for which I have varied the number of training and test days, in order to be able to extract the best results out of a similar model. The full results will be shown in section \ref{resultssection}.
