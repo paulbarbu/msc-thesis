@@ -40,6 +40,10 @@
 
 \usepackage[toc,page]{appendix}
 
+\addto\captionsenglish{
+    \renewcommand\bibname{References}
+}
+
 \usepackage{draftwatermark}
 \SetWatermarkText{DRAFT}
 \SetWatermarkScale{1}
@@ -1065,7 +1069,7 @@ R also benefits of a very large collection of packages, it has over 13000 (thirt
 
 The main packages I am using are: 
 \begin{itemize}
-    \item \texttt{forecast}: The forecast package is the basis of this work since it provides the ARIMA model implementation that I'm using. It offers all the forms of ARIMA a statistician might need, from simple ARMA, to ARIMA and (S)ARIMAX. It is based on the work of Rob J. Hyndman, a highly active and productive professor of statistics at Monash University in Australia \cite{forecastpackagearticle} \cite{forecastpackagemanual}. Using this package requires one to understand at least the meaning of the algorithms' parameters;
+    \item \texttt{forecast}: The forecast package is the basis of this work since it provides the ARIMA model implementation that I'm using. It offers all the forms of ARIMA a statistician might need, from simple ARMA, to ARIMA and (S)ARIMAX. It is based on the work of Rob J. Hyndman, a highly active and productive professor of statistics at Monash University in Australia \cite{forecastpackagearticle} \cite{rforecastpackage}. Using this package requires one to understand at least the meaning of the algorithms' parameters;
     \item \texttt{ggplot2}\footnote{\url{https://ggplot2.tidyverse.org/}}: This may be the most popular package in the scientific world of R since it easily allows the programmer to display plots of data. Its variety of plots make it suitable to every scenario imaginable while also staying very flexible and customizable. It implements a very modular way of building the plots, based on the book The Grammar of Graphics \cite{thegrammarofgraphics};
     \item \texttt{tictoc}\footnote{\url{https://cran.r-project.org/package=tictoc}}: A small and simple package that allows one to measure how much time a piece of code takes to run;
     \item \texttt{foreach}\footnote{\url{https://cran.r-project.org/package=foreach}} \& \texttt{doParallel}\footnote{\url{https://cran.r-project.org/package=doParallel}}: These two packages, used in conjunction, allow the programmer to easily write parallel R code.
@@ -1118,7 +1122,7 @@ The package also provides settings for the number of cores to be used when paral
 
 \subsection{The forecast package} \label{forecastpackagesection}
 
-The main R package leveraged by this dissertation is the \texttt{forecast} package \cite{forecastpackagemanual}, written by Rob J. Hyndman and others \cite{forecastpackagearticle} this is the main package used when forecasting time series.
+The main R package leveraged by this dissertation is the \texttt{forecast} package \cite{rforecastpackage}, written by Rob J. Hyndman and others \cite{forecastpackagearticle} this is the main package used when forecasting time series.
 Combined with the time series data type in R (\texttt{ts()}) it provides the widest range of possibilities for analyzing and forecasting such data.
 
 Compared with other solutions in other programming languages this package is used and maintained by professionals which conduct their work and research that requires forecasting tools. Hence we can be sure of the quality of the tools we are using.
@@ -2003,7 +2007,7 @@ Also, having a look at the big picture and comparing the errors produced by the 
     \label{overallcomparisonMAE}
 \end{table}
 
-Table \ref{overallcomparisonMAE} shows a comparison between the mean absolute errors from the neural networks model used in \cite{feilmeier}, the mean absolute errors from the Markov model used in \cite{antonescu} and the MAE obtained on each time series with ARIMA models used in this work by me.
+Table \ref{overallcomparisonMAE} shows a comparison between the mean absolute errors from the neural networks model used in \cite{feilmeier}, the mean absolute errors from the Markov model used in \cite{gellertmarkov}, \cite{antonescu} and the MAE obtained on each time series with ARIMA models used in this work by me.
 The last column of this table shows the average of the mean absolute errors on all the five time series as a summary of the results.
 
 %df <- data.frame(Model=rep(c('Markov', 'Neural', 'ARIMA'), each=6), Data=rep(c("PV1", "PV2", "Ph1", "Ph2", "Ph3", "Mean"), 3),
