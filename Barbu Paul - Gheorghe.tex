@@ -829,15 +829,15 @@ In the same manner we shall decide on the $ SAR(P) $ and $ SMA(Q) $ parameters i
 
 After the parameters have been chosen, the estimation of $ \phi $, $ \theta $, in case of ARIMA, and $ \Phi $, $ \Theta $ in case of SARIMA, is left to the algorithm. Usually the $ c $ constant in the ARIMA equation will be chosen as the mean of the data, remember though that this constant may not be included, depending on the software implementation of the ARIMA model.
 
-%grid.arrange(autoplot(usgdp) + xlab("Year") + ylab("US Dollars") + ggtitle("Under-differenced data"), ggAcf(usgdp) + ggtitle(""), ggPacf(usgdp) + ggtitle(""), 
-%autoplot(diff(usgdp)) + ylab("") + xlab("Year") + ggtitle("Autoregressive data"), ggAcf(diff(usgdp)) + ggtitle(""), ggPacf(diff(usgdp)) + ggtitle(""), 
-%autoplot(diff(usgdp, differences=2)) + ylab("") + xlab("Year") + ggtitle("White Noise"), ggAcf(diff(usgdp, differences=2)) + ggtitle(""), ggPacf(diff(usgdp, differences=2)) + ggtitle(""),
-%autoplot(diff(usgdp, differences=3)) + ylab("") + xlab("Year") + ggtitle("Moving average data"), ggAcf(diff(usgdp, differences=3)) + ggtitle(""), ggPacf(diff(usgdp, differences=3)) + ggtitle(""),
-%autoplot(diff(usgdp, differences=4)) + ylab("") + xlab("Year") + ggtitle("Over-differenced data"), ggAcf(diff(usgdp, differences=4)) + ggtitle(""), ggPacf(diff(usgdp, differences=4)) + ggtitle(""),
+%grid.arrange(autoplot(usgdp) + scale_x_continuous(breaks=seq(1950, 2020, 20)) + xlab("Year") + ylab("US Dollars") + ggtitle("Under-differenced data"), ggAcf(usgdp) + ggtitle(""), ggPacf(usgdp) + ggtitle(""), 
+%autoplot(diff(usgdp)) + scale_x_continuous(breaks=seq(1950, 2020, 20)) + ylab("") + xlab("Year") + ggtitle("Autoregressive data"), ggAcf(diff(usgdp)) + ggtitle(""), ggPacf(diff(usgdp)) + ggtitle(""), 
+%autoplot(diff(usgdp, differences=2)) + scale_x_continuous(breaks=seq(1950, 2020, 20)) + ylab("") + xlab("Year") + ggtitle("White Noise"), ggAcf(diff(usgdp, differences=2)) + ggtitle(""), ggPacf(diff(usgdp, differences=2)) + ggtitle(""),
+%autoplot(diff(usgdp, differences=3)) + scale_x_continuous(breaks=seq(1950, 2020, 20)) + ylab("") + xlab("Year") + ggtitle("Moving average data"), ggAcf(diff(usgdp, differences=3)) + ggtitle(""), ggPacf(diff(usgdp, differences=3)) + ggtitle(""),
+%autoplot(diff(usgdp, differences=4)) + scale_x_continuous(breaks=seq(1950, 2020, 20)) + ylab("") + xlab("Year") + ggtitle("Over-differenced data"), ggAcf(diff(usgdp, differences=4)) + ggtitle(""), ggPacf(diff(usgdp, differences=4)) + ggtitle(""),
 %layout_matrix = cbind(c(1,2,3), c(4, 5,6), c(7, 8, 9), c(10, 11, 12), c(13, 14, 15)))
 \begin{figure}[h]
     \centering
-    \includegraphics[width=1\textwidth]{darmadynamics}
+    \includegraphics[width=1\textwidth]{darmadynamics2}
     \caption{Top line, \texttt{usgdp} data (Quarterly US GDP), from left to right non-differenced data to over-differenced data; Middle line: ACF of the corresponding plots on the same column from the first line; Bottom line: PACF of the corresponding plots on the same column from the first line.}
     \label{armadynamics}
 \end{figure}
