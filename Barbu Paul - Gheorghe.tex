@@ -1777,7 +1777,7 @@ Table \ref{ph1results} shows the chosen models for the \texttt{Ph1} data series,
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.9\textwidth]{dbestph1}
-    \caption{Prediction by the best model on the \texttt{Ph1} data}
+    \caption{Prediction by the best model on the \texttt{Ph1} data (sampled every 5 minutes)}
     \label{dbestph1}
 \end{figure}
 
@@ -1833,7 +1833,7 @@ The running time of the algorithm is almost 7 seconds, which is a very short tim
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.9\textwidth]{dbestph2}
-    \caption{Prediction by the best model on the \texttt{Ph2} data}
+    \caption{Prediction by the best model on the \texttt{Ph2} data (sampled every 5 minutes)}
     \label{dbestph2}
 \end{figure}
 
@@ -1872,7 +1872,7 @@ The plot for this model applied on the $ Ph3 $ data can be seen in figure \ref{d
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.9\textwidth]{dbestph3}
-    \caption{Prediction by the best model on the \texttt{Ph3} data}
+    \caption{Prediction by the best model on the \texttt{Ph3} data (sampled every 5 minutes)}
     \label{dbestph3}
 \end{figure}
 
@@ -1922,7 +1922,7 @@ In this case I consider the best model to be the one with the lowest overall err
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.9\textwidth]{dbestpv1}
-    \caption{Prediction by the best model on the \texttt{PV1} data}
+    \caption{Prediction by the best model on the \texttt{PV1} data (sampled every 5 minutes)}
     \label{dbestpv1}
 \end{figure}
 
@@ -1966,7 +1966,7 @@ The best model in this case is $ ARIMA(1,0,0) $ with three Fourier terms for mod
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.9\textwidth]{dbestpv2}
-    \caption{Prediction by the best model on the \texttt{PV2} data}
+    \caption{Prediction by the best model on the \texttt{PV2} data (sampled every 5 minutes)}
     \label{dbestpv2}
 \end{figure}
 
@@ -1986,7 +1986,10 @@ Also, having a look at the big picture and comparing the errors produced by the 
         \textbf{Model/Time series} & \textbf{PV1} & \textbf{PV2} & \textbf{Ph1} & \textbf{Ph2} & \textbf{Ph3} & \textbf{Mean} \\ \hline
         \textbf{Markov}            & 27.29        & 26.16        & 42.39        & 25.18        & 51.11        & 34.426        \\ \hline
         \textbf{Neural}            & 111.71       & 107.16       & 279.99       & 199.35       & 357.14       & 211.07        \\ \hline
-        \textbf{ARIMA}             & 225.91       & 220.00       & 218.04       & 161.40       & 183.96       & 201.86        \\ \hline
+        
+        
+%        \textbf{ARIMA}             & 225.91       & 220.00       & 218.04       & 161.40       & 183.96       & 201.86        \\ \hline
+        \textbf{ARIMA}             & 225.91       & 219.01       & 215.51       & 157.91       & 172.99       & 198.27        \\ \hline
     \end{tabular}
     
     \centering
