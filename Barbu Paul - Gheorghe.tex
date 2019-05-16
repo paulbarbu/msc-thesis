@@ -779,13 +779,7 @@ For now I have only focused on the basic concepts that underlie the ARIMA model 
 
 I will now combine the two previous sections about autocorrelation function and partial autocorrelation function into what will be the guideline on how to choose the $ p $ and $ q $ parameters of ARIMA (and, of course, their seasonal counterparts $ P $ and $ Q $).
 
-The ARIMA equation is given in \ref{boxjenkinsequation} and repeated here for clarity:
-\begin{equation}
-\tag{\ref{boxjenkinsequation}}
-y'_{t} = c + \phi_{1}y'_{t-1} + \cdots + \phi_{p}y'_{t-p} + \theta_{1}\varepsilon_{t-1} + \cdots + \theta_{q}\varepsilon_{t-q} + \varepsilon_{t}
-\end{equation}
-
-As one can see, the auto regressive part of the equation, as the name implies, uses lagged values of the time series (possibly differenced, but for simplicity I will not consider that case in the explanation) scaled by some coefficients $ \phi_{1}, \phi_{2}, \dots, \phi_{p} $, the number of which will be chosen by the researcher, under the parameter $ p $. So the rule by which we should choose the number of AR terms in ARIMA is by inspecting both the ACF and PACF. 
+From the ARIMA equation given in \ref{boxjenkinsequation}  one can see that the auto regressive part of the equation, as the name implies, uses lagged values of the time series (possibly differenced, but for simplicity I will not consider that case in the explanation) scaled by some coefficients $ \phi_{1}, \phi_{2}, \dots, \phi_{p} $, the number of which will be chosen by the researcher, under the parameter $ p $. So the rule by which we should choose the number of AR terms in ARIMA is by inspecting both the ACF and PACF. 
 
 It is clear that the ACF should display some kind of correlation between several terms since otherwise we couldn't exploit the relationship between lagged values in order to produce forecasts. But the question still remains, how many lagged values should we take into account for forecasting purposes? The answer to the question comes from the intuitive understanding of the PACF, namely: where do the lagged values stop being correlated with the current value of the time series? This is exactly the question that PACF answers, the lagged PACF value that is the last above the critical domain gives the number of observations that definitely influence (read: are correlated) with the current observation. In summary: if the ACF shows some correlation between lags, and the PACF at some point drops below the critical values we have a, so called, AR signature for which we choose $ p $ to be equal to the number of significant spikes in the PACF plot up to the point where they dip below the critical threshold of $ \pm \frac{1.96}{\sqrt{n}} $. In practice data will show either exponentially decreasing or sinusoidal ACF plots \cite{fpp2nonseasonalarima}.
 
@@ -1002,14 +996,7 @@ Forecasting with dummies is similar to forecasting using Fourier terms. It's a r
 
 In the case of dummies, they model one-time events, for example public holidays, or some one-time public events, such as concerts or sporting events that take up several days and might influence electrical energy consumption or other time series that one might be interested in forecasting. Any event that doesn't fit into the "seasonal period" category can be modeled using dummies. Think of dummies as placeholders, they take on values only when a specific event has happened.
 
-I will use seasonal dummies as an example, suppose each weekday consists of a separate event that repeats over and over again, then one needs to model weekdays separately as dummies. In the original ARIMAX equation (\ref{arimaxequation}), reiterated here for clarity:
-
-\[
-y'_{t} = c + \beta x_{t} + \phi_{1}y'_{t-1} + \cdots + \phi_{p}y'_{t-p} + \theta_{1}\varepsilon_{t-1} + \cdots + \theta_{q}\varepsilon_{t-q} + \varepsilon_{t} 
-\tag{\ref{arimaxequation}}
-\]
-
-I have used only one external variable: $ x_{t} $. If one needs to model the seven days of the week, then one needs to use six dummy variables, that is: $ x_{1\dots6,t} $. The general rule being that one needs $ n - 1 $ dummy variables if there are $ n $ separate events to be modeled \cite{fpp2usefulpredictors}.
+I will use seasonal dummies as an example, suppose each weekday consists of a separate event that repeats over and over again, then one needs to model weekdays separately as dummies. In the original ARIMAX equation (\ref{arimaxequation}), I have used only one external variable: $ x_{t} $. If one needs to model the seven days of the week, then one needs to use six dummy variables, that is: $ x_{1\dots6,t} $. The general rule being that one needs $ n - 1 $ dummy variables if there are $ n $ separate events to be modeled \cite{fpp2usefulpredictors}.
 
 Each variable would only take two values, either zero or one, depending if the event has happened or is valid for a certain data point. For the weekday example the table \ref{weekdaydummies} depicts the way I have to choose the variables for a data set that has one observation per day.
 
