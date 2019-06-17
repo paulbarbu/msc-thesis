@@ -1,0 +1,68 @@
+SLIDE 1 -------------------------------------------------
+ 700 cuvinte
+ 
+ 
+ 
+Buna ziua,
+Numele meu este Barbu Paul Gheorghe si am sa va prezint proiectul meu de diploma:
+Secured Bootloader: program pentru controlul secventei de initializare
+si al actualizării aplicatiei în microcontrollere programabile.
+
+SLIDE 2 -------------------------------------------------
+
+Residuals are the errors on the training data
+Look for corellation in the residuals, if theer is any, then that is information that our model may be enriched with, thus improving predictions.
+
+SLIDE 3 -------------------------------------------------
+
+An equilibrium has to be found.
+Critical value: 2x std dev (for a two tailed distribution)
+
+SLIDE 4 -------------------------------------------------
+
+
+SLIDE 5 -------------------------------------------------
+
+Retail index - a measure of inflation
+
+SLIDE 6 -------------------------------------------------
+
+SLIDE 7 -------------------------------------------------
+
+SLIDE 8 -------------------------------------------------
+
+SLIDE 9 -------------------------------------------------
+
+SLIDE 10 ------------------------------------------------
+
+SLIDE 11 ------------------------------------------------
+
+Give out examples of dummies
+Say that in my tests time & fourier terms were the best performing external regressor
+
+Fourier terms model seasonality - hence, theoretically there is no need to apply seasonal ARIMA terms
+
+SLIDE 12 ------------------------------------------------
+
+Despre date, de unde provin, ce reprezinta, la cat timp sunt capturate, de ce am facut downsampling
+
+SLIDE 13-15 ------------------------------------------------
+
+ONly full (5minute data is presented here
+Changes happen more sporadically for ph1,2,3 but for PV1,2 they happen slowly since the amount of daylight increases slowly as well
+
+Missing several days at the beginning because of training period for the algorithm
+
+SLIDE 19 ------------------------------------------------
+
+Explain naive
+explain mean (mean until now, mean on the last x days) I used mean on the last 7 days to predict the next one
+Explain snaive
+Naive is like a contextual methods, that's why markov is very precise
+
+SLIDE 20 ------------------------------------------------
+
+high frequency data idea; ARIMA is time consuming since I had to parallelize it in order to reduce running times
+
+SUPLIMENTAR ------------------------------------------------
+SLIDE 22+ ------------------------------------------------
