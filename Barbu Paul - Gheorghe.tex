@@ -44,9 +44,9 @@
     \renewcommand\bibname{References}
 }
 
-\usepackage{draftwatermark}
-\SetWatermarkText{DRAFT}
-\SetWatermarkScale{1}
+%\usepackage{draftwatermark}
+%\SetWatermarkText{DRAFT}
+%\SetWatermarkScale{1}
 
 \author{Barbu Paul - Gheorghe}
 
@@ -831,7 +831,7 @@ After the parameters have been chosen, the estimation of $ \phi $, $ \theta $, i
 %layout_matrix = cbind(c(1,2,3), c(4, 5,6), c(7, 8, 9), c(10, 11, 12), c(13, 14, 15)))
 \begin{figure}[h]
     \centering
-    \includegraphics[width=1\textwidth]{darmadynamics2}
+    \includegraphics[width=1\textwidth]{darmadynamics3}
     \caption{Top line, \texttt{usgdp} data (Quarterly US GDP), from left to right non-differenced data to over-differenced data; Middle line: ACF of the corresponding plots on the same column from the first line; Bottom line: PACF of the corresponding plots on the same column from the first line.}
     \label{armadynamics}
 \end{figure}
@@ -1916,7 +1916,7 @@ The next two sets of results deal with the $PV1 $ and $ PV2 $ data series. These
 
 First, table \ref{pv1results} shows the results for the $ PV1 $ time series and the sub-sampled series.
 It can be seen that the running times are very similar to the running times on the consumption time series, showing in fact that apart from the semantic difference of producing and consuming energy, there is no difference between the two.
-What is fundamentally different though is the time covered by the dummies. Here the interval is directly proportional with the interval the sun shines most, which, as shown ere by the best model is between 11:00 in the morning and 17:00 in the afternoon (start dummy is 11, and length is 6).
+What is fundamentally different though is the time covered by the dummies. Here the interval is directly proportional with the interval the sun shines most, which, as shown here by the best model is between 11:00 in the morning and 17:00 in the afternoon (start dummy is 11, and length is 6).
 In this case I consider the best model to be the one with the lowest overall errors, hence: $ ARIMA(1, 0, 0) $ with three Fourier terms and dummies starting at the 11th hour and lasting 6 hours. These dummies are necessary to capture the peaks created by the high production of electrical energy during the afternoon hours when the sun shines brightest.
 
 \begin{figure}[htbp]
