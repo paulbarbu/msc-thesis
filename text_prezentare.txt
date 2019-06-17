@@ -1,7 +1,7 @@
 SLIDE 1 -------------------------------------------------
  700 cuvinte
  
- 
+what is the problem, why is it a problem, and how I solved it 
  
 Buna ziua,
 Numele meu este Barbu Paul Gheorghe si am sa va prezint proiectul meu de diploma:
